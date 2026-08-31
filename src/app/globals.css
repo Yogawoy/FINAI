@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+:root {
+  --bg-canvas: #F6F7FB;
+  --bg-surface: #FFFFFF;
+  --bg-surface-glass: rgba(255, 255, 255, 0.72);
+  --text-primary: #242636;
+  --text-secondary: #757A95;
+  --text-muted: #A0A4B8;
+  --accent-periwinkle: #7C7CE6;
+  --accent-lavender: #E4E2FB;
+  --accent-iceblue: #D6E4FA;
+  --accent-mint: #D0EFE5;
+  --accent-peach: #FCE2E0;
+  --border-subtle: rgba(36, 38, 54, 0.06);
+  --border-glass: rgba(255, 255, 255, 0.85);
+}
+
+/* Hide default browser scrollbars across all pages and elements */
+html,
+body,
+* {
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE and Edge */
+}
+
+*::-webkit-scrollbar {
+  display: none !important; /* Chrome, Safari, Opera, Edge */
+  width: 0px !important;
+  height: 0px !important;
+  background: transparent !important;
+}
+
+body {
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Utility to explicitly hide scrollbars */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Custom Soft Glassmorphism */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 10px 35px -5px rgba(48, 51, 74, 0.04), 0 0 0 1px rgba(36, 38, 54, 0.03);
+}
+
+.glass-pill {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 15px rgba(48, 51, 74, 0.03);
+}
+
+.glass-interactive {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-interactive:hover {
+  background: rgba(255, 255, 255, 0.88);
+  border-color: rgba(255, 255, 255, 0.95);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 40px -8px rgba(124, 124, 230, 0.12), 0 0 0 1px rgba(124, 124, 230, 0.1);
+}
+
+/* Ethereal Glow Backgrounds */
+.aurora-glow-1 {
+  background: radial-gradient(circle at 50% 50%, rgba(140, 139, 232, 0.18) 0%, rgba(201, 216, 245, 0.12) 45%, transparent 70%);
+  filter: blur(40px);
+}
+
+.aurora-glow-2 {
+  background: radial-gradient(circle at 50% 50%, rgba(201, 231, 220, 0.25) 0%, rgba(231, 229, 250, 0.15) 50%, transparent 75%);
+  filter: blur(50px);
+}
+
+/* Number display */
+.tabular-numbers {
+  font-variant-numeric: tabular-nums;
+}
