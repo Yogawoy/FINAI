@@ -189,7 +189,7 @@ export default function GoalsPage() {
       });
     }
 
-    showToast(`Setoran ${formatIDR(contribution.amount)} dari ${contribution.sourceWalletName} ke ${contribution.destinationWalletName} berhasil.`);
+    showToast('Tabungan berhasil ditambahkan.');
   };
 
   // Modal Opener Triggers
@@ -211,6 +211,7 @@ export default function GoalsPage() {
   };
 
   const handleContributionTrigger = (goal: GoalItem) => {
+    setIsDetailModalOpen(false);
     setActiveGoal(goal);
     setIsContributionModalOpen(true);
   };

@@ -10,7 +10,7 @@ interface ModalProps {
   title?: string;
   subtitle?: string;
   children: React.ReactNode;
-  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl';
   hideHeader?: boolean;
   hideCloseButton?: boolean;
   className?: string;
@@ -53,6 +53,12 @@ export default function Modal({
         return 'max-w-3xl';
       case '2xl':
         return 'max-w-4xl';
+      case '3xl':
+        return 'max-w-5xl';
+      case '4xl':
+        return 'max-w-6xl';
+      case '5xl':
+        return 'max-w-[1180px]';
       default:
         return 'max-w-md';
     }
