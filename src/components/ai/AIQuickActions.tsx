@@ -1,7 +1,16 @@
 'use client';
 
-import React from 'react';
-import { Receipt, PieChart, Target, LineChart, ArrowRight } from 'lucide-react';
+import {
+  Receipt,
+  PieChart,
+  Target,
+  LineChart,
+  ArrowRight,
+  Coffee,
+  Zap,
+  ArrowDownLeft,
+  Wallet,
+} from 'lucide-react';
 
 interface QuickActionItem {
   id: string;
@@ -19,31 +28,59 @@ interface AIQuickActionsProps {
 const QUICK_ACTIONS: QuickActionItem[] = [
   {
     id: 'qa-1',
-    title: 'Catat Pengeluaran',
-    subtitle: 'Catat transaksi belanja baru',
+    title: 'Ayam Geprek',
+    subtitle: 'Catat pengeluaran makan',
     prompt: 'Tadi aku beli ayam geprek 10 ribu.',
     icon: <Receipt size={14} className="text-[#D94F4F]" />,
   },
   {
     id: 'qa-2',
-    title: 'Cek Pengeluaran',
-    subtitle: 'Lihat pengeluaran bulan ini',
-    prompt: 'Pengeluaranku bulan ini gimana?',
-    icon: <LineChart size={14} className="text-[#7C7CE6]" />,
+    title: 'Beli Kopi',
+    subtitle: 'Catat beli kopi susu',
+    prompt: 'Tadi beli kopi susu 18 ribu',
+    icon: <Coffee size={14} className="text-[#9C7550]" />,
   },
   {
     id: 'qa-3',
+    title: 'Bayar Listrik',
+    subtitle: 'Catat tagihan bulanan PLN',
+    prompt: 'Bayar listrik 250 ribu dari BCA',
+    icon: <Zap size={14} className="text-[#E0A824]" />,
+  },
+  {
+    id: 'qa-4',
+    title: 'Terima Gaji',
+    subtitle: 'Catat pemasukan bulanan',
+    prompt: 'Terima transfer gaji 7 juta ke BCA',
+    icon: <ArrowDownLeft size={14} className="text-[#1B7354]" />,
+  },
+  {
+    id: 'qa-5',
     title: 'Cek Budget',
-    subtitle: 'Apakah anggaran masih aman?',
+    subtitle: 'Evaluasi sisa kuota pos',
     prompt: 'Budget makananku masih aman?',
     icon: <PieChart size={14} className="text-[#5F5ED4]" />,
   },
   {
-    id: 'qa-4',
-    title: 'Target Impian',
-    subtitle: 'Nabung untuk target impian',
+    id: 'qa-6',
+    title: 'Cek Pengeluaran',
+    subtitle: 'Lihat cashflow bulan ini',
+    prompt: 'Pengeluaranku bulan ini gimana?',
+    icon: <LineChart size={14} className="text-[#7C7CE6]" />,
+  },
+  {
+    id: 'qa-7',
+    title: 'Nabung Kuliah',
+    subtitle: 'Alokasikan dana ke target',
     prompt: 'Aku mau nabung 500 ribu buat kuliah dari BCA.',
     icon: <Target size={14} className="text-[#1B7354]" />,
+  },
+  {
+    id: 'qa-8',
+    title: 'Cek Saldo Kas',
+    subtitle: 'Lihat saldo seluruh dompet',
+    prompt: 'Berapa saldo di semua dompetku?',
+    icon: <Wallet size={14} className="text-[#4F73D9]" />,
   },
 ];
 

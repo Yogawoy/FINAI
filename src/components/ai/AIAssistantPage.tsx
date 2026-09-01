@@ -153,6 +153,62 @@ export default function AIAssistantPage() {
         return;
       }
 
+      // 2. Detect Income / Gaji
+      if (lower.includes('gaji') || lower.includes('pemasukan') || lower.includes('transfer masuk')) {
+        let amount = 7000000;
+        const matchedDigits = text.match(/\d+(\.\d+)?/);
+        if (matchedDigits) {
+          const num = parseInt(matchedDigits[0].replace(/\./g, ''), 10);
+          if (num > 0) {
+            amount = num < 100 && lower.includes('juta') ? num * 1000000 : num;
+          }
+        }
+
+        const aiMsg: AIMessageType = {
+          id: `ai-${Date.now()}`,
+          sender: 'assistant',
+          content: 'Pemasukan baru terdeteksi! Silakan periksa dan simpan transaksi berikut ke rekening Anda:',
+          timestamp: timeStr,
+          action: {
+            id: `act-${Date.now()}`,
+            type: 'income',
+            title: 'Gaji Bulanan',
+            amount,
+            category: 'Gaji & Pendapatan',
+            sourceWallet: 'BCA •••• 4821',
+            date: '1 September 2026',
+            status: 'pending',
+          },
+        };
+        setMessages((prev) => [...prev, aiMsg]);
+        return;
+      }
+
+      // 3. Detect Wallet Balances
+      if (lower.includes('saldo') || lower.includes('dompet')) {
+        const aiMsg: AIMessageType = {
+          id: `ai-${Date.now()}`,
+          sender: 'assistant',
+          content: 'Berikut rincian saldo terkini di seluruh dompet dan rekening kas FinAI Anda:',
+          timestamp: timeStr,
+          insight: {
+            type: 'analytics',
+            title: 'Likuiditas Kas & Dompet',
+            subtitle: 'Total Keseluruhan: Rp24.560.000',
+            metrics: [
+              { label: 'Bank BCA', value: 'Rp18.500.000', color: 'text-[#242636]' },
+              { label: 'Bank Mandiri', value: 'Rp4.200.000', color: 'text-[#242636]' },
+              { label: 'GoPay E-Wallet', value: 'Rp860.000', color: 'text-[#5F5ED4]' },
+              { label: 'Cash Fisik', value: 'Rp1.000.000', color: 'text-[#1B7354]' },
+            ],
+            actionLabel: 'Kelola Seluruh Dompet',
+            actionHref: '/app/wallets',
+          },
+        };
+        setMessages((prev) => [...prev, aiMsg]);
+        return;
+      }
+
       // 2. Detect Goal Contribution
       if (
         lower.includes('nabung') ||
@@ -272,6 +328,8 @@ export default function AIAssistantPage() {
           if (updatedAction.type === 'expense') {
             setBalance((b) => Math.max(b - updatedAction.amount, 0));
             setMonthlyExpense((e) => e + updatedAction.amount);
+          } else if (updatedAction.type === 'income') {
+            setBalance((b) => b + updatedAction.amount);
           }
 
           return {
