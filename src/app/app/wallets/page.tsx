@@ -143,7 +143,7 @@ export default function WalletsPage() {
             icon={<Plus size={16} />}
             onClick={() => setIsAddModalOpen(true)}
           >
-            + Tambah Dompet
+            Tambah Dompet
           </Button>
         </div>
       </div>
@@ -269,7 +269,7 @@ export default function WalletsPage() {
               icon={<Plus size={16} />}
               onClick={() => setIsAddModalOpen(true)}
             >
-              + Tambah Dompet
+              Tambah Dompet
             </Button>
           </div>
         )}

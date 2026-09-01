@@ -21,7 +21,7 @@ export default function AddWalletCard({ onClick }: AddWalletCardProps) {
         <Plus size={24} strokeWidth={2.5} />
       </div>
       <h4 className="text-base font-bold text-[#242636] group-hover:text-[#7C7CE6] transition-colors">
-        + Tambah Dompet Baru
+        Tambah Dompet Baru
       </h4>
       <p className="text-xs text-[#757A95] mt-1 max-w-[200px] leading-relaxed">
         Hubungkan rekening bank, e-wallet, tabungan, atau uang tunai.

@@ -246,14 +246,14 @@ export default function BudgetsPage() {
             </AnimatePresence>
           </div>
 
-          {/* + Buat Anggaran Button */}
+          {/* Buat Anggaran Button */}
           <Button
             variant="primary"
             size="md"
             icon={<Plus size={16} />}
             onClick={() => setIsCreateModalOpen(true)}
           >
-            + Buat Anggaran
+            Buat Anggaran
           </Button>
         </div>
       </div>

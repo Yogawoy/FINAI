@@ -46,7 +46,7 @@ export default function BudgetList({
             icon={<Plus size={16} />}
             onClick={onCreateBudget}
           >
-            + Buat Anggaran
+            Buat Anggaran
           </Button>
         </div>
       </div>

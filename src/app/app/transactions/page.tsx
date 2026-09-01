@@ -202,7 +202,7 @@ export default function TransactionsPage() {
           icon={<Plus size={16} />}
           onClick={() => setIsAddModalOpen(true)}
         >
-          + Tambah Transaksi
+          Tambah Transaksi
         </Button>
       </div>
 
