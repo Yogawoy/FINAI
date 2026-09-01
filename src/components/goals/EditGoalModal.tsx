@@ -260,7 +260,7 @@ export default function EditGoalModal({
           <div className="p-3.5 rounded-2xl bg-[#FAF9FE] border border-[#E8E4F8] space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-[11px] font-bold text-[#242636] uppercase tracking-wider block">
+                <label className="text-[11px] font-bold text-[#242636] uppercase tracking-wider block truncate">
                   Dompet Sumber Dana
                 </label>
                 <WalletSelect
@@ -268,10 +268,13 @@ export default function EditGoalModal({
                   onChange={setSourceWalletId}
                   wallets={wallets}
                 />
+                <p className="text-[10px] text-[#757A95] leading-tight">
+                  Dompet untuk menyetor tabungan.
+                </p>
               </div>
 
               <div className="space-y-1">
-                <label className="text-[11px] font-bold text-[#5F5ED4] uppercase tracking-wider block">
+                <label className="text-[11px] font-bold text-[#5F5ED4] uppercase tracking-wider block truncate">
                   Dompet Tujuan Tabungan
                 </label>
                 <WalletSelect
@@ -279,6 +282,9 @@ export default function EditGoalModal({
                   onChange={setDestinationWalletId}
                   wallets={wallets}
                 />
+                <p className="text-[10px] text-[#757A95] leading-tight">
+                  Dompet tempat dana target disimpan.
+                </p>
               </div>
             </div>
 

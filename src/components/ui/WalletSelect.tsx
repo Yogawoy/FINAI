@@ -44,7 +44,7 @@ interface WalletSelectProps {
 export default function WalletSelect({
   value,
   onChange,
-  label = 'Dompet / Sumber Dana',
+  label = '',
   wallets = DEFAULT_WALLETS,
   className = '',
 }: WalletSelectProps) {
