@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Target, Sparkles, Calendar, TrendingUp, X, ArrowRight, AlertCircle } from 'lucide-react';
+import { Sparkles, TrendingUp, X, ArrowRight } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
 import DatePicker from '@/components/ui/DatePicker';
@@ -20,12 +20,12 @@ interface CreateGoalModalProps {
 }
 
 const CATEGORY_OPTIONS: { id: GoalCategoryType; label: string }[] = [
-  { id: 'laptop', label: 'Gadget / Laptop' },
-  { id: 'travel', label: 'Liburan & Wisata' },
-  { id: 'emergency', label: 'Dana Darurat' },
+  { id: 'laptop', label: 'Gadget' },
+  { id: 'travel', label: 'Liburan' },
+  { id: 'emergency', label: 'Darurat' },
   { id: 'vehicle', label: 'Kendaraan' },
-  { id: 'home', label: 'Rumah & Properti' },
-  { id: 'course', label: 'Edukasi / Kursus' },
+  { id: 'home', label: 'Properti' },
+  { id: 'course', label: 'Edukasi' },
   { id: 'wedding', label: 'Pernikahan' },
   { id: 'other', label: 'Lainnya' },
 ];
@@ -151,7 +151,7 @@ export default function CreateGoalModal({
       hideCloseButton={true}
       className="p-6 sm:p-7 overflow-hidden"
     >
-      <div className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-5">
         {/* Header */}
         <div className="flex items-start justify-between pb-1 border-b border-black/[0.04]">
           <div className="space-y-0.5">
@@ -176,9 +176,9 @@ export default function CreateGoalModal({
         </div>
 
         {/* 2-Column Responsive Layout: Left Form (7 cols), Right Live Preview (5 cols) */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
-          {/* Left Form */}
-          <form onSubmit={handleSubmit} className="md:col-span-7 space-y-3.5">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch">
+          {/* Left Form (7 cols) */}
+          <div className="md:col-span-7 space-y-3">
             {/* 1. Nama Target */}
             <div className="space-y-1">
               <label className="text-[11px] font-bold text-[#757A95] uppercase tracking-wider block">
@@ -194,49 +194,31 @@ export default function CreateGoalModal({
               />
             </div>
 
-            {/* =================================================================== */}
-            {/* 2. DUAL WALLETS SELECTION: SUMBER DANA & TUJUAN TABUNGAN            */}
-            {/* =================================================================== */}
-            <div className="p-3.5 rounded-2xl bg-[#FAF9FE] border border-[#E8E4F8] space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* 1. Sumber Dana */}
-                <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-[#242636] uppercase tracking-wider block truncate">
-                    Dompet Sumber Dana
-                  </label>
-                  <WalletSelect
-                    value={sourceWalletId}
-                    onChange={setSourceWalletId}
-                    wallets={wallets}
-                  />
-                  <p className="text-[10px] text-[#757A95] leading-tight">
-                    Dompet untuk menyetor tabungan.
-                  </p>
-                </div>
-
-                {/* 2. Dompet Tujuan */}
-                <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-[#5F5ED4] uppercase tracking-wider block truncate">
-                    Dompet Tujuan Tabungan
-                  </label>
-                  <WalletSelect
-                    value={destinationWalletId}
-                    onChange={setDestinationWalletId}
-                    wallets={wallets}
-                  />
-                  <p className="text-[10px] text-[#757A95] leading-tight">
-                    Dompet tempat dana target disimpan.
-                  </p>
-                </div>
+            {/* 2. DUAL WALLETS SELECTION */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {/* Dompet Sumber */}
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold text-[#242636] uppercase tracking-wider block truncate">
+                  Dompet Sumber Dana
+                </label>
+                <WalletSelect
+                  value={sourceWalletId}
+                  onChange={setSourceWalletId}
+                  wallets={wallets}
+                />
               </div>
 
-              {/* Visual Transfer Flow Component */}
-              <GoalTransferFlow
-                sourceWallet={sourceWallet}
-                destinationWallet={destinationWallet}
-                amount={calculation.monthlyReq}
-                mode="create"
-              />
+              {/* Dompet Tujuan */}
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold text-[#5F5ED4] uppercase tracking-wider block truncate">
+                  Dompet Tujuan Tabungan
+                </label>
+                <WalletSelect
+                  value={destinationWalletId}
+                  onChange={setDestinationWalletId}
+                  wallets={wallets}
+                />
+              </div>
             </div>
 
             {/* 3. Kategori */}
@@ -258,7 +240,7 @@ export default function CreateGoalModal({
                           : 'bg-[#F8F9FD] border-black/[0.05] text-[#757A95] hover:text-[#242636]'
                       }`}
                     >
-                      {cat.label.split('/')[0].trim()}
+                      {cat.label}
                     </button>
                   );
                 })}
@@ -266,8 +248,7 @@ export default function CreateGoalModal({
             </div>
 
             {/* 4. Target Dana & Dana Awal */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {/* Target Dana */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               <div className="space-y-1">
                 <label className="text-[11px] font-bold text-[#757A95] uppercase tracking-wider block">
                   Target Dana
@@ -289,10 +270,9 @@ export default function CreateGoalModal({
                 </div>
               </div>
 
-              {/* Dana Saat Ini */}
               <div className="space-y-1">
-                <label className="text-[11px] font-bold text-[#757A95] uppercase tracking-wider block">
-                  Dana Saat Ini (di Dompet Tujuan)
+                <label className="text-[11px] font-bold text-[#757A95] uppercase tracking-wider block truncate">
+                  Dana Saat Ini
                 </label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-[#757A95]">
@@ -312,7 +292,7 @@ export default function CreateGoalModal({
             </div>
 
             {/* 5. Target Tanggal & Frekuensi */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               <div className="space-y-1">
                 <label className="text-[11px] font-bold text-[#757A95] uppercase tracking-wider block">
                   Target Tanggal
@@ -322,7 +302,7 @@ export default function CreateGoalModal({
 
               <div className="space-y-1">
                 <label className="text-[11px] font-bold text-[#757A95] uppercase tracking-wider block">
-                  Frekuensi Tabungan
+                  Frekuensi
                 </label>
                 <SegmentedControl
                   value={frequency}
@@ -359,53 +339,35 @@ export default function CreateGoalModal({
                 })}
               </div>
             </div>
+          </div>
 
-            {/* Action Buttons */}
-            <div className="flex items-center gap-2.5 pt-3 border-t border-black/[0.05]">
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex-1 py-2.5 rounded-2xl bg-[#F4F3F9] hover:bg-[#EAE9F2] text-[#757A95] font-bold text-xs transition-colors cursor-pointer"
-              >
-                Batal
-              </button>
-              <Button
-                type="submit"
-                variant="primary"
-                size="md"
-                className="flex-1"
-                disabled={isSameWallet}
-              >
-                Buat Target
-              </Button>
-            </div>
-          </form>
-
-          {/* Right Live Goal Preview Card */}
-          <div className="md:col-span-5 p-5 rounded-[24px] bg-gradient-to-br from-[#FAF9FE] via-white to-[#F3F0FE] border border-[#E8E4F8] shadow-sm space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-black/[0.04]">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#757A95] flex items-center gap-1">
-                <Sparkles size={12} className="text-[#7C7CE6]" />
-                Live Preview
-              </span>
-              <span className="text-[10px] font-bold text-[#5F5ED4] bg-[#EDEAFC] px-2 py-0.5 rounded-full">
-                {calculation.percentage}%
-              </span>
-            </div>
-
+          {/* Right Live Goal Preview Card (5 cols - fills height completely) */}
+          <div className="md:col-span-5 p-4 sm:p-5 rounded-[24px] bg-gradient-to-br from-[#FAF9FE] via-white to-[#F3F0FE] border border-[#E8E4F8] shadow-sm flex flex-col justify-between space-y-3">
             <div className="space-y-3">
+              {/* Header Preview */}
+              <div className="flex items-center justify-between pb-2 border-b border-black/[0.04]">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#757A95] flex items-center gap-1">
+                  <Sparkles size={12} className="text-[#7C7CE6]" />
+                  Live Preview
+                </span>
+                <span className="text-[10px] font-bold text-[#5F5ED4] bg-[#EDEAFC] px-2 py-0.5 rounded-full">
+                  {calculation.percentage}%
+                </span>
+              </div>
+
+              {/* Goal Title & Target */}
               <div className="flex items-center gap-3">
                 <GoalVisualIcon
                   category={category}
                   colorTheme={colorTheme}
-                  size={22}
-                  className="w-12 h-12 shadow-2xs"
+                  size={20}
+                  className="w-11 h-11 shadow-2xs"
                 />
                 <div className="min-w-0">
-                  <h4 className="text-base font-bold text-[#242636] truncate">
+                  <h4 className="text-sm sm:text-base font-bold text-[#242636] truncate">
                     {title.trim() || 'Nama Target Impian'}
                   </h4>
-                  <span className="text-xs text-[#757A95] block">
+                  <span className="text-[11px] text-[#757A95] block">
                     Target: {targetDate || '31 Des 2026'}
                   </span>
                 </div>
@@ -423,45 +385,56 @@ export default function CreateGoalModal({
                     className={`h-full rounded-full ${themeConfig.bar} transition-all duration-300`}
                   />
                 </div>
-                <div className="text-[11px] text-[#757A95] font-semibold">
-                  Sisa {formatIDR(remaining)}
+                <div className="text-[10px] text-[#757A95] font-semibold">
+                  Sisa kebutuhan: {formatIDR(remaining)}
                 </div>
               </div>
 
-              {/* Funding Flow Summary in Preview */}
-              <div className="p-3 rounded-2xl bg-white border border-black/[0.05] space-y-1.5">
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#757A95] block">
-                  Alur Setoran
-                </span>
-                <div className="flex items-center justify-between text-xs font-bold text-[#242636]">
-                  <span className="truncate max-w-[90px]">{sourceWallet?.name || 'BCA'}</span>
-                  <div className="flex items-center gap-1 text-[#7C7CE6]">
-                    <span className="text-[10px] font-normal">setor ke</span>
-                    <ArrowRight size={12} />
-                  </div>
-                  <span className="truncate max-w-[90px] text-[#5F5ED4]">
-                    {destinationWallet?.name || 'Tabungan'}
-                  </span>
-                </div>
-              </div>
+              {/* Visual Transfer Flow Component */}
+              <GoalTransferFlow
+                sourceWallet={sourceWallet}
+                destinationWallet={destinationWallet}
+                amount={calculation.monthlyReq}
+                mode="create"
+              />
+            </div>
 
-              {/* Auto Calculation Recommendation Box */}
-              <div className="p-3 rounded-2xl bg-white border border-black/[0.05] space-y-1">
-                <div className="flex items-center gap-1 text-[11px] font-bold text-[#1B7354]">
-                  <TrendingUp size={13} />
-                  <span>Kebutuhan Nabung Bulanan:</span>
-                </div>
-                <div className="text-sm font-extrabold text-[#242636]">
-                  {formatIDR(calculation.monthlyReq)} / bulan
-                </div>
-                <p className="text-[10px] text-[#757A95] leading-relaxed">
-                  Perlu menabung sekitar {formatIDR(calculation.monthlyReq)} per bulan selama {calculation.months} bulan untuk mencapai target tepat waktu.
-                </p>
+            {/* Auto Calculation Recommendation Box */}
+            <div className="p-3 rounded-2xl bg-white border border-black/[0.05] space-y-1">
+              <div className="flex items-center gap-1 text-[11px] font-bold text-[#1B7354]">
+                <TrendingUp size={13} />
+                <span>Kebutuhan Nabung Bulanan:</span>
               </div>
+              <div className="text-sm font-extrabold text-[#242636]">
+                {formatIDR(calculation.monthlyReq)} / bulan
+              </div>
+              <p className="text-[10px] text-[#757A95] leading-relaxed">
+                Perlu menabung sekitar {formatIDR(calculation.monthlyReq)} per bulan selama {calculation.months} bulan untuk mencapai target tepat waktu.
+              </p>
             </div>
           </div>
         </div>
-      </div>
+
+        {/* Full-width Modal Action Buttons */}
+        <div className="flex items-center gap-3 pt-3 border-t border-black/[0.05]">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 py-2.5 rounded-2xl bg-[#F4F3F9] hover:bg-[#EAE9F2] text-[#757A95] font-bold text-xs sm:text-sm transition-colors cursor-pointer"
+          >
+            Batal
+          </button>
+          <Button
+            type="submit"
+            variant="primary"
+            size="md"
+            className="flex-1"
+            disabled={isSameWallet || !title.trim() || targetAmount <= 0}
+          >
+            Buat Target
+          </Button>
+        </div>
+      </form>
     </Modal>
   );
 }
