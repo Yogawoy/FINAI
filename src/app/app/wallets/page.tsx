@@ -307,10 +307,12 @@ export default function WalletsPage() {
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
         onEdit={(w) => {
+          setIsDetailModalOpen(false);
           setSelectedWallet(w);
           setIsEditModalOpen(true);
         }}
         onArchive={(w) => {
+          setIsDetailModalOpen(false);
           setSelectedWallet(w);
           setIsDeleteDialogOpen(true);
         }}

@@ -159,16 +159,19 @@ export default function BudgetsPage() {
   };
 
   const handleEditTrigger = (budget: BudgetCategory) => {
+    setIsDetailModalOpen(false);
     setActiveBudget(budget);
     setIsEditModalOpen(true);
   };
 
   const handleDeleteTrigger = (budget: BudgetCategory) => {
+    setIsDetailModalOpen(false);
     setActiveBudget(budget);
     setIsDeleteDialogOpen(true);
   };
 
   const handleDuplicateTrigger = (budget: BudgetCategory) => {
+    setIsDetailModalOpen(false);
     setActiveBudget(budget);
     setIsDuplicateModalOpen(true);
   };

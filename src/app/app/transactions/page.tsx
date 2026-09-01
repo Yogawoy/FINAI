@@ -277,10 +277,12 @@ export default function TransactionsPage() {
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
         onEdit={(tx) => {
+          setIsDetailModalOpen(false);
           setActiveTransaction(tx);
           setIsEditModalOpen(true);
         }}
         onDelete={(tx) => {
+          setIsDetailModalOpen(false);
           setActiveTransaction(tx);
           setIsDeleteDialogOpen(true);
         }}
