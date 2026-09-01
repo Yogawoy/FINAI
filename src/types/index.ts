@@ -83,6 +83,44 @@ export interface BudgetCategory {
   healthStatus?: BudgetHealthStatus;
 }
 
+export type GoalStatus = 'on_track' | 'needs_attention' | 'behind' | 'completed';
+export type GoalFrequency = 'monthly' | 'weekly';
+export type GoalColorTheme = 'periwinkle' | 'lavender' | 'iceblue' | 'mint' | 'peach';
+export type GoalCategoryType =
+  | 'laptop'
+  | 'travel'
+  | 'emergency'
+  | 'vehicle'
+  | 'course'
+  | 'home'
+  | 'wedding'
+  | 'other';
+
+export interface GoalContribution {
+  id: string;
+  amount: number;
+  date: string;
+  walletName: string;
+  note?: string;
+}
+
+export interface GoalItem {
+  id: string;
+  title: string;
+  category: GoalCategoryType;
+  targetAmount: number;
+  currentAmount: number;
+  targetDate: string; // ISO date or readable string
+  frequency: GoalFrequency;
+  monthlySaving: number;
+  walletId: string;
+  walletName: string;
+  colorTheme: GoalColorTheme;
+  status: GoalStatus;
+  notes?: string;
+  contributions: GoalContribution[];
+}
+
 export interface FinancialGoal {
   id: string;
   title: string;

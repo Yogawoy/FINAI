@@ -2,6 +2,7 @@ import {
   Transaction,
   BudgetCategory,
   FinancialGoal,
+  GoalItem,
   CashflowPoint,
   CategoryBreakdown,
   DaySpending,
@@ -622,6 +623,85 @@ export const MOCK_GOALS: FinancialGoal[] = [
     monthlyContribution: 3000000,
     status: 'Core priority (63%)'
   }
+];
+
+export const MOCK_GOALS_LIST: GoalItem[] = [
+  {
+    id: 'goal-1',
+    title: 'Laptop Baru',
+    category: 'laptop',
+    targetAmount: 12000000,
+    currentAmount: 8160000,
+    targetDate: '2026-12-31',
+    frequency: 'monthly',
+    monthlySaving: 960000,
+    walletId: 'BCA',
+    walletName: 'Bank BCA •••• 4821',
+    colorTheme: 'periwinkle',
+    status: 'on_track',
+    notes: 'MacBook Pro untuk kerja & desain UI/UX',
+    contributions: [
+      { id: 'c-1', amount: 500000, date: '30 Agu 2026', walletName: 'Bank BCA', note: 'Sisihan freelance' },
+      { id: 'c-2', amount: 250000, date: '15 Agu 2026', walletName: 'Bank BCA', note: 'Bonus mingguan' },
+      { id: 'c-3', amount: 500000, date: '01 Agu 2026', walletName: 'Bank BCA', note: 'Gaji pokok' },
+    ],
+  },
+  {
+    id: 'goal-2',
+    title: 'Liburan Jepang',
+    category: 'travel',
+    targetAmount: 25000000,
+    currentAmount: 10500000,
+    targetDate: '2027-06-30',
+    frequency: 'monthly',
+    monthlySaving: 1610000,
+    walletId: 'GoPay',
+    walletName: 'GoPay / E-Wallet',
+    colorTheme: 'lavender',
+    status: 'needs_attention',
+    notes: 'Tiket pesawat & penginapan Tokyo - Kyoto 7 hari',
+    contributions: [
+      { id: 'c-4', amount: 1000000, date: '28 Agu 2026', walletName: 'GoPay', note: 'Cashback e-wallet' },
+      { id: 'c-5', amount: 500000, date: '10 Agu 2026', walletName: 'Bank BCA', note: 'Tabungan rutin' },
+    ],
+  },
+  {
+    id: 'goal-3',
+    title: 'Dana Darurat',
+    category: 'emergency',
+    targetAmount: 20000000,
+    currentAmount: 6200000,
+    targetDate: '2027-12-31',
+    frequency: 'monthly',
+    monthlySaving: 575000,
+    walletId: 'Savings',
+    walletName: 'Pos Tabungan',
+    colorTheme: 'mint',
+    status: 'on_track',
+    notes: 'Target 6 bulan biaya operasional aman',
+    contributions: [
+      { id: 'c-6', amount: 1000000, date: '25 Agu 2026', walletName: 'Bank BCA', note: 'Alokasi dana darurat' },
+      { id: 'c-7', amount: 750000, date: '05 Agu 2026', walletName: 'Pos Tabungan', note: 'Simpanan awal bulan' },
+    ],
+  },
+  {
+    id: 'goal-4',
+    title: 'Motor',
+    category: 'vehicle',
+    targetAmount: 30000000,
+    currentAmount: 22500000,
+    targetDate: '2027-03-31',
+    frequency: 'monthly',
+    monthlySaving: 1070000,
+    walletId: 'BCA',
+    walletName: 'Bank BCA •••• 4821',
+    colorTheme: 'iceblue',
+    status: 'on_track',
+    notes: 'DP & pelunasan kendaraan harian kantor',
+    contributions: [
+      { id: 'c-8', amount: 1500000, date: '30 Agu 2026', walletName: 'Bank BCA', note: 'Tabungan bulanan motor' },
+    ],
+  },
 ];
 
 export const MOCK_CASHFLOW: CashflowPoint[] = [
