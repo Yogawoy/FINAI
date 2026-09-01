@@ -185,78 +185,9 @@ export default function EditGoalModal({
             />
           </div>
 
-          {/* 2. Kategori */}
-          <div className="space-y-1">
-            <label className="text-[11px] font-bold text-[#757A95] uppercase tracking-wider block">
-              Kategori Target
-            </label>
-            <div className="grid grid-cols-4 gap-1.5">
-              {CATEGORY_OPTIONS.map((cat) => {
-                const isSelected = category === cat.id;
-                return (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() => setCategory(cat.id)}
-                    className={`p-2 rounded-2xl border text-[11px] font-bold transition-all cursor-pointer truncate ${
-                      isSelected
-                        ? 'bg-[#EDEAFC] border-[#7C7CE6] text-[#5F5ED4] shadow-xs'
-                        : 'bg-[#F8F9FD] border-black/[0.05] text-[#757A95] hover:text-[#242636]'
-                    }`}
-                  >
-                    {cat.label.split('/')[0].trim()}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* 3. Target Dana */}
-          <div className="space-y-1">
-            <label className="text-[11px] font-bold text-[#757A95] uppercase tracking-wider block">
-              Target Dana
-            </label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-[#757A95]">
-                Rp
-              </span>
-              <input
-                type="number"
-                required
-                min="100000"
-                step="50000"
-                value={targetAmountRaw}
-                onChange={(e) => setTargetAmountRaw(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 bg-[#F8F9FD] border border-black/[0.06] rounded-2xl text-xs sm:text-sm font-extrabold text-[#242636] focus:outline-none focus:border-[#7C7CE6] focus:bg-white transition-all tabular-nums"
-              />
-            </div>
-          </div>
-
-          {/* 4. Target Tanggal & Frekuensi */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-[11px] font-bold text-[#757A95] uppercase tracking-wider block">
-                Target Tanggal
-              </label>
-              <DatePicker value={targetDate} onChange={setTargetDate} />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-[11px] font-bold text-[#757A95] uppercase tracking-wider block">
-                Frekuensi Tabungan
-              </label>
-              <SegmentedControl
-                value={frequency}
-                onChange={(val) => setFrequency(val as GoalFrequency)}
-                options={[
-                  { value: 'monthly', label: 'Bulanan' },
-                  { value: 'weekly', label: 'Mingguan' },
-                ]}
-              />
-            </div>
-          </div>
-
-          {/* 5. DUAL WALLETS (SUMBER DANA & TUJUAN TABUNGAN) */}
+          {/* =================================================================== */}
+          {/* 2. DUAL WALLETS (SUMBER DANA & TUJUAN TABUNGAN)                     */}
+          {/* =================================================================== */}
           <div className="p-3.5 rounded-2xl bg-[#FAF9FE] border border-[#E8E4F8] space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
@@ -295,6 +226,77 @@ export default function EditGoalModal({
               amount={calculation.monthlyReq}
               mode="create"
             />
+          </div>
+
+          {/* 3. Kategori */}
+          <div className="space-y-1">
+            <label className="text-[11px] font-bold text-[#757A95] uppercase tracking-wider block">
+              Kategori Target
+            </label>
+            <div className="grid grid-cols-4 gap-1.5">
+              {CATEGORY_OPTIONS.map((cat) => {
+                const isSelected = category === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setCategory(cat.id)}
+                    className={`p-2 rounded-2xl border text-[11px] font-bold transition-all cursor-pointer truncate ${
+                      isSelected
+                        ? 'bg-[#EDEAFC] border-[#7C7CE6] text-[#5F5ED4] shadow-xs'
+                        : 'bg-[#F8F9FD] border-black/[0.05] text-[#757A95] hover:text-[#242636]'
+                    }`}
+                  >
+                    {cat.label.split('/')[0].trim()}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 4. Target Dana */}
+          <div className="space-y-1">
+            <label className="text-[11px] font-bold text-[#757A95] uppercase tracking-wider block">
+              Target Dana
+            </label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-[#757A95]">
+                Rp
+              </span>
+              <input
+                type="number"
+                required
+                min="100000"
+                step="50000"
+                value={targetAmountRaw}
+                onChange={(e) => setTargetAmountRaw(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 bg-[#F8F9FD] border border-black/[0.06] rounded-2xl text-xs sm:text-sm font-extrabold text-[#242636] focus:outline-none focus:border-[#7C7CE6] focus:bg-white transition-all tabular-nums"
+              />
+            </div>
+          </div>
+
+          {/* 5. Target Tanggal & Frekuensi */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-[11px] font-bold text-[#757A95] uppercase tracking-wider block">
+                Target Tanggal
+              </label>
+              <DatePicker value={targetDate} onChange={setTargetDate} />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[11px] font-bold text-[#757A95] uppercase tracking-wider block">
+                Frekuensi Tabungan
+              </label>
+              <SegmentedControl
+                value={frequency}
+                onChange={(val) => setFrequency(val as GoalFrequency)}
+                options={[
+                  { value: 'monthly', label: 'Bulanan' },
+                  { value: 'weekly', label: 'Mingguan' },
+                ]}
+              />
+            </div>
           </div>
 
           {/* 6. Tema Warna */}

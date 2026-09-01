@@ -194,7 +194,52 @@ export default function CreateGoalModal({
               />
             </div>
 
-            {/* 2. Kategori */}
+            {/* =================================================================== */}
+            {/* 2. DUAL WALLETS SELECTION: SUMBER DANA & TUJUAN TABUNGAN            */}
+            {/* =================================================================== */}
+            <div className="p-3.5 rounded-2xl bg-[#FAF9FE] border border-[#E8E4F8] space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* 1. Sumber Dana */}
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-[#242636] uppercase tracking-wider block truncate">
+                    Dompet Sumber Dana
+                  </label>
+                  <WalletSelect
+                    value={sourceWalletId}
+                    onChange={setSourceWalletId}
+                    wallets={wallets}
+                  />
+                  <p className="text-[10px] text-[#757A95] leading-tight">
+                    Dompet untuk menyetor tabungan.
+                  </p>
+                </div>
+
+                {/* 2. Dompet Tujuan */}
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-[#5F5ED4] uppercase tracking-wider block truncate">
+                    Dompet Tujuan Tabungan
+                  </label>
+                  <WalletSelect
+                    value={destinationWalletId}
+                    onChange={setDestinationWalletId}
+                    wallets={wallets}
+                  />
+                  <p className="text-[10px] text-[#757A95] leading-tight">
+                    Dompet tempat dana target disimpan.
+                  </p>
+                </div>
+              </div>
+
+              {/* Visual Transfer Flow Component */}
+              <GoalTransferFlow
+                sourceWallet={sourceWallet}
+                destinationWallet={destinationWallet}
+                amount={calculation.monthlyReq}
+                mode="create"
+              />
+            </div>
+
+            {/* 3. Kategori */}
             <div className="space-y-1">
               <label className="text-[11px] font-bold text-[#757A95] uppercase tracking-wider block">
                 Kategori Target
@@ -220,7 +265,7 @@ export default function CreateGoalModal({
               </div>
             </div>
 
-            {/* 3. Target Dana & Dana Awal */}
+            {/* 4. Target Dana & Dana Awal */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Target Dana */}
               <div className="space-y-1">
@@ -266,7 +311,7 @@ export default function CreateGoalModal({
               </div>
             </div>
 
-            {/* 4. Target Tanggal & Frekuensi */}
+            {/* 5. Target Tanggal & Frekuensi */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
                 <label className="text-[11px] font-bold text-[#757A95] uppercase tracking-wider block">
@@ -288,51 +333,6 @@ export default function CreateGoalModal({
                   ]}
                 />
               </div>
-            </div>
-
-            {/* =================================================================== */}
-            {/* DUAL WALLETS SELECTION: SUMBER DANA & TUJUAN TABUNGAN               */}
-            {/* =================================================================== */}
-            <div className="p-3.5 rounded-2xl bg-[#FAF9FE] border border-[#E8E4F8] space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* 1. Sumber Dana */}
-                <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-[#242636] uppercase tracking-wider block truncate">
-                    Dompet Sumber Dana
-                  </label>
-                  <WalletSelect
-                    value={sourceWalletId}
-                    onChange={setSourceWalletId}
-                    wallets={wallets}
-                  />
-                  <p className="text-[10px] text-[#757A95] leading-tight">
-                    Dompet untuk menyetor tabungan.
-                  </p>
-                </div>
-
-                {/* 2. Dompet Tujuan */}
-                <div className="space-y-1">
-                  <label className="text-[11px] font-bold text-[#5F5ED4] uppercase tracking-wider block truncate">
-                    Dompet Tujuan Tabungan
-                  </label>
-                  <WalletSelect
-                    value={destinationWalletId}
-                    onChange={setDestinationWalletId}
-                    wallets={wallets}
-                  />
-                  <p className="text-[10px] text-[#757A95] leading-tight">
-                    Dompet tempat dana target disimpan.
-                  </p>
-                </div>
-              </div>
-
-              {/* Visual Transfer Flow Component */}
-              <GoalTransferFlow
-                sourceWallet={sourceWallet}
-                destinationWallet={destinationWallet}
-                amount={calculation.monthlyReq}
-                mode="create"
-              />
             </div>
 
             {/* 6. Pilihan Tema Warna */}
