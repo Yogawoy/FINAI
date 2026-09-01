@@ -13,6 +13,7 @@ interface QuickActionItem {
 
 interface AIQuickActionsProps {
   onSelectAction: (prompt: string) => void;
+  variant?: 'cards' | 'sticky-bar';
 }
 
 const QUICK_ACTIONS: QuickActionItem[] = [
@@ -21,32 +22,61 @@ const QUICK_ACTIONS: QuickActionItem[] = [
     title: 'Catat Pengeluaran',
     subtitle: 'Catat transaksi belanja baru',
     prompt: 'Tadi aku beli ayam geprek 10 ribu.',
-    icon: <Receipt size={16} className="text-[#D94F4F]" />,
+    icon: <Receipt size={14} className="text-[#D94F4F]" />,
   },
   {
     id: 'qa-2',
     title: 'Cek Pengeluaran',
     subtitle: 'Lihat pengeluaran bulan ini',
     prompt: 'Pengeluaranku bulan ini gimana?',
-    icon: <LineChart size={16} className="text-[#7C7CE6]" />,
+    icon: <LineChart size={14} className="text-[#7C7CE6]" />,
   },
   {
     id: 'qa-3',
     title: 'Cek Budget',
     subtitle: 'Apakah anggaran masih aman?',
     prompt: 'Budget makananku masih aman?',
-    icon: <PieChart size={16} className="text-[#5F5ED4]" />,
+    icon: <PieChart size={14} className="text-[#5F5ED4]" />,
   },
   {
     id: 'qa-4',
     title: 'Target Impian',
     subtitle: 'Nabung untuk target impian',
     prompt: 'Aku mau nabung 500 ribu buat kuliah dari BCA.',
-    icon: <Target size={16} className="text-[#1B7354]" />,
+    icon: <Target size={14} className="text-[#1B7354]" />,
   },
 ];
 
-export default function AIQuickActions({ onSelectAction }: AIQuickActionsProps) {
+export default function AIQuickActions({
+  onSelectAction,
+  variant = 'cards',
+}: AIQuickActionsProps) {
+  if (variant === 'sticky-bar') {
+    return (
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+        <div className="flex items-center gap-1.5 px-2 py-1 text-[11px] font-bold text-[#757A95] uppercase tracking-wider shrink-0 select-none">
+          <span>Saran Cepat:</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {QUICK_ACTIONS.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => onSelectAction(item.prompt)}
+              className="h-9 px-3.5 rounded-full bg-white border border-[#E8EAF2] hover:border-[#7C7CE6]/60 hover:bg-[#FAFBFD] shadow-2xs hover:shadow-xs transition-all text-xs font-semibold text-[#242636] flex items-center gap-2 shrink-0 cursor-pointer active:scale-95 group"
+            >
+              <div className="w-5 h-5 rounded-full bg-[#FAFBFD] flex items-center justify-center">
+                {item.icon}
+              </div>
+              <span className="group-hover:text-[#5F5ED4] transition-colors">{item.title}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-2">
       <span className="text-[11px] font-bold text-[#757A95] uppercase tracking-wider block pl-1">

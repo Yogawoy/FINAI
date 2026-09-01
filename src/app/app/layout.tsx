@@ -10,7 +10,7 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative min-h-screen bg-[#F6F7FB] overflow-x-hidden">
+    <div className="relative min-h-screen bg-[#F6F7FB] overflow-x-clip">
       {/* Background Soft Aura Halos */}
       <div className="fixed top-0 left-1/4 w-[600px] h-[600px] rounded-full aurora-glow-1 pointer-events-none -z-10" />
       <div className="fixed bottom-10 right-10 w-[500px] h-[500px] rounded-full aurora-glow-2 pointer-events-none -z-10" />

@@ -313,7 +313,7 @@ export default function AIAssistantPage() {
   };
 
   return (
-    <div className="max-w-[1150px] mx-auto pb-8 space-y-6">
+    <div className="max-w-[1150px] mx-auto pb-4 space-y-4">
       {/* 1. Header */}
       <AIHeader onNewChat={handleNewChat} onClearChat={handleClearChat} />
 
@@ -326,8 +326,15 @@ export default function AIAssistantPage() {
         contextDate="September 2026"
       />
 
-      {/* 3. Conversation Area */}
-      <div className="min-h-[420px] max-w-[920px] mx-auto pt-2">
+      {/* 3. STICKY TOP: Saran Cepat (Mengikuti saat di-scroll) */}
+      <div className="sticky top-0 z-20 py-2.5 -mx-3 px-3 bg-[#F6F7FB]/95 backdrop-blur-md border-b border-[#E8EAF2]/70 shadow-[0_4px_20px_rgba(36,38,54,0.02)] transition-all">
+        <div className="max-w-[920px] mx-auto">
+          <AIQuickActions onSelectAction={handleSendMessage} variant="sticky-bar" />
+        </div>
+      </div>
+
+      {/* 4. Conversation Area */}
+      <div className="min-h-[420px] max-w-[920px] mx-auto pt-2 pb-6">
         <AIConversation
           messages={messages}
           isThinking={isThinking}
@@ -337,20 +344,16 @@ export default function AIAssistantPage() {
         />
       </div>
 
-      {/* Quick Suggestions below conversation if there are messages */}
-      {messages.length > 0 && (
-        <div className="max-w-[920px] mx-auto pt-2">
-          <AIQuickActions onSelectAction={handleSendMessage} />
+      {/* 5. STICKY BOTTOM: Chat Input Area (Mengikuti saat di-scroll) */}
+      <div className="sticky bottom-4 z-20 max-w-[920px] mx-auto w-full pt-2">
+        <div className="relative">
+          <div className="absolute -inset-2 bg-gradient-to-t from-[#F6F7FB] via-[#F6F7FB]/90 to-transparent -z-10 rounded-3xl" />
+          <AIInput
+            onSendMessage={handleSendMessage}
+            disabled={isThinking}
+            onOpenPresets={() => setShowPresetsModal(!showPresetsModal)}
+          />
         </div>
-      )}
-
-      {/* 4. Sticky Input Area */}
-      <div className="max-w-[920px] mx-auto">
-        <AIInput
-          onSendMessage={handleSendMessage}
-          disabled={isThinking}
-          onOpenPresets={() => setShowPresetsModal(!showPresetsModal)}
-        />
       </div>
     </div>
   );

@@ -32,10 +32,10 @@ export default function AIInput({
   };
 
   return (
-    <div className="sticky bottom-4 z-20 w-full pt-2">
+    <div className="w-full">
       <form
         onSubmit={handleSubmit}
-        className="h-16 sm:h-[68px] px-3 sm:px-4 rounded-[22px] bg-white border border-[#E8EAF2] shadow-[0_12px_36px_rgba(36,38,54,0.08)] flex items-center gap-2 sm:gap-3 transition-all focus-within:border-[#7C7CE6] focus-within:ring-2 focus-within:ring-[#7C7CE6]/20"
+        className="h-16 sm:h-[68px] px-3 sm:px-4 rounded-[22px] bg-white/95 backdrop-blur-md border border-[#E8EAF2] shadow-[0_12px_40px_rgba(36,38,54,0.1)] flex items-center gap-2 sm:gap-3 transition-all focus-within:border-[#7C7CE6] focus-within:ring-2 focus-within:ring-[#7C7CE6]/20"
       >
         {/* Optional quick preset opener */}
         {onOpenPresets && (
