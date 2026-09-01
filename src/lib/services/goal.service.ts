@@ -133,9 +133,17 @@ export class GoalService {
     if (input.targetAmount !== undefined) data.targetAmount = new Prisma.Decimal(input.targetAmount);
     if (input.currentAmount !== undefined) data.currentAmount = new Prisma.Decimal(input.currentAmount);
     if (input.deadline !== undefined) data.deadline = new Date(input.deadline);
-    if (input.sourceWalletId !== undefined) data.sourceWalletId = input.sourceWalletId;
-    if (input.destinationWalletId !== undefined) data.destinationWalletId = input.destinationWalletId;
     if (input.frequency !== undefined) data.frequency = input.frequency;
+    if (input.sourceWalletId !== undefined) {
+      data.sourceWallet = input.sourceWalletId
+        ? { connect: { id: input.sourceWalletId } }
+        : { disconnect: true };
+    }
+    if (input.destinationWalletId !== undefined) {
+      data.destinationWallet = input.destinationWalletId
+        ? { connect: { id: input.destinationWalletId } }
+        : { disconnect: true };
+    }
 
     const updated = await prisma.goal.update({
       where: { id: goalId },

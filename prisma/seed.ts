@@ -4,19 +4,19 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Memulai proses seeding data awal FinAI...');
+  console.log('🌱 Memulai proses seeding data development FinAI...');
 
-  // 1. Bersihkan data demo sebelumnya jika ada
-  const demoEmail = 'yoga@finai.design';
+  // 1. Strategi idempotent: Bersihkan data demo sebelumnya
+  const demoEmail = 'demo@finai.local';
   await prisma.user.deleteMany({
     where: { email: demoEmail },
   });
 
-  // 2. Buat Demo User
+  // 2. Buat Demo User dengan password hash
   const passwordHash = await bcrypt.hash('password123', 12);
   const user = await prisma.user.create({
     data: {
-      name: 'Yoga W.',
+      name: 'Demo User',
       email: demoEmail,
       passwordHash,
       avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
@@ -38,52 +38,52 @@ async function main() {
 
   console.log(`👤 User dibuat: ${user.name} (${user.email})`);
 
-  // 3. Buat 3 Dompet Utama (BCA, GoPay, Cash)
+  // 3. Buat 3 Dompet Utama (BCA: Rp12.500.000, GoPay: Rp750.000, Cash: Rp500.000)
   const bca = await prisma.wallet.create({
     data: {
       userId: user.id,
       name: 'BCA Utama',
       type: 'BANK',
-      institution: 'Bank Central Asia',
+      institution: 'BCA',
       accountLast4: '4821',
-      balance: new Prisma.Decimal(24560000),
+      balance: new Prisma.Decimal(12500000),
     },
   });
 
   const gopay = await prisma.wallet.create({
     data: {
       userId: user.id,
-      name: 'GoPay Daily',
+      name: 'GoPay',
       type: 'E_WALLET',
       institution: 'GoTo Financial',
       accountLast4: '0812',
-      balance: new Prisma.Decimal(1250000),
+      balance: new Prisma.Decimal(750000),
     },
   });
 
   const cash = await prisma.wallet.create({
     data: {
       userId: user.id,
-      name: 'Kas Tunai Dompet',
+      name: 'Cash',
       type: 'CASH',
       institution: null,
       accountLast4: null,
-      balance: new Prisma.Decimal(650000),
+      balance: new Prisma.Decimal(500000),
     },
   });
 
-  console.log('💳 3 Dompet berhasil dibuat (BCA, GoPay, Cash)');
+  console.log('💳 3 Dompet berhasil dibuat (BCA: Rp12.500.000, GoPay: Rp750.000, Cash: Rp500.000)');
 
-  // 4. Buat Transaksi Contoh
+  // 4. Buat Transaksi (Pemasukan & Pengeluaran)
   await prisma.transaction.createMany({
     data: [
       {
         userId: user.id,
         walletId: bca.id,
         type: 'INCOME',
-        amount: new Prisma.Decimal(18500000),
+        amount: new Prisma.Decimal(15000000),
         category: 'Gaji & Pendapatan',
-        description: 'Gaji Bulanan PT Finansial Cerdas',
+        description: 'Gaji Bulanan Software Engineer',
         transactionDate: new Date('2026-09-01T08:00:00Z'),
       },
       {
@@ -91,8 +91,8 @@ async function main() {
         walletId: gopay.id,
         type: 'EXPENSE',
         amount: new Prisma.Decimal(45000),
-        category: 'Makanan & Minuman',
-        description: 'Makan Siang Ayam Geprek & Es Teh',
+        category: 'Makanan',
+        description: 'Makan Siang Nasi Padang',
         transactionDate: new Date('2026-09-01T12:30:00Z'),
       },
       {
@@ -101,24 +101,24 @@ async function main() {
         type: 'EXPENSE',
         amount: new Prisma.Decimal(28000),
         category: 'Transportasi',
-        description: 'GoRide ke Kantor',
+        description: 'Transportasi Ojek Online ke Kantor',
         transactionDate: new Date('2026-09-01T07:45:00Z'),
       },
       {
         userId: user.id,
         walletId: cash.id,
         type: 'EXPENSE',
-        amount: new Prisma.Decimal(15000),
-        category: 'Kebutuhan Harian',
-        description: 'Beli Air Mineral & Camilan',
-        transactionDate: new Date('2026-09-01T15:10:00Z'),
+        amount: new Prisma.Decimal(50000),
+        category: 'Hiburan',
+        description: 'Nonton Bioskop Akhir Pekan',
+        transactionDate: new Date('2026-09-01T19:00:00Z'),
       },
     ],
   });
 
-  console.log('📝 Transaksi contoh berhasil dimasukkan');
+  console.log('📝 Transaksi pemasukan & pengeluaran berhasil dimasukkan');
 
-  // 5. Buat Pos Anggaran
+  // 5. Buat Pos Anggaran (Makanan, Transportasi, Hiburan)
   const now = new Date();
   const currentMonth = now.getMonth() + 1;
   const currentYear = now.getFullYear();
@@ -127,7 +127,7 @@ async function main() {
     data: [
       {
         userId: user.id,
-        category: 'Makanan & Minuman',
+        category: 'Makanan',
         limitAmount: new Prisma.Decimal(3000000),
         month: currentMonth,
         year: currentYear,
@@ -135,23 +135,29 @@ async function main() {
       {
         userId: user.id,
         category: 'Transportasi',
-        limitAmount: new Prisma.Decimal(1200000),
+        limitAmount: new Prisma.Decimal(1000000),
         month: currentMonth,
         year: currentYear,
       },
       {
         userId: user.id,
-        category: 'Belanja & Hiburan',
-        limitAmount: new Prisma.Decimal(2000000),
+        category: 'Hiburan',
+        limitAmount: new Prisma.Decimal(1500000),
         month: currentMonth,
         year: currentYear,
       },
     ],
   });
 
-  console.log('📊 Pos Anggaran berhasil disiapkan');
+  console.log('📊 Pos Anggaran (Makanan, Transportasi, Hiburan) berhasil disiapkan');
 
-  // 6. Buat 2 Target Impian (Goals)
+  // 6. Buat 2 Target Impian (Goals: Laptop Baru & Kuliah)
+  const laptopDeadline = new Date();
+  laptopDeadline.setMonth(laptopDeadline.getMonth() + 4);
+
+  const kuliahDeadline = new Date();
+  kuliahDeadline.setFullYear(kuliahDeadline.getFullYear() + 1);
+
   const laptopGoal = await prisma.goal.create({
     data: {
       userId: user.id,
@@ -159,8 +165,9 @@ async function main() {
       category: 'Teknologi & Kerja',
       targetAmount: new Prisma.Decimal(12000000),
       currentAmount: new Prisma.Decimal(3500000),
-      deadline: new Date('2026-12-31T23:59:59Z'),
+      deadline: laptopDeadline,
       sourceWalletId: bca.id,
+      destinationWalletId: bca.id,
       frequency: 'MONTHLY',
     },
   });
@@ -168,17 +175,18 @@ async function main() {
   const kuliahGoal = await prisma.goal.create({
     data: {
       userId: user.id,
-      name: 'Tabungan Kuliah',
+      name: 'Kuliah',
       category: 'Pendidikan',
       targetAmount: new Prisma.Decimal(25000000),
       currentAmount: new Prisma.Decimal(8000000),
-      deadline: new Date('2027-06-30T23:59:59Z'),
+      deadline: kuliahDeadline,
       sourceWalletId: bca.id,
+      destinationWalletId: bca.id,
       frequency: 'MONTHLY',
     },
   });
 
-  // Tambahkan 1 riwayat setoran contoh
+  // Catat riwayat setoran contoh
   await prisma.goalContribution.create({
     data: {
       goalId: laptopGoal.id,
@@ -188,8 +196,8 @@ async function main() {
     },
   });
 
-  console.log(`🎯 2 Target Impian berhasil dibuat: ${laptopGoal.name} & ${kuliahGoal.name}`);
-  console.log('✅ Seeding FinAI selesai secara sukses!');
+  console.log(`🎯 2 Target Impian dibuat: ${laptopGoal.name} & ${kuliahGoal.name}`);
+  console.log('✅ Seeding FinAI FASE 2 selesai secara sukses!');
 }
 
 main()
