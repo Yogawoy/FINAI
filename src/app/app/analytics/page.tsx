@@ -12,8 +12,6 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import {
-  AreaChart,
-  Area,
   BarChart,
   Bar,
   PieChart,
@@ -24,6 +22,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
+import { IncomeExpenseChart } from '@/components/charts';
 import Header from '@/components/navigation/Header';
 import GlassCard from '@/components/ui/GlassCard';
 import Badge from '@/components/ui/Badge';
@@ -132,84 +131,13 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Main Cashflow Trend Area Chart */}
-      <GlassCard className="p-6 sm:p-8 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <Badge variant="periwinkle" size="sm" icon={<LineChartIcon size={12} />}>
-                Tren Arus Kas 6 Bulan
-              </Badge>
-            </div>
-            <h2 className="text-xl font-extrabold text-[#242636] mt-1">
-              Keseimbangan Pemasukan vs Pengeluaran
-            </h2>
-          </div>
-
-          <div className="flex items-center gap-6 text-xs font-semibold">
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-[#7C7CE6]" />
-              <span className="text-[#242636]">Pemasukan</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-[#9EB3F7]" />
-              <span className="text-[#757A95]">Pengeluaran</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="h-72 w-full pt-4">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={MOCK_CASHFLOW}>
-              <defs>
-                <linearGradient id="colorIncAnalytics" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#7C7CE6" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="#7C7CE6" stopOpacity={0.0} />
-                </linearGradient>
-                <linearGradient id="colorExpAnalytics" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#9EB3F7" stopOpacity={0.35} />
-                  <stop offset="95%" stopColor="#9EB3F7" stopOpacity={0.0} />
-                </linearGradient>
-              </defs>
-              <XAxis dataKey="month" stroke="#A0A4B8" fontSize={11} tickLine={false} axisLine={false} />
-              <YAxis
-                stroke="#A0A4B8"
-                fontSize={11}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(v) => `${v / 1000000}Jt`}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                  borderRadius: '16px',
-                  border: '1px solid rgba(255,255,255,0.8)',
-                  boxShadow: '0 8px 30px rgba(48,51,74,0.08)',
-                  fontSize: '12px',
-                }}
-                formatter={(val: any) => [formatIDR(Number(val) || 0), '']}
-              />
-              <Area
-                type="monotone"
-                dataKey="income"
-                name="Pemasukan"
-                stroke="#7C7CE6"
-                strokeWidth={2.5}
-                fillOpacity={1}
-                fill="url(#colorIncAnalytics)"
-              />
-              <Area
-                type="monotone"
-                dataKey="expense"
-                name="Pengeluaran"
-                stroke="#9EB3F7"
-                strokeWidth={2}
-                fillOpacity={1}
-                fill="url(#colorExpAnalytics)"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-      </GlassCard>
+      <IncomeExpenseChart
+        variant="analytics"
+        title="Keseimbangan Pemasukan vs Pengeluaran"
+        subtitle="Tren arus kas 6 bulan terakhir"
+        defaultPeriod="6 Bulan"
+        showSummary={true}
+      />
 
       {/* Two Column Grid: Category Donut & Day-of-Week Spending */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">

@@ -33,14 +33,7 @@ import {
   Check,
   PieChart,
 } from 'lucide-react';
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from 'recharts';
+import { IncomeExpenseChart } from '@/components/charts';
 import Header from '@/components/navigation/Header';
 import Button from '@/components/ui/Button';
 import CustomSelect from '@/components/ui/CustomSelect';
@@ -612,84 +605,13 @@ export default function DashboardPage() {
       </section>
 
       {/* ========================================================================= */}
-      {/* 5. ARUS KEUANGAN GRAFIK 2D (Spending Flow)                                */}
+      {/* 5. ARUS KEUANGAN GRAFIK (Keseimbangan Pemasukan vs Pengeluaran)            */}
       {/* ========================================================================= */}
-      <section className="p-6 sm:p-7 rounded-[28px] bg-white/70 backdrop-blur-md border border-white/90 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div>
-            <h3 className="text-lg font-bold tracking-tight text-[#242636]">
-              Arus Keuangan & Pertumbuhan Tabungan
-            </h3>
-            <p className="text-xs text-[#757A95]">
-              Tren keseimbangan pemasukan vs pengeluaran 6 bulan terakhir
-            </p>
-          </div>
-
-          <div className="flex items-center gap-5 text-xs font-semibold">
-            <span className="flex items-center gap-1.5 text-[#242636]">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#7C7CE6]" />
-              Pemasukan
-            </span>
-            <span className="flex items-center gap-1.5 text-[#757A95]">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#9EB3F7]" />
-              Pengeluaran
-            </span>
-          </div>
-        </div>
-
-        <div className="h-56 sm:h-64 w-full pt-2">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={MOCK_CASHFLOW} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="flowIncomeCleanFull" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#7C7CE6" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="#7C7CE6" stopOpacity={0.0} />
-                </linearGradient>
-                <linearGradient id="flowExpenseCleanFull" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#9EB3F7" stopOpacity={0.35} />
-                  <stop offset="95%" stopColor="#9EB3F7" stopOpacity={0.0} />
-                </linearGradient>
-              </defs>
-              <XAxis dataKey="month" stroke="#A0A4B8" fontSize={11} tickLine={false} axisLine={false} />
-              <YAxis
-                stroke="#A0A4B8"
-                fontSize={11}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(v) => `${v / 1000000}Jt`}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                  borderRadius: '14px',
-                  border: '1px solid rgba(255,255,255,0.8)',
-                  boxShadow: '0 8px 30px rgba(48,51,74,0.08)',
-                  fontSize: '12px',
-                }}
-                formatter={(val: any) => [formatIDR(Number(val) || 0), '']}
-              />
-              <Area
-                type="monotone"
-                dataKey="income"
-                name="Pemasukan"
-                stroke="#7C7CE6"
-                strokeWidth={2.5}
-                fillOpacity={1}
-                fill="url(#flowIncomeCleanFull)"
-              />
-              <Area
-                type="monotone"
-                dataKey="expense"
-                name="Pengeluaran"
-                stroke="#9EB3F7"
-                strokeWidth={2}
-                fillOpacity={1}
-                fill="url(#flowExpenseCleanFull)"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-      </section>
+      <IncomeExpenseChart
+        variant="dashboard"
+        title="Keseimbangan Pemasukan vs Pengeluaran"
+        subtitle="Tren arus kas 6 bulan terakhir"
+      />
 
       {/* ========================================================================= */}
       {/* 6. MODAL DINAMIS UNTUK 8 FITUR INTERAKTIF NYATA                            */}
