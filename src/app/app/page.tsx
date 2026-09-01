@@ -283,7 +283,7 @@ export default function DashboardPage() {
       {/* ========================================================================= */}
       {/* 1. KARTU DOMPET DIGITAL FULL-WIDTH (TANPA KONTEN DI SAMPINGNYA)           */}
       {/* ========================================================================= */}
-      <section className="space-y-3 w-full">
+      <section className="space-y-3 w-full relative z-20">
         <div className="flex items-center justify-between">
           <span className="text-xs font-extrabold uppercase tracking-widest text-[#757A95]">
             Dompet Digital FinAI

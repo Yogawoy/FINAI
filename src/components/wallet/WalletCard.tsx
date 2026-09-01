@@ -1,7 +1,20 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Sparkles, Wifi, Eye, EyeOff, ChevronDown, Check } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Sparkles,
+  Wifi,
+  Eye,
+  EyeOff,
+  ChevronDown,
+  Check,
+  Building2,
+  Banknote,
+  Smartphone,
+  CreditCard,
+  PiggyBank,
+} from 'lucide-react';
 import AnimatedCounter from '@/components/ui/AnimatedCounter';
 import { MOCK_WALLETS, formatIDR } from '@/data/mockData';
 import { Wallet } from '@/types';
@@ -14,6 +27,22 @@ interface WalletCardProps {
   className?: string;
 }
 
+const getWalletIcon = (type: string) => {
+  switch (type?.toLowerCase()) {
+    case 'bank':
+      return <Building2 size={14} className="text-[#3E6FB0]" />;
+    case 'cash':
+      return <Banknote size={14} className="text-[#1B7354]" />;
+    case 'ewallet':
+      return <Smartphone size={14} className="text-[#7C7CE6]" />;
+    case 'savings':
+    case 'investment':
+      return <PiggyBank size={14} className="text-[#6867D4]" />;
+    default:
+      return <CreditCard size={14} className="text-[#757A95]" />;
+  }
+};
+
 export default function WalletCard({
   balance = 34850000,
   cardNumber = '••••  ••••  ••••  4821',
@@ -24,6 +53,7 @@ export default function WalletCard({
   const [isBalanceHidden, setIsBalanceHidden] = useState(false);
   const [selectedWalletId, setSelectedWalletId] = useState<string>('all');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Compute active wallet or total
   const selectedWallet: Wallet | undefined = MOCK_WALLETS.find((w) => w.id === selectedWalletId);
@@ -33,12 +63,36 @@ export default function WalletCard({
     ? selectedWallet.accountIdentifier || cardNumber
     : cardNumber;
 
+  // Handle click outside and Escape key to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsDropdownOpen(false);
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isDropdownOpen]);
+
   return (
     <div
-      className={`relative w-full min-h-[280px] sm:min-h-[300px] md:min-h-[320px] rounded-[28px] sm:rounded-[32px] p-7 sm:p-9 flex flex-col justify-between overflow-hidden bg-gradient-to-br from-[#8E9AF7] via-[#7C7CE6] to-[#5F5ED4] text-white shadow-[0_25px_60px_-12px_rgba(124,124,230,0.48),0_10px_30px_rgba(36,38,54,0.12)] border border-white/40 select-none ${className}`}
+      className={`relative w-full min-h-[280px] sm:min-h-[300px] md:min-h-[320px] rounded-[28px] sm:rounded-[32px] p-7 sm:p-9 flex flex-col justify-between select-none ${className}`}
     >
-      {/* Abstract Smooth Wave Layers (Overlay inside card) */}
-      <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+      {/* ===================================================================== */}
+      {/* 0. INNER CLIPPED LAYER FOR BACKGROUND & WAVES (PREVENTS POPUP CLIPPING) */}
+      {/* ===================================================================== */}
+      <div className="absolute inset-0 rounded-[28px] sm:rounded-[32px] bg-gradient-to-br from-[#8E9AF7] via-[#7C7CE6] to-[#5F5ED4] shadow-[0_25px_60px_-12px_rgba(124,124,230,0.48),0_10px_30px_rgba(36,38,54,0.12)] border border-white/40 overflow-hidden pointer-events-none z-0">
         <div className="absolute -top-24 -right-24 w-[420px] h-[420px] rounded-full bg-white/20 blur-2xl" />
         <div className="absolute -bottom-28 -left-20 w-96 h-96 rounded-full bg-[#4E4DC7]/40 blur-xl" />
         <svg
@@ -60,69 +114,110 @@ export default function WalletCard({
       </div>
 
       {/* ===================================================================== */}
-      {/* CARD TOP ROW: BRAND & WALLET SELECTOR DROPDOWN                        */}
+      {/* 1. CARD TOP ROW: BRAND & WALLET SELECTOR DROPDOWN (OVERFLOW VISIBLE) */}
       {/* ===================================================================== */}
-      <div className="flex items-center justify-between relative z-20">
-        <div className="relative">
+      <div className="flex items-center justify-between relative z-30">
+        {/* Dropdown Container */}
+        <div ref={dropdownRef} className="relative">
           <button
             type="button"
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 text-white transition-all cursor-pointer shadow-xs"
+            onClick={() => setIsDropdownOpen((prev) => !prev)}
+            aria-expanded={isDropdownOpen}
+            aria-haspopup="listbox"
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-white/25 hover:bg-white/35 active:scale-98 backdrop-blur-md border border-white/35 text-white transition-all cursor-pointer shadow-xs"
           >
             <span className="text-xs sm:text-sm font-bold tracking-wide">
               {currentAccountLabel}
             </span>
-            <ChevronDown size={14} className={`transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown
+              size={14}
+              className={`transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`}
+            />
           </button>
 
-          {/* Dropdown Menu */}
-          {isDropdownOpen && (
-            <div className="absolute left-0 top-full mt-2 w-56 p-2 rounded-2xl bg-white text-[#242636] shadow-[0_15px_35px_rgba(36,38,54,0.15)] border border-black/[0.06] z-50 space-y-1">
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedWalletId('all');
-                  setIsDropdownOpen(false);
-                }}
-                className={`w-full px-3 py-2 rounded-xl text-left text-xs font-bold flex items-center justify-between transition-colors cursor-pointer ${
-                  selectedWalletId === 'all'
-                    ? 'bg-[#E4E2FB] text-[#5F5ED4]'
-                    : 'hover:bg-black/[0.03] text-[#242636]'
-                }`}
+          {/* Unclipped High Z-Index Floating Popover */}
+          <AnimatePresence>
+            {isDropdownOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -6, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -6, scale: 0.96 }}
+                transition={{ duration: 0.16, ease: 'easeOut' }}
+                className="absolute left-0 top-full mt-2 w-64 p-2 rounded-2xl bg-white text-[#242636] shadow-[0_20px_45px_rgba(36,38,54,0.22)] border border-black/[0.08] z-50 divide-y divide-[#E8EAF2]/60"
               >
-                <span>Total Semua Dompet</span>
-                {selectedWalletId === 'all' && <Check size={14} />}
-              </button>
+                {/* Option 1: Total Semua Dompet */}
+                <div className="pb-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedWalletId('all');
+                      setIsDropdownOpen(false);
+                    }}
+                    className={`w-full px-3 py-2.5 rounded-xl text-left text-xs font-bold flex items-center justify-between transition-colors cursor-pointer ${
+                      selectedWalletId === 'all'
+                        ? 'bg-[#EDEAFC] text-[#5F5ED4]'
+                        : 'hover:bg-[#FAFBFD] text-[#242636]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-lg bg-[#E4E2FB] text-[#7C7CE6] flex items-center justify-center shrink-0">
+                        <CreditCard size={14} />
+                      </div>
+                      <div>
+                        <span className="block leading-tight">Total Semua Dompet</span>
+                        <span className="text-[10px] text-[#757A95] font-normal leading-tight">
+                          {formatIDR(balance)}
+                        </span>
+                      </div>
+                    </div>
+                    {selectedWalletId === 'all' && (
+                      <Check size={15} strokeWidth={2.5} className="text-[#5F5ED4] shrink-0" />
+                    )}
+                  </button>
+                </div>
 
-              <div className="h-px bg-black/[0.05] my-1" />
-
-              {MOCK_WALLETS.map((w) => (
-                <button
-                  key={w.id}
-                  type="button"
-                  onClick={() => {
-                    setSelectedWalletId(w.id);
-                    setIsDropdownOpen(false);
-                  }}
-                  className={`w-full px-3 py-2 rounded-xl text-left text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
-                    selectedWalletId === w.id
-                      ? 'bg-[#E4E2FB] text-[#5F5ED4] font-bold'
-                      : 'hover:bg-black/[0.03] text-[#242636]'
-                  }`}
-                >
-                  <div className="truncate">
-                    <span className="block">{w.name}</span>
-                    <span className="text-[10px] text-[#757A95] font-normal">
-                      {formatIDR(w.balance)}
-                    </span>
-                  </div>
-                  {selectedWalletId === w.id && <Check size={14} className="shrink-0" />}
-                </button>
-              ))}
-            </div>
-          )}
+                {/* Specific Wallets List */}
+                <div className="pt-1.5 space-y-1 max-h-56 overflow-y-auto no-scrollbar">
+                  {MOCK_WALLETS.map((w) => {
+                    const isSelected = selectedWalletId === w.id;
+                    return (
+                      <button
+                        key={w.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedWalletId(w.id);
+                          setIsDropdownOpen(false);
+                        }}
+                        className={`w-full px-3 py-2 rounded-xl text-left text-xs flex items-center justify-between transition-colors cursor-pointer ${
+                          isSelected
+                            ? 'bg-[#EDEAFC] text-[#5F5ED4] font-bold'
+                            : 'hover:bg-[#FAFBFD] text-[#242636] font-semibold'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-7 h-7 rounded-lg bg-[#FAFBFD] border border-[#E8EAF2] flex items-center justify-center shrink-0">
+                            {getWalletIcon(w.type)}
+                          </div>
+                          <div className="truncate">
+                            <span className="block leading-tight truncate">{w.name}</span>
+                            <span className="text-[10px] text-[#757A95] font-normal leading-tight">
+                              {formatIDR(w.balance)}
+                            </span>
+                          </div>
+                        </div>
+                        {isSelected && (
+                          <Check size={15} strokeWidth={2.5} className="text-[#5F5ED4] shrink-0 ml-2" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
+        {/* Right Wireless & Sparkles Icons */}
         <div className="flex items-center gap-3">
           <Wifi size={22} className="text-white/90 rotate-90" />
           <div className="w-9 h-9 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30 shadow-xs">
@@ -132,7 +227,7 @@ export default function WalletCard({
       </div>
 
       {/* ===================================================================== */}
-      {/* CARD MIDDLE ROW: EMV GOLD CHIP & SALDO TERSEDIA (WITH EYE TOGGLE)     */}
+      {/* 2. CARD MIDDLE ROW: EMV GOLD CHIP & SALDO TERSEDIA (WITH EYE TOGGLE) */}
       {/* ===================================================================== */}
       <div className="flex flex-wrap items-center justify-between gap-4 relative z-10 my-4">
         {/* Large Realistic EMV Chip */}
@@ -174,9 +269,9 @@ export default function WalletCard({
       </div>
 
       {/* ===================================================================== */}
-      {/* CARD BOTTOM ROW: CARD NUMBER, HOLDER & EXPIRY                         */}
+      {/* 3. CARD BOTTOM ROW: CARD NUMBER, HOLDER & EXPIRY                     */}
       {/* ===================================================================== */}
-      <div className="space-y-2 relative z-10 pt-2 border-t border-white/20">
+      <div className="space-y-2 relative z-10 pt-2 border-t border-white/20 text-white">
         <div className="flex items-center justify-between text-xs sm:text-sm font-mono tracking-widest text-white/95 drop-shadow-xs">
           <span>{currentIdentifier}</span>
           <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30">
