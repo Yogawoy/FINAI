@@ -232,7 +232,7 @@ export default function GoalsPage() {
               Target Impian
             </h1>
             <p className="text-xs sm:text-sm text-[#757A95] mt-0.5">
-              Turn your plans into something you can achieve.
+              Wujudkan rencana dan impian finansial Anda menjadi kenyataan.
             </p>
           </div>
 

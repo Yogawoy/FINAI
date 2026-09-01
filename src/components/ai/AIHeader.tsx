@@ -36,7 +36,7 @@ export default function AIHeader({ onNewChat, onClearChat }: AIHeaderProps) {
             <Sparkles size={16} />
           </div>
           <h1 className="text-xl sm:text-2xl font-black text-[#242636] tracking-tight">
-            FinAI Assistant
+            Asisten FinAI
           </h1>
           <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#EBF7F2] border border-[#D0EFE5] text-[11px] font-semibold text-[#1B7354]">
             <span className="w-1.5 h-1.5 rounded-full bg-[#1B7354] animate-pulse" />

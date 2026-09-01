@@ -42,8 +42,8 @@ const LANGUAGE_OPTIONS: SelectOption[] = [
 
 const CURRENCY_OPTIONS: SelectOption[] = [
   { value: 'IDR', label: 'Rupiah (IDR)', sublabel: 'Rp - Rupiah Indonesia' },
-  { value: 'USD', label: 'US Dollar (USD)', sublabel: '$ - United States' },
-  { value: 'SGD', label: 'Singapore Dollar (SGD)', sublabel: 'S$ - Singapore' },
+  { value: 'USD', label: 'Dolar AS (USD)', sublabel: '$ - Dolar Amerika Serikat' },
+  { value: 'SGD', label: 'Dolar Singapura (SGD)', sublabel: 'S$ - Dolar Singapura' },
 ];
 
 const NUMBER_FORMAT_OPTIONS: SelectOption[] = [

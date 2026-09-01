@@ -114,7 +114,7 @@ export default function SecuritySection({
               onClick={() => setIsPasswordModalOpen(true)}
               className="h-8.5 px-3.5 rounded-xl bg-white border border-[#E8EAF2] hover:border-[#7C7CE6]/50 hover:bg-[#FAFBFD] text-xs font-bold text-[#242636] transition-all cursor-pointer shadow-2xs"
             >
-              Ubah Password
+              Ubah Kata Sandi
             </button>
           }
         />

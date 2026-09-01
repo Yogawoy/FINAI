@@ -10,8 +10,8 @@ const plusJakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'FinAI — Your Money. Understandable.',
-  description: 'A soft, spatial personal finance experience powered by visual clarity and intuitive 3D perception.',
+  title: 'FinAI — Kelola Keuangan Pribadi Lebih Jelas & Cerdas',
+  description: 'Aplikasi pengelolaan keuangan pribadi modern dengan visualisasi jernih, pos anggaran, target impian, dan asisten FinAI.',
 };
 
 export default function RootLayout({
@@ -20,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={plusJakarta.variable}>
+    <html lang="id" className={plusJakarta.variable}>
       <body className={`${plusJakarta.className} antialiased bg-[#F6F7FB] text-[#242636] min-h-screen selection:bg-[#E4E2FB] selection:text-[#7C7CE6]`}>
         {children}
       </body>

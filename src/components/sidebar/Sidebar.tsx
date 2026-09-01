@@ -45,7 +45,7 @@ export const NAVIGATION_GROUPS: NavGroupConfig[] = [
     items: [
       {
         id: 'overview',
-        label: 'Overview',
+        label: 'Beranda',
         href: '/app',
         icon: LayoutDashboard,
       },
@@ -102,7 +102,7 @@ export const NAVIGATION_GROUPS: NavGroupConfig[] = [
       },
       {
         id: 'ai-assistant',
-        label: 'AI Assistant',
+        label: 'Asisten FinAI',
         href: '/app/ai-assistant',
         icon: Sparkles,
         hasActivityDot: true,
@@ -259,16 +259,16 @@ export default function Sidebar() {
         >
           <span className="flex items-center gap-2">
             <ArrowUpRight size={14} className="text-[#7C7CE6]" />
-            <span>Landing Showcase</span>
+            <span>Halaman Depan</span>
           </span>
           <span className="px-1.5 py-0.5 rounded-md bg-[#EBF7F2] text-[10px] font-bold text-[#1B7354]">
-            Live
+            Aktif
           </span>
         </Link>
 
         <SidebarProfile
           name="Yoga W."
-          tier="FinAI Pro Tier"
+          tier="Member FinAI Pro"
           initials="YW"
         />
       </div>

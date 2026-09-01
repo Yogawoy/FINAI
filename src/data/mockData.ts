@@ -15,7 +15,7 @@ export const USER_PROFILE = {
   fullName: 'Yoga Wicaksono',
   email: 'yoga@finai.design',
   avatar: '/avatar.png',
-  tier: 'FinAI Pro Member',
+  tier: 'Member FinAI Pro',
   currency: 'IDR',
   availableBalance: 34850000,
   monthlyInflow: 18700000,
@@ -23,11 +23,11 @@ export const USER_PROFILE = {
   netCashflow: 6250000,
   financialHealth: {
     score: 82,
-    rating: 'Excellent',
+    rating: 'Sangat Baik',
     discipline: 92,
     savingsRate: 34.2,
     emergencyCushionMonths: 4.8,
-    summary: 'Your financial core is exceptionally balanced this month. Cash reserve velocity is at an optimal 34% buffer.'
+    summary: 'Kondisi keuangan Anda bulan ini sangat seimbang. Cadangan dana darurat berada pada rasio optimal 34% buffer.'
   },
   accounts: [
     { id: 'acc-1', name: 'BCA Priority', balance: 12500000, type: 'Rekening Bank', number: '••• 4821' },
@@ -844,25 +844,25 @@ export const MOCK_CATEGORY_BREAKDOWN: CategoryBreakdown[] = [
 ];
 
 export const MOCK_DAY_SPENDING: DaySpending[] = [
-  { day: 'Mon', amount: 120000, avg: 150000 },
-  { day: 'Tue', amount: 85000, avg: 150000 },
-  { day: 'Wed', amount: 210000, avg: 150000 },
-  { day: 'Thu', amount: 145000, avg: 150000 },
-  { day: 'Fri', amount: 320000, avg: 150000 },
-  { day: 'Sat', amount: 450000, avg: 150000 },
-  { day: 'Sun', amount: 390000, avg: 150000 }
+  { day: 'Sen', amount: 120000, avg: 150000 },
+  { day: 'Sel', amount: 85000, avg: 150000 },
+  { day: 'Rab', amount: 210000, avg: 150000 },
+  { day: 'Kam', amount: 145000, avg: 150000 },
+  { day: 'Jum', amount: 320000, avg: 150000 },
+  { day: 'Sab', amount: 450000, avg: 150000 },
+  { day: 'Min', amount: 390000, avg: 150000 }
 ];
 
 export const INITIAL_AI_MESSAGES: AIMessage[] = [
   {
     id: 'ai-1',
     sender: 'assistant',
-    content: 'Good morning, Yoga! Your financial status is in excellent condition today. You have saved 34.2% of your monthly cashflow. What financial analysis would you like to explore?',
-    timestamp: '09:00 AM',
+    content: 'Selamat pagi, Yoga! Keuanganmu berada dalam kondisi sangat sehat hari ini. Kamu telah menyisihkan 34,2% dari arus kas bulananmu. Analisis atau simulasi apa yang ingin kamu lakukan?',
+    timestamp: '09:00 WIB',
     quickInsights: [
-      { label: 'Available Liquidity', value: 'Rp34.850.000' },
-      { label: 'Top Spending Category', value: 'Food & Dining (34%)' },
-      { label: 'Health Score', value: '82 / 100' }
+      { label: 'Likuiditas Tersedia', value: 'Rp34.850.000' },
+      { label: 'Kategori Belanja Terbesar', value: 'Makanan & Minuman (34%)' },
+      { label: 'Skor Kesehatan', value: '82 / 100' }
     ]
   }
 ];

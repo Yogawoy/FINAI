@@ -21,7 +21,7 @@ export default function SidebarBrand() {
           FinAI
         </span>
         <span className="text-[9px] tracking-[0.14em] uppercase font-bold text-[#7C7CE6] block mt-1 leading-none">
-          SPATIAL FINANCE
+          KEUANGAN SPASIAL
         </span>
       </div>
     </Link>
