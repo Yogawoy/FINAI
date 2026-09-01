@@ -31,24 +31,31 @@ export default function SettingsPage() {
   const [numberFormat, setNumberFormat] = useState('id');
   const [defaultWallet, setDefaultWallet] = useState('w-1');
   const [defaultCategory, setDefaultCategory] = useState('Belanja');
+  const [paydayDate, setPaydayDate] = useState('25');
+  const [savingsRateTarget, setSavingsRateTarget] = useState('30%');
   const [enableAnimations, setEnableAnimations] = useState(true);
 
   // 3. Notification State
   const [budgetReminder, setBudgetReminder] = useState(true);
+  const [budgetThreshold, setBudgetThreshold] = useState('80%');
   const [goalReminder, setGoalReminder] = useState(true);
   const [financialSummary, setFinancialSummary] = useState(true);
+  const [dailyReminderTime, setDailyReminderTime] = useState('20:00');
 
   // 4. AI Settings State
   const [aiPersonalization, setAiPersonalization] = useState(true);
   const [aiActionConfirmation, setAiActionConfirmation] = useState(true);
 
-  // 5. Modals State
+  // 5. Security State
+  const [pinLockEnabled, setPinLockEnabled] = useState(false);
+
+  // 6. Modals State
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isExportDataOpen, setIsExportDataOpen] = useState(false);
   const [isDeleteDataOpen, setIsDeleteDataOpen] = useState(false);
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
 
-  // 6. Toast Notification State
+  // 7. Toast Notification State
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (message: string) => {
@@ -61,11 +68,15 @@ export default function SettingsPage() {
   // Handlers
   const handleSaveProfile = (name: string, email: string) => {
     setProfile((prev) => ({ ...prev, name, email }));
-    showToast('Pengaturan berhasil disimpan.');
+    showToast('Pengaturan profil berhasil diperbarui.');
   };
 
-  const handleExportData = (format: 'csv' | 'json', datasets: string[]) => {
-    showToast(`Data keuangan (${format.toUpperCase()}) berhasil diexport.`);
+  const handleExportSuccess = (format: 'csv' | 'json', count: number) => {
+    showToast(`Berkas cadangan (.${format}) berhasil diunduh ke perangkat Anda.`);
+  };
+
+  const handleImportSuccess = (fileName: string) => {
+    showToast(`Berkas ${fileName} berhasil diimpor & dipulihkan.`);
   };
 
   const handleDeleteData = () => {
@@ -134,6 +145,16 @@ export default function SettingsPage() {
           setDefaultCategory(val);
           showToast('Kategori default berhasil diperbarui.');
         }}
+        paydayDate={paydayDate}
+        onPaydayDateChange={(val) => {
+          setPaydayDate(val);
+          showToast(`Siklus gajian diatur setiap tanggal ${val} bulanan.`);
+        }}
+        savingsRateTarget={savingsRateTarget}
+        onSavingsRateTargetChange={(val) => {
+          setSavingsRateTarget(val);
+          showToast(`Target rasio tabungan diatur ke ${val} pendapatan.`);
+        }}
         enableAnimations={enableAnimations}
         onAnimationsChange={(val) => {
           setEnableAnimations(val);
@@ -148,6 +169,11 @@ export default function SettingsPage() {
           setBudgetReminder(val);
           showToast(val ? 'Pengingat anggaran diaktifkan.' : 'Pengingat anggaran dinonaktifkan.');
         }}
+        budgetThreshold={budgetThreshold}
+        onBudgetThresholdChange={(val) => {
+          setBudgetThreshold(val);
+          showToast(`Ambang batas peringatan anggaran diatur ke ${val}.`);
+        }}
         goalReminder={goalReminder}
         onGoalReminderChange={(val) => {
           setGoalReminder(val);
@@ -157,6 +183,11 @@ export default function SettingsPage() {
         onFinancialSummaryChange={(val) => {
           setFinancialSummary(val);
           showToast(val ? 'Ringkasan keuangan berkala diaktifkan.' : 'Ringkasan keuangan berkala dinonaktifkan.');
+        }}
+        dailyReminderTime={dailyReminderTime}
+        onDailyReminderTimeChange={(val) => {
+          setDailyReminderTime(val);
+          showToast(`Jadwal pengingat harian diatur ke pukul ${val} WIB.`);
         }}
       />
 
@@ -175,12 +206,20 @@ export default function SettingsPage() {
       />
 
       {/* 6. Security Section */}
-      <SecuritySection onTriggerToast={showToast} />
+      <SecuritySection
+        pinLockEnabled={pinLockEnabled}
+        onPinLockChange={(val) => {
+          setPinLockEnabled(val);
+          showToast(val ? 'Kunci PIN transaksi diaktifkan.' : 'Kunci PIN transaksi dinonaktifkan.');
+        }}
+        onTriggerToast={showToast}
+      />
 
       {/* 7. Data & Privacy Section */}
       <DataPrivacySection
         onOpenExportModal={() => setIsExportDataOpen(true)}
         onOpenDeleteModal={() => setIsDeleteDataOpen(true)}
+        onImportSuccess={handleImportSuccess}
       />
 
       {/* 8. Account Section */}
@@ -201,7 +240,7 @@ export default function SettingsPage() {
       <ExportDataModal
         isOpen={isExportDataOpen}
         onClose={() => setIsExportDataOpen(false)}
-        onExport={handleExportData}
+        onExportSuccess={handleExportSuccess}
       />
 
       <DeleteDataModal

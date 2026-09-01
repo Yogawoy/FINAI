@@ -1,7 +1,16 @@
 'use client';
 
 import React from 'react';
-import { Globe, Coins, Hash, Wallet, Tag, Sliders } from 'lucide-react';
+import {
+  Globe,
+  Coins,
+  Hash,
+  Wallet,
+  Tag,
+  Sliders,
+  CalendarCheck,
+  Percent,
+} from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
 import CustomSelect, { SelectOption } from '@/components/ui/CustomSelect';
 import SettingRow from './SettingRow';
@@ -18,6 +27,10 @@ interface PreferencesSectionProps {
   onDefaultWalletChange: (val: string) => void;
   defaultCategory: string;
   onDefaultCategoryChange: (val: string) => void;
+  paydayDate: string;
+  onPaydayDateChange: (val: string) => void;
+  savingsRateTarget: string;
+  onSavingsRateTargetChange: (val: string) => void;
   enableAnimations: boolean;
   onAnimationsChange: (val: boolean) => void;
 }
@@ -53,6 +66,21 @@ const CATEGORY_OPTIONS: SelectOption[] = [
   { value: 'Hiburan', label: 'Hiburan', sublabel: 'Rekreasi & hobi' },
 ];
 
+const PAYDAY_OPTIONS: SelectOption[] = [
+  { value: '25', label: 'Tanggal 25 Bulanan', sublabel: 'Siklus standar payroll' },
+  { value: '28', label: 'Tanggal 28 Bulanan', sublabel: 'Akhir bulan kerja' },
+  { value: '1', label: 'Tanggal 1 Awal Bulan', sublabel: 'Awal bulan kalender' },
+  { value: '5', label: 'Tanggal 5 Bulanan', sublabel: 'Minggu pertama' },
+  { value: '10', label: 'Tanggal 10 Bulanan', sublabel: 'Pertengahan awal' },
+];
+
+const SAVINGS_TARGET_OPTIONS: SelectOption[] = [
+  { value: '20%', label: '20% Pendapatan', sublabel: 'Konservatif & aman' },
+  { value: '30%', label: '30% Pendapatan', sublabel: 'Rekomendasi ideal FinAI' },
+  { value: '40%', label: '40% Pendapatan', sublabel: 'Optimal percepatan target' },
+  { value: '50%', label: '50% Pendapatan', sublabel: 'Agresif / Gerakan FIRE' },
+];
+
 export default function PreferencesSection({
   language,
   onLanguageChange,
@@ -64,65 +92,53 @@ export default function PreferencesSection({
   onDefaultWalletChange,
   defaultCategory,
   onDefaultCategoryChange,
+  paydayDate,
+  onPaydayDateChange,
+  savingsRateTarget,
+  onSavingsRateTargetChange,
   enableAnimations,
   onAnimationsChange,
 }: PreferencesSectionProps) {
   return (
     <div className="space-y-2.5">
       <span className="text-[11px] font-bold text-[#757A95] uppercase tracking-wider block pl-1">
-        Preferensi Aplikasi
+        Preferensi & Siklus Keuangan
       </span>
 
       <GlassCard className="divide-y divide-[#E8EAF2]/60 overflow-visible">
-        {/* 1. Bahasa */}
+        {/* 1. Siklus Tanggal Gajian */}
         <SettingRow
-          icon={<Globe size={16} />}
-          title="Bahasa Tampilan"
-          description="Bahasa utama yang digunakan di seluruh antarmuka FinAI"
+          icon={<CalendarCheck size={16} className="text-[#1B7354]" />}
+          title="Siklus Tanggal Gajian"
+          description="Tanggal reset siklus anggaran bulanan dan acuan arus kas masuk Anda"
           action={
             <div className="w-48 sm:w-56">
               <CustomSelect
-                value={language}
-                onChange={onLanguageChange}
-                options={LANGUAGE_OPTIONS}
+                value={paydayDate}
+                onChange={onPaydayDateChange}
+                options={PAYDAY_OPTIONS}
               />
             </div>
           }
         />
 
-        {/* 2. Mata Uang */}
+        {/* 2. Target Rasio Tabungan */}
         <SettingRow
-          icon={<Coins size={16} />}
-          title="Mata Uang Utama"
-          description="Mata uang standar untuk saldo kas, anggaran, dan grafik"
+          icon={<Percent size={16} className="text-[#5F5ED4]" />}
+          title="Target Rasio Menabung"
+          description="Target persentase pemasukan bulanan yang disisihkan ke target impian"
           action={
             <div className="w-48 sm:w-56">
               <CustomSelect
-                value={currency}
-                onChange={onCurrencyChange}
-                options={CURRENCY_OPTIONS}
+                value={savingsRateTarget}
+                onChange={onSavingsRateTargetChange}
+                options={SAVINGS_TARGET_OPTIONS}
               />
             </div>
           }
         />
 
-        {/* 3. Format Angka */}
-        <SettingRow
-          icon={<Hash size={16} />}
-          title="Format Angka & Pemisah"
-          description="Gaya penulisan angka desimal dan pemisah ribuan"
-          action={
-            <div className="w-48 sm:w-56">
-              <CustomSelect
-                value={numberFormat}
-                onChange={onNumberFormatChange}
-                options={NUMBER_FORMAT_OPTIONS}
-              />
-            </div>
-          }
-        />
-
-        {/* 4. Dompet Utama */}
+        {/* 3. Dompet Utama */}
         <SettingRow
           icon={<Wallet size={16} />}
           title="Dompet Kas Utama"
@@ -138,7 +154,7 @@ export default function PreferencesSection({
           }
         />
 
-        {/* 5. Kategori Default */}
+        {/* 4. Kategori Default */}
         <SettingRow
           icon={<Tag size={16} />}
           title="Kategori Transaksi Default"
@@ -154,7 +170,55 @@ export default function PreferencesSection({
           }
         />
 
-        {/* 6. Animasi Antarmuka */}
+        {/* 5. Mata Uang */}
+        <SettingRow
+          icon={<Coins size={16} />}
+          title="Mata Uang Utama"
+          description="Mata uang standar untuk saldo kas, anggaran, dan grafik"
+          action={
+            <div className="w-48 sm:w-56">
+              <CustomSelect
+                value={currency}
+                onChange={onCurrencyChange}
+                options={CURRENCY_OPTIONS}
+              />
+            </div>
+          }
+        />
+
+        {/* 6. Format Angka */}
+        <SettingRow
+          icon={<Hash size={16} />}
+          title="Format Angka & Pemisah"
+          description="Gaya penulisan angka desimal dan pemisah ribuan"
+          action={
+            <div className="w-48 sm:w-56">
+              <CustomSelect
+                value={numberFormat}
+                onChange={onNumberFormatChange}
+                options={NUMBER_FORMAT_OPTIONS}
+              />
+            </div>
+          }
+        />
+
+        {/* 7. Bahasa */}
+        <SettingRow
+          icon={<Globe size={16} />}
+          title="Bahasa Tampilan"
+          description="Bahasa utama yang digunakan di seluruh antarmuka FinAI"
+          action={
+            <div className="w-48 sm:w-56">
+              <CustomSelect
+                value={language}
+                onChange={onLanguageChange}
+                options={LANGUAGE_OPTIONS}
+              />
+            </div>
+          }
+        />
+
+        {/* 8. Animasi Antarmuka */}
         <SettingRow
           icon={<Sliders size={16} />}
           title="Animasi Antarmuka"

@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Download, FileSpreadsheet, FileCode, Check, CircleCheck } from 'lucide-react';
+import { Download, FileSpreadsheet, FileCode, Check } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
+import { MOCK_TRANSACTIONS, MOCK_WALLETS, MOCK_BUDGETS, MOCK_GOALS } from '@/data/mockData';
 
 interface ExportDataModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onExport: (format: 'csv' | 'json', selectedDatasets: string[]) => void;
+  onExportSuccess: (format: 'csv' | 'json', count: number) => void;
 }
 
 const DATASETS = [
@@ -20,7 +21,7 @@ const DATASETS = [
 export default function ExportDataModal({
   isOpen,
   onClose,
-  onExport,
+  onExportSuccess,
 }: ExportDataModalProps) {
   const [selectedFormat, setSelectedFormat] = useState<'csv' | 'json'>('csv');
   const [selectedDatasets, setSelectedDatasets] = useState<string[]>([
@@ -39,7 +40,56 @@ export default function ExportDataModal({
   const handleExportSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedDatasets.length === 0) return;
-    onExport(selectedFormat, selectedDatasets);
+
+    if (selectedFormat === 'json') {
+      const exportObject: Record<string, any> = {
+        meta: {
+          app: 'FinAI Keuangan Personal',
+          version: '1.0.0',
+          exportedAt: new Date().toISOString(),
+        },
+      };
+
+      if (selectedDatasets.includes('transactions')) exportObject.transactions = MOCK_TRANSACTIONS;
+      if (selectedDatasets.includes('wallets')) exportObject.wallets = MOCK_WALLETS;
+      if (selectedDatasets.includes('budgets')) exportObject.budgets = MOCK_BUDGETS;
+      if (selectedDatasets.includes('goals')) exportObject.goals = MOCK_GOALS;
+
+      const blob = new Blob([JSON.stringify(exportObject, null, 2)], {
+        type: 'application/json;charset=utf-8;',
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `finai_backup_keuangan_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } else {
+      // CSV Format
+      let csvContent = 'ID,Tanggal,Deskripsi,Kategori,Tipe,Nominal,Dompet\n';
+      MOCK_TRANSACTIONS.forEach((t) => {
+        const cleanTitle = t.title.replace(/,/g, ' ');
+        const cleanCategory = (t.category || '').replace(/,/g, ' ');
+        const cleanWallet = (t.walletId || 'BCA').replace(/,/g, ' ');
+        csvContent += `${t.id},${t.date},${cleanTitle},${cleanCategory},${t.type},${t.amount},${cleanWallet}\n`;
+      });
+
+      const blob = new Blob([csvContent], {
+        type: 'text/csv;charset=utf-8;',
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `finai_transaksi_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    onExportSuccess(selectedFormat, selectedDatasets.length);
     onClose();
   };
 
@@ -110,7 +160,7 @@ export default function ExportDataModal({
               </div>
               <div className="text-left">
                 <span className="block text-xs font-bold">CSV / Excel</span>
-                <span className="block text-[10px] opacity-70">Spreadsheet</span>
+                <span className="block text-[10px] opacity-70">Spreadsheet (.csv)</span>
               </div>
             </button>
 
@@ -127,8 +177,8 @@ export default function ExportDataModal({
                 <FileCode size={16} />
               </div>
               <div className="text-left">
-                <span className="block text-xs font-bold">JSON Data</span>
-                <span className="block text-[10px] opacity-70">Struktur baku</span>
+                <span className="block text-xs font-bold">JSON Backup</span>
+                <span className="block text-[10px] opacity-70">Struktur Data (.json)</span>
               </div>
             </button>
           </div>
@@ -149,7 +199,7 @@ export default function ExportDataModal({
             className="flex-1 h-10 rounded-xl bg-[#7C7CE6] hover:bg-[#6867D4] active:scale-98 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-bold text-white shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <Download size={14} />
-            <span>Unduh Berkas</span>
+            <span>Unduh Berkas Nyata</span>
           </button>
         </div>
       </form>
