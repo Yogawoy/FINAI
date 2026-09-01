@@ -34,13 +34,31 @@ import {
   formatIDR,
 } from '@/data/mockData';
 
+// Loading & Page Transition
+import AnalyticsSkeleton from '@/components/loading/AnalyticsSkeleton';
+import PageTransition from '@/components/loading/PageTransition';
+
 const TIMEFRAMES = ['7 Hari', '30 Hari', '6 Bulan', '1 Tahun'];
 
 export default function AnalyticsPage() {
+  const [isLoading, setIsLoading] = useState(true);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 450);
+    return () => clearTimeout(timer);
+  }, []);
+
   const [selectedTimeframe, setSelectedTimeframe] = useState('6 Bulan');
 
+  if (isLoading) {
+    return <AnalyticsSkeleton />;
+  }
+
   return (
-    <div className="space-y-8">
+    <PageTransition>
+      <div className="space-y-8 max-w-7xl mx-auto pb-16">
       {/* Header */}
       <Header
         title="Analisis & Intelijen Keuangan"
@@ -301,5 +319,6 @@ export default function AnalyticsPage() {
         </GlassCard>
       </div>
     </div>
+  </PageTransition>
   );
 }

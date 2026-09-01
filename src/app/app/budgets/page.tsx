@@ -13,6 +13,10 @@ import Button from '@/components/ui/Button';
 import { BudgetCategory } from '@/types';
 import { MOCK_BUDGETS, formatIDR } from '@/data/mockData';
 
+// Loading & Page Transition
+import BudgetsSkeleton from '@/components/loading/BudgetsSkeleton';
+import PageTransition from '@/components/loading/PageTransition';
+
 // Modular Subcomponents & 6 Visual Modals
 import BudgetOverview from '@/components/budgets/BudgetOverview';
 import BudgetInsight from '@/components/budgets/BudgetInsight';
@@ -35,6 +39,15 @@ const MONTH_OPTIONS = [
 ];
 
 export default function BudgetsPage() {
+  const [isLoading, setIsLoading] = useState(true);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 450);
+    return () => clearTimeout(timer);
+  }, []);
+
   // 1. Budgets Local State (Initialized with 6 realistic categories)
   const [budgets, setBudgets] = useState<BudgetCategory[]>(MOCK_BUDGETS);
 
@@ -176,210 +189,221 @@ export default function BudgetsPage() {
     setIsDuplicateModalOpen(true);
   };
 
+  if (isLoading) {
+    return <BudgetsSkeleton />;
+  }
+
   return (
-    <div className="space-y-7 max-w-7xl mx-auto pb-16">
-      {/* ========================================================================= */}
-      {/* 1. PAGE HEADER                                                            */}
-      {/* ========================================================================= */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-[#242636] tracking-tight">
-            Anggaran
-          </h1>
-          <p className="text-xs sm:text-sm text-[#757A95] mt-0.5 font-medium">
-            Rencanakan pengeluaran sebelum Anda berbelanja.
-          </p>
-        </div>
-
-        {/* Date Selector & Create Budget Action */}
-        <div className="flex items-center gap-2.5">
-          {/* Month Selector Dropdown */}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setIsMonthDropdownOpen(!isMonthDropdownOpen)}
-              className="px-3.5 py-2.5 rounded-2xl bg-white hover:bg-[#F8F9FD] text-[#242636] border border-black/[0.06] shadow-2xs text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer"
-            >
-              <Calendar size={15} className="text-[#7C7CE6]" />
-              <span>{selectedMonth}</span>
-              <ChevronDown
-                size={14}
-                className={`text-[#757A95] transition-transform duration-200 ${
-                  isMonthDropdownOpen ? 'rotate-180' : ''
-                }`}
-              />
-            </button>
-
-            {/* Dropdown Menu */}
-            <AnimatePresence>
-              {isMonthDropdownOpen && (
-                <>
-                  <div
-                    className="fixed inset-0 z-20"
-                    onClick={() => setIsMonthDropdownOpen(false)}
-                  />
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.96, y: 5 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.96, y: 5 }}
-                    transition={{ duration: 0.12 }}
-                    className="absolute right-0 top-11 z-30 w-48 bg-white rounded-2xl shadow-[0_10px_25px_rgba(36,38,54,0.12)] border border-black/[0.06] p-1.5 space-y-0.5"
-                  >
-                    {MONTH_OPTIONS.map((m) => (
-                      <button
-                        key={m}
-                        type="button"
-                        onClick={() => {
-                          setSelectedMonth(m);
-                          setIsMonthDropdownOpen(false);
-                        }}
-                        className={`w-full px-3 py-2 rounded-xl text-left text-xs font-bold flex items-center justify-between transition-colors cursor-pointer ${
-                          selectedMonth === m
-                            ? 'bg-[#EDEAFC] text-[#5F5ED4]'
-                            : 'text-[#242636] hover:bg-[#F4F3F9]'
-                        }`}
-                      >
-                        <span>{m}</span>
-                        {selectedMonth === m && <Check size={14} className="text-[#5F5ED4]" />}
-                      </button>
-                    ))}
-                  </motion.div>
-                </>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Buat Anggaran Button */}
-          <Button
-            variant="primary"
-            size="md"
-            icon={<Plus size={16} />}
-            onClick={() => setIsCreateModalOpen(true)}
-          >
-            Buat Anggaran
-          </Button>
-        </div>
-      </div>
-
-      {/* ========================================================================= */}
-      {/* 2. MONTHLY OVERVIEW HERO CARD                                             */}
-      {/* ========================================================================= */}
-      <BudgetOverview
-        monthLabel={selectedMonth}
-        totalBudget={totalBudget}
-        totalSpent={totalSpent}
-        remaining={remaining}
-        percentage={overallPercentage}
-        healthStatus={overallHealth}
-        onQuickCreate={() => setIsCreateModalOpen(true)}
-      />
-
-      {/* ========================================================================= */}
-      {/* 3. AI QUICK INSIGHT BANNER                                                */}
-      {/* ========================================================================= */}
-      <BudgetInsight
-        insightText="Dengan pola belanja saat ini, Anda berpotensi menghemat Rp420.000 pada pos Makanan & Minuman bulan ini."
-        category="Makanan & Minuman"
-        dailySafeSpend={51600}
-        onExplore={() => {
-          const foodBudget = budgets.find((b) => b.category === 'food');
-          if (foodBudget) handleSelectBudget(foodBudget);
-        }}
-      />
-
-      {/* ========================================================================= */}
-      {/* 4. CATEGORY BUDGETS SECTION                                               */}
-      {/* ========================================================================= */}
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+    <PageTransition>
+      <div className="space-y-7 max-w-7xl mx-auto pb-16">
+        {/* ========================================================================= */}
+        {/* 1. PAGE HEADER                                                            */}
+        {/* ========================================================================= */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h3 className="text-lg sm:text-xl font-bold text-[#242636] tracking-tight">
-              Daftar Anggaran Anda
-            </h3>
-            <p className="text-xs text-[#757A95]">
-              Batas pengeluaran yang diatur berdasarkan pos kategori pengeluaran.
+            <h1 className="text-2xl sm:text-3xl font-black text-[#242636] tracking-tight">
+              Anggaran
+            </h1>
+            <p className="text-xs sm:text-sm text-[#757A95] mt-0.5 font-medium">
+              Rencanakan pengeluaran sebelum Anda berbelanja.
             </p>
           </div>
+
+          {/* Date Selector & Create Budget Action */}
+          <div className="flex items-center gap-2.5">
+            {/* Month Selector Dropdown */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsMonthDropdownOpen(!isMonthDropdownOpen)}
+                className="px-3.5 py-2.5 rounded-2xl bg-white hover:bg-[#F8F9FD] text-[#242636] border border-black/[0.06] shadow-2xs text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer"
+              >
+                <Calendar size={15} className="text-[#7C7CE6]" />
+                <span>{selectedMonth}</span>
+                <ChevronDown
+                  size={14}
+                  className={`text-[#757A95] transition-transform duration-200 ${
+                    isMonthDropdownOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+
+              {/* Dropdown Menu */}
+              <AnimatePresence>
+                {isMonthDropdownOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-20"
+                      onClick={() => setIsMonthDropdownOpen(false)}
+                    />
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute right-0 mt-2 w-48 rounded-2xl bg-white border border-black/[0.08] shadow-[0_12px_36px_rgba(48,51,74,0.12)] p-1.5 z-30 space-y-0.5"
+                    >
+                      {MONTH_OPTIONS.map((m) => (
+                        <button
+                          key={m}
+                          type="button"
+                          onClick={() => {
+                            setSelectedMonth(m);
+                            setIsMonthDropdownOpen(false);
+                          }}
+                          className={`w-full px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-between transition-colors cursor-pointer ${
+                            selectedMonth === m
+                              ? 'bg-[#E4E2FB] text-[#7C7CE6]'
+                              : 'text-[#242636] hover:bg-[#F8F9FD]'
+                          }`}
+                        >
+                          <span>{m}</span>
+                          {selectedMonth === m && <Check size={14} className="text-[#7C7CE6]" />}
+                        </button>
+                      ))}
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Create Budget Button */}
+            <Button
+              type="button"
+              variant="primary"
+              size="md"
+              icon={<Plus size={16} />}
+              onClick={() => setIsCreateModalOpen(true)}
+            >
+              Buat Anggaran
+            </Button>
+          </div>
         </div>
 
-        {/* Search & Filter Tabs */}
-        <BudgetFilters
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          selectedFilter={selectedFilter}
-          onFilterChange={setSelectedFilter}
-          counts={filterCounts}
+        {/* ========================================================================= */}
+        {/* 2. OVERVIEW CARD & SMART HEALTH METER                                     */}
+        {/* ========================================================================= */}
+        <BudgetOverview
+          monthLabel={selectedMonth}
+          totalBudget={totalBudget}
+          totalSpent={totalSpent}
+          remaining={remaining}
+          percentage={overallPercentage}
+          healthStatus={overallHealth}
+          onQuickCreate={() => setIsCreateModalOpen(true)}
         />
 
-        {/* Budget Rows List */}
-        <BudgetList
-          budgets={filteredBudgets}
-          searchQuery={searchQuery}
-          onSelectBudget={handleSelectBudget}
-          onEditBudget={handleEditTrigger}
-          onDeleteBudget={handleDeleteTrigger}
-          onDuplicateBudget={handleDuplicateTrigger}
-          onCreateBudget={() => setIsCreateModalOpen(true)}
+        {/* ========================================================================= */}
+        {/* 3. FINAI BUDGET INSIGHT BANNER                                            */}
+        {/* ========================================================================= */}
+        <BudgetInsight
+          insightText="Dengan pola belanja saat ini, Anda berpotensi menghemat Rp420.000 pada pos Makanan & Minuman bulan ini."
+          category="Makanan & Minuman"
+          dailySafeSpend={51600}
+          onExplore={() => {
+            const foodBudget = budgets.find((b) => b.category === 'food');
+            if (foodBudget) handleSelectBudget(foodBudget);
+          }}
+        />
+
+        {/* ========================================================================= */}
+        {/* 4. BUDGETS LIST SECTION & CONTROLS                                        */}
+        {/* ========================================================================= */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <div>
+              <h2 className="text-lg font-bold text-[#242636] tracking-tight">
+                Pos Anggaran Kategori
+              </h2>
+              <p className="text-xs text-[#757A95]">
+                Klik pos anggaran mana pun untuk melihat rincian batas dan status.
+              </p>
+            </div>
+            <span className="text-xs font-semibold text-[#757A95]">
+              {filteredBudgets.length} Kategori Terpasang
+            </span>
+          </div>
+
+          {/* Search & Filter Toolbar */}
+          <BudgetFilters
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            selectedFilter={selectedFilter}
+            onFilterChange={setSelectedFilter}
+            counts={filterCounts}
+          />
+
+          {/* Budget Categories Grid */}
+          <BudgetList
+            budgets={filteredBudgets}
+            searchQuery={searchQuery}
+            onSelectBudget={handleSelectBudget}
+            onEditBudget={handleEditTrigger}
+            onDeleteBudget={handleDeleteTrigger}
+            onDuplicateBudget={handleDuplicateTrigger}
+            onCreateBudget={() => setIsCreateModalOpen(true)}
+          />
+        </section>
+
+        {/* ========================================================================= */}
+        {/* 5. ALL 6 MODALS SUITE                                                     */}
+        {/* ========================================================================= */}
+
+        {/* Modal 1: Buat Anggaran Baru */}
+        <CreateBudgetModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onCreateBudget={handleCreateBudget}
+        />
+
+        {/* Modal 2: Edit Anggaran */}
+        <EditBudgetModal
+          budget={activeBudget}
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          onUpdateBudget={handleUpdateBudget}
+        />
+
+        {/* Modal 3: Detail Anggaran */}
+        <BudgetDetailModal
+          budget={activeBudget}
+          isOpen={isDetailModalOpen}
+          onClose={() => setIsDetailModalOpen(false)}
+          onEdit={handleEditTrigger}
+          onDelete={handleDeleteTrigger}
+          onDuplicate={handleDuplicateTrigger}
+        />
+
+        {/* Modal 4: Konfirmasi Hapus Anggaran */}
+        <DeleteBudgetDialog
+          budget={activeBudget}
+          isOpen={isDeleteDialogOpen}
+          onClose={() => setIsDeleteDialogOpen(false)}
+          onConfirmDelete={handleDeleteBudget}
+        />
+
+        {/* Modal 5: Anggaran Dibuat Success Modal */}
+        <BudgetSuccessModal
+          budget={lastCreatedBudget}
+          isOpen={isSuccessModalOpen}
+          onClose={() => setIsSuccessModalOpen(false)}
+          onCreateAnother={() => setIsCreateModalOpen(true)}
+        />
+
+        {/* Modal 6: Duplikat Anggaran Modal */}
+        <DuplicateBudgetModal
+          sourceBudget={activeBudget}
+          isOpen={isDuplicateModalOpen}
+          onClose={() => setIsDuplicateModalOpen(false)}
+          onDuplicateBudget={handleDuplicateBudget}
+        />
+
+        {/* Toast Floating Notification */}
+        <TransactionToast
+          message={toastMessage}
+          onClose={() => setToastMessage(null)}
         />
       </div>
-
-      {/* ========================================================================= */}
-      {/* 5. ALL 6 MODALS & DIALOGS MATCHING FINAI DESIGN SYSTEM                    */}
-      {/* ========================================================================= */}
-      {/* Modal 1: Buat Anggaran Baru Modal */}
-      <CreateBudgetModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onCreateBudget={handleCreateBudget}
-      />
-
-      {/* Modal 2: Edit Anggaran Modal */}
-      <EditBudgetModal
-        budget={activeBudget}
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        onUpdateBudget={handleUpdateBudget}
-      />
-
-      {/* Modal 3: Detail Anggaran Modal */}
-      <BudgetDetailModal
-        budget={activeBudget}
-        isOpen={isDetailModalOpen}
-        onClose={() => setIsDetailModalOpen(false)}
-        onEdit={handleEditTrigger}
-        onDelete={handleDeleteTrigger}
-        onDuplicate={handleDuplicateTrigger}
-      />
-
-      {/* Modal 4: Konfirmasi Hapus Anggaran Dialog */}
-      <DeleteBudgetDialog
-        budget={activeBudget}
-        isOpen={isDeleteDialogOpen}
-        onClose={() => setIsDeleteDialogOpen(false)}
-        onConfirmDelete={handleDeleteBudget}
-      />
-
-      {/* Modal 5: Anggaran Dibuat Success Modal */}
-      <BudgetSuccessModal
-        budget={lastCreatedBudget}
-        isOpen={isSuccessModalOpen}
-        onClose={() => setIsSuccessModalOpen(false)}
-        onCreateAnother={() => setIsCreateModalOpen(true)}
-      />
-
-      {/* Modal 6: Duplikat Anggaran Modal */}
-      <DuplicateBudgetModal
-        sourceBudget={activeBudget}
-        isOpen={isDuplicateModalOpen}
-        onClose={() => setIsDuplicateModalOpen(false)}
-        onDuplicateBudget={handleDuplicateBudget}
-      />
-
-      {/* Toast Floating Notification */}
-      <TransactionToast
-        message={toastMessage}
-        onClose={() => setToastMessage(null)}
-      />
-    </div>
+    </PageTransition>
   );
 }

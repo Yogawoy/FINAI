@@ -8,6 +8,10 @@ import Button from '@/components/ui/Button';
 import { Transaction, TransactionCategory, TransactionType } from '@/types';
 import { MOCK_TRANSACTIONS } from '@/data/mockData';
 
+// Loading & Page Transition
+import TransactionsSkeleton from '@/components/loading/TransactionsSkeleton';
+import PageTransition from '@/components/loading/PageTransition';
+
 // Subkomponen Modular
 import TransactionSummary from '@/components/transactions/TransactionSummary';
 import TransactionFilters, { DateFilterType } from '@/components/transactions/TransactionFilters';
@@ -23,6 +27,15 @@ import TransactionToast from '@/components/transactions/TransactionToast';
 import AITransactionPrompt from '@/components/transactions/AITransactionPrompt';
 
 export default function TransactionsPage() {
+  const [isLoading, setIsLoading] = useState(true);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 450);
+    return () => clearTimeout(timer);
+  }, []);
+
   // 1. Data mutasi transaksi (25 catatan realistis)
   const [transactions, setTransactions] = useState<Transaction[]>(MOCK_TRANSACTIONS);
 
@@ -182,163 +195,169 @@ export default function TransactionsPage() {
     setIsDeleteDialogOpen(true);
   };
 
+  if (isLoading) {
+    return <TransactionsSkeleton />;
+  }
+
   return (
-    <div className="space-y-7 max-w-7xl mx-auto pb-16">
-      {/* 1. HEADER HALAMAN */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#242636] tracking-tight">
-            Transaksi
-          </h1>
-          <p className="text-xs sm:text-sm text-[#757A95] mt-0.5">
-            Pantau dan kelola seluruh arus pemasukan dan pengeluaran Anda.
-          </p>
+    <PageTransition>
+      <div className="space-y-7 max-w-7xl mx-auto pb-16">
+        {/* 1. HEADER HALAMAN */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#242636] tracking-tight">
+              Transaksi
+            </h1>
+            <p className="text-xs sm:text-sm text-[#757A95] mt-0.5">
+              Pantau dan kelola seluruh arus pemasukan dan pengeluaran Anda.
+            </p>
+          </div>
+
+          <Button
+            type="button"
+            variant="primary"
+            size="md"
+            icon={<Plus size={16} />}
+            onClick={() => setIsAddModalOpen(true)}
+          >
+            Tambah Transaksi
+          </Button>
         </div>
 
-        <Button
-          type="button"
-          variant="primary"
-          size="md"
-          icon={<Plus size={16} />}
-          onClick={() => setIsAddModalOpen(true)}
-        >
-          Tambah Transaksi
-        </Button>
-      </div>
+        {/* 2. RINGKASAN FINANSIAL (4 Metrik Utama) */}
+        <TransactionSummary
+          income={summary.income}
+          expenses={summary.expenses}
+          net={summary.net}
+          avgDaily={summary.avgDaily}
+        />
 
-      {/* 2. RINGKASAN FINANSIAL (4 Metrik Utama) */}
-      <TransactionSummary
-        income={summary.income}
-        expenses={summary.expenses}
-        net={summary.net}
-        avgDaily={summary.avgDaily}
-      />
+        {/* 3. PANCARIAN & FILTER KAS */}
+        <TransactionFilters
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          selectedType={selectedType}
+          onTypeChange={setSelectedType}
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+          selectedDateFilter={selectedDateFilter}
+          onDateFilterChange={setSelectedDateFilter}
+          onOpenFilterModal={() => setIsFilterModalOpen(true)}
+          onResetFilters={handleResetFilters}
+          hasActiveFilters={hasActiveFilters}
+        />
 
-      {/* 3. PANCARIAN & FILTER KAS */}
-      <TransactionFilters
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        selectedType={selectedType}
-        onTypeChange={setSelectedType}
-        selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
-        selectedDateFilter={selectedDateFilter}
-        onDateFilterChange={setSelectedDateFilter}
-        onOpenFilterModal={() => setIsFilterModalOpen(true)}
-        onResetFilters={handleResetFilters}
-        hasActiveFilters={hasActiveFilters}
-      />
+        {/* 4. BANNER ASISTEN ANALISIS FINAI */}
+        <AITransactionBanner onOpenAI={handleOpenAIWithPrompt} />
 
-      {/* 4. BANNER ASISTEN ANALISIS FINAI */}
-      <AITransactionBanner onOpenAI={handleOpenAIWithPrompt} />
+        {/* 5. DAFTAR ARUS MUTASI KAS KRONOLOGIS */}
+        <section className="space-y-3">
+          <div className="flex items-center justify-between px-1">
+            <span className="text-xs font-extrabold uppercase tracking-widest text-[#757A95]">
+              Buku Kas Mutasi
+            </span>
+            <span className="text-xs font-semibold text-[#757A95]">
+              Menampilkan {filteredTransactions.length} dari {transactions.length} catatan transaksi
+            </span>
+          </div>
 
-      {/* 5. DAFTAR ARUS MUTASI KAS KRONOLOGIS */}
-      <section className="space-y-3">
-        <div className="flex items-center justify-between px-1">
-          <span className="text-xs font-extrabold uppercase tracking-widest text-[#757A95]">
-            Buku Kas Mutasi
-          </span>
-          <span className="text-xs font-semibold text-[#757A95]">
-            Menampilkan {filteredTransactions.length} dari {transactions.length} catatan transaksi
-          </span>
-        </div>
+          <TransactionList
+            transactions={filteredTransactions}
+            onSelectTransaction={handleSelectRow}
+            onEditTransaction={handleEditRow}
+            onDeleteTransaction={handleDeleteRow}
+            onResetFilters={handleResetFilters}
+          />
+        </section>
 
-        <TransactionList
-          transactions={filteredTransactions}
-          onSelectTransaction={handleSelectRow}
-          onEditTransaction={handleEditRow}
-          onDeleteTransaction={handleDeleteRow}
+        {/* ========================================================================= */}
+        {/* 6. REDESIGNED MODAL & POPUP SUITE (MATCHING VISUAL REFERENCE)             */}
+        {/* ========================================================================= */}
+
+        {/* Modal 1: Add Transaction (Top-Left in Visual Reference) */}
+        <AddTransactionModal
+          isOpen={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
+          onAddTransaction={handleAddTransaction}
+        />
+
+        {/* Modal 2: Edit Transaction (Bottom-Left in Visual Reference) */}
+        <EditTransactionModal
+          transaction={activeTransaction}
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          onUpdateTransaction={handleUpdateTransaction}
+        />
+
+        {/* Modal 3: Transaction Detail Receipt (Top-Center in Visual Reference) */}
+        <TransactionDetail
+          transaction={activeTransaction}
+          isOpen={isDetailModalOpen}
+          onClose={() => setIsDetailModalOpen(false)}
+          onEdit={(tx) => {
+            setIsDetailModalOpen(false);
+            setActiveTransaction(tx);
+            setIsEditModalOpen(true);
+          }}
+          onDelete={(tx) => {
+            setIsDetailModalOpen(false);
+            setActiveTransaction(tx);
+            setIsDeleteDialogOpen(true);
+          }}
+        />
+
+        {/* Modal 4: Delete Confirmation (Top-Right in Visual Reference) */}
+        <DeleteTransactionDialog
+          transaction={activeTransaction}
+          isOpen={isDeleteDialogOpen}
+          onClose={() => setIsDeleteDialogOpen(false)}
+          onConfirmDelete={handleDeleteTransaction}
+        />
+
+        {/* Modal 5: Filter Transactions Modal (Bottom-Center in Visual Reference) */}
+        <FilterTransactionsModal
+          isOpen={isFilterModalOpen}
+          onClose={() => setIsFilterModalOpen(false)}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          selectedType={selectedType}
+          onTypeChange={setSelectedType}
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+          selectedDateFilter={selectedDateFilter}
+          onDateFilterChange={setSelectedDateFilter}
           onResetFilters={handleResetFilters}
         />
-      </section>
 
-      {/* ========================================================================= */}
-      {/* 6. REDESIGNED MODAL & POPUP SUITE (MATCHING VISUAL REFERENCE)             */}
-      {/* ========================================================================= */}
+        {/* Modal 6: Transaction Success Modal (Bottom-Right in Visual Reference) */}
+        <TransactionSuccessModal
+          transaction={lastAffectedTransaction}
+          isOpen={isSuccessModalOpen}
+          onClose={() => setIsSuccessModalOpen(false)}
+          onViewTransaction={(tx) => {
+            setIsSuccessModalOpen(false);
+            setActiveTransaction(tx);
+            setIsDetailModalOpen(true);
+          }}
+          actionType={successActionType}
+        />
 
-      {/* Modal 1: Add Transaction (Top-Left in Visual Reference) */}
-      <AddTransactionModal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onAddTransaction={handleAddTransaction}
-      />
+        {/* Panel Tanya FinAI */}
+        <AITransactionPrompt
+          isOpen={isAIModalOpen}
+          onClose={() => {
+            setIsAIModalOpen(false);
+            setInitialAIPrompt(undefined);
+          }}
+          initialPrompt={initialAIPrompt}
+        />
 
-      {/* Modal 2: Edit Transaction (Bottom-Left in Visual Reference) */}
-      <EditTransactionModal
-        transaction={activeTransaction}
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        onUpdateTransaction={handleUpdateTransaction}
-      />
-
-      {/* Modal 3: Transaction Detail Receipt (Top-Center in Visual Reference) */}
-      <TransactionDetail
-        transaction={activeTransaction}
-        isOpen={isDetailModalOpen}
-        onClose={() => setIsDetailModalOpen(false)}
-        onEdit={(tx) => {
-          setIsDetailModalOpen(false);
-          setActiveTransaction(tx);
-          setIsEditModalOpen(true);
-        }}
-        onDelete={(tx) => {
-          setIsDetailModalOpen(false);
-          setActiveTransaction(tx);
-          setIsDeleteDialogOpen(true);
-        }}
-      />
-
-      {/* Modal 4: Delete Confirmation (Top-Right in Visual Reference) */}
-      <DeleteTransactionDialog
-        transaction={activeTransaction}
-        isOpen={isDeleteDialogOpen}
-        onClose={() => setIsDeleteDialogOpen(false)}
-        onConfirmDelete={handleDeleteTransaction}
-      />
-
-      {/* Modal 5: Filter Transactions Modal (Bottom-Center in Visual Reference) */}
-      <FilterTransactionsModal
-        isOpen={isFilterModalOpen}
-        onClose={() => setIsFilterModalOpen(false)}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        selectedType={selectedType}
-        onTypeChange={setSelectedType}
-        selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
-        selectedDateFilter={selectedDateFilter}
-        onDateFilterChange={setSelectedDateFilter}
-        onResetFilters={handleResetFilters}
-      />
-
-      {/* Modal 6: Transaction Success Modal (Bottom-Right in Visual Reference) */}
-      <TransactionSuccessModal
-        transaction={lastAffectedTransaction}
-        isOpen={isSuccessModalOpen}
-        onClose={() => setIsSuccessModalOpen(false)}
-        onViewTransaction={(tx) => {
-          setIsSuccessModalOpen(false);
-          setActiveTransaction(tx);
-          setIsDetailModalOpen(true);
-        }}
-        actionType={successActionType}
-      />
-
-      {/* Panel Tanya FinAI */}
-      <AITransactionPrompt
-        isOpen={isAIModalOpen}
-        onClose={() => {
-          setIsAIModalOpen(false);
-          setInitialAIPrompt(undefined);
-        }}
-        initialPrompt={initialAIPrompt}
-      />
-
-      {/* Notifikasi Toast Mengambang */}
-      <TransactionToast
-        message={toastMessage}
-        onClose={() => setToastMessage(null)}
-      />
-    </div>
+        {/* Notifikasi Toast Mengambang */}
+        <TransactionToast
+          message={toastMessage}
+          onClose={() => setToastMessage(null)}
+        />
+      </div>
+    </PageTransition>
   );
 }

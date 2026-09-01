@@ -54,6 +54,8 @@ import {
   formatIDR,
 } from '@/data/mockData';
 import { BudgetCategory } from '@/types';
+import DashboardSkeleton from '@/components/loading/DashboardSkeleton';
+import PageTransition from '@/components/loading/PageTransition';
 
 interface TransactionItem {
   id: string;
@@ -99,6 +101,15 @@ const INITIAL_TRANSACTIONS: TransactionItem[] = [
 ];
 
 export default function DashboardPage() {
+  const [isLoading, setIsLoading] = useState(true);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 450);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Real-time prototype balance state
   const [balance, setBalance] = useState<number>(USER_PROFILE.availableBalance);
   const [transactions, setTransactions] = useState<TransactionItem[]>(INITIAL_TRANSACTIONS);
@@ -263,8 +274,13 @@ export default function DashboardPage() {
     );
   };
 
+  if (isLoading) {
+    return <DashboardSkeleton />;
+  }
+
   return (
-    <div className="space-y-8 max-w-7xl mx-auto pb-12">
+    <PageTransition>
+      <div className="space-y-8 max-w-7xl mx-auto pb-12">
       {/* Header Utama */}
       <Header
         title="Selamat siang, Yoga."
@@ -1225,5 +1241,6 @@ export default function DashboardPage() {
         )}
       </Modal>
     </div>
+  </PageTransition>
   );
 }

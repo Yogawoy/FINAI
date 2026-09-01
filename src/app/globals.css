@@ -92,3 +92,32 @@ body {
 .tabular-numbers {
   font-variant-numeric: tabular-nums;
 }
+
+/* FinAI Global Skeleton Shimmer */
+@keyframes finai-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.finai-skeleton {
+  background: linear-gradient(
+    90deg,
+    #E8EAF2 0%,
+    #F5F6FA 50%,
+    #E8EAF2 100%
+  );
+  background-size: 200% 100%;
+  animation: finai-shimmer 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .finai-skeleton {
+    animation: none !important;
+    background: #E8EAF2 !important;
+  }
+}
+
