@@ -100,7 +100,10 @@ export interface GoalContribution {
   id: string;
   amount: number;
   date: string;
-  walletName: string;
+  sourceWalletId: string;
+  sourceWalletName: string;
+  destinationWalletId: string;
+  destinationWalletName: string;
   note?: string;
 }
 
@@ -113,8 +116,10 @@ export interface GoalItem {
   targetDate: string; // ISO date or readable string
   frequency: GoalFrequency;
   monthlySaving: number;
-  walletId: string;
-  walletName: string;
+  sourceWalletId: string;
+  sourceWalletName: string;
+  destinationWalletId: string;
+  destinationWalletName: string;
   colorTheme: GoalColorTheme;
   status: GoalStatus;
   notes?: string;

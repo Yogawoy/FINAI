@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Target, Sparkles, CircleCheck } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import TransactionToast from '@/components/transactions/TransactionToast';
-import { GoalItem, GoalContribution } from '@/types';
-import { MOCK_GOALS_LIST } from '@/data/mockData';
+import { GoalItem, GoalContribution, Wallet } from '@/types';
+import { MOCK_GOALS_LIST, MOCK_WALLETS, formatIDR } from '@/data/mockData';
 
 // Subcomponents
 import GoalSummary from '@/components/goals/GoalSummary';
@@ -20,8 +20,9 @@ import DeleteGoalDialog from '@/components/goals/DeleteGoalDialog';
 import AddContributionModal from '@/components/goals/AddContributionModal';
 
 export default function GoalsPage() {
-  // State: Goals List
+  // State: Goals List & Wallets
   const [goals, setGoals] = useState<GoalItem[]>(MOCK_GOALS_LIST);
+  const [wallets, setWallets] = useState<Wallet[]>(MOCK_WALLETS);
 
   // State: Active Modals
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -79,7 +80,8 @@ export default function GoalsPage() {
         (g) =>
           g.title.toLowerCase().includes(q) ||
           (g.notes && g.notes.toLowerCase().includes(q)) ||
-          g.walletName.toLowerCase().includes(q)
+          g.sourceWalletName.toLowerCase().includes(q) ||
+          g.destinationWalletName.toLowerCase().includes(q)
       );
     }
 
@@ -132,6 +134,20 @@ export default function GoalsPage() {
   };
 
   const handleAddContribution = (goalId: string, contribution: GoalContribution) => {
+    // 1. Update wallet balances (Internal Transfer: Source -amount, Destination +amount)
+    setWallets((prevWallets) =>
+      prevWallets.map((w) => {
+        if (w.id === contribution.sourceWalletId) {
+          return { ...w, balance: Math.max(w.balance - contribution.amount, 0) };
+        }
+        if (w.id === contribution.destinationWalletId) {
+          return { ...w, balance: w.balance + contribution.amount };
+        }
+        return w;
+      })
+    );
+
+    // 2. Update Goal currentAmount and contributions history
     setGoals((prev) =>
       prev.map((g) => {
         if (g.id === goalId) {
@@ -159,7 +175,7 @@ export default function GoalsPage() {
       });
     }
 
-    showToast(`Tabungan Rp ${contribution.amount.toLocaleString('id-ID')} berhasil ditambahkan.`);
+    showToast(`Setoran ${formatIDR(contribution.amount)} dari ${contribution.sourceWalletName} ke ${contribution.destinationWalletName} berhasil.`);
   };
 
   // Modal Opener Triggers
@@ -284,6 +300,7 @@ export default function GoalsPage() {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onCreateGoal={handleCreateGoal}
+        wallets={wallets}
       />
 
       {/* Modal 2: Edit Target */}
@@ -292,6 +309,7 @@ export default function GoalsPage() {
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         onUpdateGoal={handleUpdateGoal}
+        wallets={wallets}
       />
 
       {/* Modal 3: Detail Target */}
@@ -318,6 +336,7 @@ export default function GoalsPage() {
         isOpen={isContributionModalOpen}
         onClose={() => setIsContributionModalOpen(false)}
         onAddContribution={handleAddContribution}
+        wallets={wallets}
       />
 
       {/* Floating Toast Notification */}

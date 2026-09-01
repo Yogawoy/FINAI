@@ -11,11 +11,12 @@ import {
   Pencil,
   Trash2,
   X,
-  Wallet,
-  ArrowUpRight,
+  ArrowRight,
   ShieldCheck,
   CheckCircle2,
   Clock,
+  ArrowDownRight,
+  ArrowUpRight,
 } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
@@ -24,6 +25,7 @@ import { formatIDR } from '@/data/mockData';
 import GoalVisualIcon, { GOAL_THEME_COLORS } from './GoalVisualIcon';
 import GoalStatusBadge from './GoalStatusBadge';
 import GoalTimeline from './GoalTimeline';
+import GoalTransferFlow from './GoalTransferFlow';
 
 interface GoalDetailModalProps {
   goal: GoalItem | null;
@@ -77,7 +79,6 @@ export default function GoalDetailModal({
     return d;
   };
 
-  // Mock monthly saving plan progress
   const thisMonthSaved = goal.contributions
     .slice(0, 2)
     .reduce((sum, c) => sum + c.amount, 0);
@@ -114,7 +115,7 @@ export default function GoalDetailModal({
               <GoalStatusBadge status={goal.status} size="sm" />
             </div>
             <p className="text-xs text-[#757A95] mt-0.5">
-              {goal.notes || `Target ${formatDeadline(goal.targetDate)} • Sumber: ${goal.walletName}`}
+              {goal.notes || `Target ${formatDeadline(goal.targetDate)}`}
             </p>
           </div>
         </div>
@@ -205,37 +206,46 @@ export default function GoalDetailModal({
           </div>
 
           <div className="flex items-center justify-between text-xs font-bold">
-            <span className="text-[#5F5ED4]">{percentage}% Tercapai</span>
+            <span className="text-[#5F5ED4]">{percentage}% Terkumpul</span>
             <span className="text-[#757A95]">Sisa Kebutuhan: {formatIDR(remaining)}</span>
           </div>
         </div>
 
-        {/* 3 Metric Mini Cards */}
-        <div className="grid grid-cols-3 gap-2.5 pt-2">
+        {/* 4 Information Metric Mini Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2">
           <div className="p-3 rounded-2xl bg-white border border-black/[0.05] text-center space-y-0.5">
             <span className="text-[10px] font-bold text-[#757A95] uppercase tracking-wider block">
-              Tenggat Waktu
+              Sumber Dana
+            </span>
+            <div className="text-xs sm:text-sm font-extrabold text-[#242636] truncate">
+              {goal.sourceWalletName || 'BCA Priority'}
+            </div>
+          </div>
+
+          <div className="p-3 rounded-2xl bg-white border border-[#7C7CE6]/25 bg-[#FAF9FE] text-center space-y-0.5">
+            <span className="text-[10px] font-bold text-[#5F5ED4] uppercase tracking-wider block">
+              Dompet Tujuan
+            </span>
+            <div className="text-xs sm:text-sm font-extrabold text-[#5F5ED4] truncate">
+              {goal.destinationWalletName || 'Tabungan'}
+            </div>
+          </div>
+
+          <div className="p-3 rounded-2xl bg-white border border-black/[0.05] text-center space-y-0.5">
+            <span className="text-[10px] font-bold text-[#757A95] uppercase tracking-wider block">
+              Rencana Menabung
+            </span>
+            <div className="text-xs sm:text-sm font-extrabold text-[#1B7354] tabular-nums">
+              {formatIDR(goal.monthlySaving)}/bln
+            </div>
+          </div>
+
+          <div className="p-3 rounded-2xl bg-white border border-black/[0.05] text-center space-y-0.5">
+            <span className="text-[10px] font-bold text-[#757A95] uppercase tracking-wider block">
+              Target Tanggal
             </span>
             <div className="text-xs sm:text-sm font-extrabold text-[#242636] truncate">
               {formatDeadline(goal.targetDate)}
-            </div>
-          </div>
-
-          <div className="p-3 rounded-2xl bg-white border border-black/[0.05] text-center space-y-0.5">
-            <span className="text-[10px] font-bold text-[#757A95] uppercase tracking-wider block">
-              Nabung Bulanan
-            </span>
-            <div className="text-xs sm:text-sm font-extrabold text-[#1B7354] tabular-nums">
-              {formatIDR(goal.monthlySaving)}
-            </div>
-          </div>
-
-          <div className="p-3 rounded-2xl bg-white border border-black/[0.05] text-center space-y-0.5">
-            <span className="text-[10px] font-bold text-[#757A95] uppercase tracking-wider block">
-              Sumber Dompet
-            </span>
-            <div className="text-xs sm:text-sm font-extrabold text-[#242636] truncate">
-              {goal.walletName}
             </div>
           </div>
         </div>
@@ -275,12 +285,12 @@ export default function GoalDetailModal({
       />
 
       {/* ========================================================================= */}
-      {/* 5. RECENT CONTRIBUTIONS LIST                                              */}
+      {/* 5. RIWAYAT TABUNGAN / CONTRIBUTIONS LIST (TRANSFER RECORDS)               */}
       {/* ========================================================================= */}
       <div className="space-y-2.5">
         <div className="flex items-center justify-between">
           <h4 className="text-xs font-extrabold uppercase tracking-wider text-[#757A95]">
-            Riwayat Setoran Tabungan
+            Riwayat Setoran Tabungan (Transfer Internal)
           </h4>
           <span className="text-[11px] text-[#757A95]">
             {goal.contributions.length} Transaksi
@@ -292,7 +302,7 @@ export default function GoalDetailModal({
             Belum ada setoran tabungan yang tercatat untuk target ini.
           </div>
         ) : (
-          <div className="space-y-2 max-h-44 overflow-y-auto pr-1">
+          <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
             {goal.contributions.map((c) => (
               <div
                 key={c.id}
@@ -304,14 +314,18 @@ export default function GoalDetailModal({
                   </div>
                   <div>
                     <span className="font-bold text-[#242636] block">
-                      {c.note || 'Setoran Tabungan'}
+                      {c.note || `Setoran ${goal.title}`}
                     </span>
-                    <span className="text-[10px] text-[#757A95]">
-                      {c.date} • {c.walletName}
-                    </span>
+                    <div className="flex items-center gap-1.5 text-[10px] text-[#757A95] mt-0.5">
+                      <span>{c.date}</span>
+                      <span>•</span>
+                      <span className="font-semibold text-[#242636]">{c.sourceWalletName || 'BCA'}</span>
+                      <ArrowRight size={10} className="text-[#7C7CE6]" />
+                      <span className="font-semibold text-[#5F5ED4]">{c.destinationWalletName || 'Tabungan'}</span>
+                    </div>
                   </div>
                 </div>
-                <span className="font-black text-[#1B7354] tabular-nums">
+                <span className="font-black text-[#1B7354] tabular-nums text-sm">
                   +{formatIDR(c.amount)}
                 </span>
               </div>
@@ -330,8 +344,8 @@ export default function GoalDetailModal({
         </div>
         <p className="text-xs text-[#166534] leading-relaxed">
           {percentage >= 100
-            ? `Target ${goal.title} telah tercapai 100%! Selamat atas kedisiplinan finansial Anda.`
-            : `Jika kamu konsisten menyisihkan ${formatIDR(goal.monthlySaving)} setiap bulan, target ini dapat tercapai tepat pada ${formatDeadline(goal.targetDate)}. Menambah ${formatIDR(200000)}/bulan dapat mempercepat target 1 bulan lebih awal.`}
+            ? `Target ${goal.title} telah tercapai 100%! Dana aman tersimpan di ${goal.destinationWalletName}.`
+            : `Menyetor ${formatIDR(goal.monthlySaving)}/bulan dari ${goal.sourceWalletName} ke ${goal.destinationWalletName} akan memastikan target tercapai tepat pada ${formatDeadline(goal.targetDate)} tanpa mengganggu pos pengeluaran rutin.`}
         </p>
       </div>
 

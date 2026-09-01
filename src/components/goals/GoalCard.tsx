@@ -58,8 +58,8 @@ export default function GoalCard({
               <h4 className="text-base font-bold text-[#242636] truncate group-hover:text-[#5F5ED4] transition-colors">
                 {goal.title}
               </h4>
-              <span className="text-[11px] text-[#757A95] block truncate">
-                {goal.walletName || 'Bank BCA'}
+              <span className="text-[11px] text-[#5F5ED4] font-medium block truncate">
+                {goal.destinationWalletName || 'Tabungan'}
               </span>
             </div>
           </div>

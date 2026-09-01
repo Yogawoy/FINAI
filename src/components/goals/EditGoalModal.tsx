@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Pencil, Sparkles, X, TrendingUp } from 'lucide-react';
+import { Pencil, Sparkles, X, TrendingUp, AlertCircle } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
 import DatePicker from '@/components/ui/DatePicker';
@@ -9,12 +9,14 @@ import SegmentedControl from '@/components/ui/SegmentedControl';
 import WalletSelect from '@/components/ui/WalletSelect';
 import { GoalItem, GoalCategoryType, GoalColorTheme, GoalFrequency, Wallet } from '@/types';
 import { MOCK_WALLETS, formatIDR } from '@/data/mockData';
+import GoalTransferFlow from './GoalTransferFlow';
 
 interface EditGoalModalProps {
   goal: GoalItem | null;
   isOpen: boolean;
   onClose: () => void;
   onUpdateGoal: (goal: GoalItem) => void;
+  wallets?: Wallet[];
 }
 
 const CATEGORY_OPTIONS: { id: GoalCategoryType; label: string }[] = [
@@ -41,13 +43,18 @@ export default function EditGoalModal({
   isOpen,
   onClose,
   onUpdateGoal,
+  wallets = MOCK_WALLETS,
 }: EditGoalModalProps) {
   const [title, setTitle] = useState('');
-  const [category, setCategory] = useState<GoalCategoryType>('laptop');
+  const [category, setCategory] = useState<GoalCategoryType>('course');
   const [targetAmountRaw, setTargetAmountRaw] = useState('12000000');
   const [targetDate, setTargetDate] = useState('2026-12-31');
   const [frequency, setFrequency] = useState<GoalFrequency>('monthly');
-  const [selectedWalletId, setSelectedWalletId] = useState('BCA');
+
+  // Dual Wallets
+  const [sourceWalletId, setSourceWalletId] = useState('w-1');
+  const [destinationWalletId, setDestinationWalletId] = useState('w-5');
+
   const [colorTheme, setColorTheme] = useState<GoalColorTheme>('periwinkle');
   const [notes, setNotes] = useState('');
 
@@ -58,7 +65,8 @@ export default function EditGoalModal({
       setTargetAmountRaw(goal.targetAmount.toString());
       setTargetDate(goal.targetDate);
       setFrequency(goal.frequency);
-      setSelectedWalletId(goal.walletId || 'BCA');
+      setSourceWalletId(goal.sourceWalletId || 'w-1');
+      setDestinationWalletId(goal.destinationWalletId || 'w-5');
       setColorTheme(goal.colorTheme || 'periwinkle');
       setNotes(goal.notes || '');
     }
@@ -67,6 +75,17 @@ export default function EditGoalModal({
   const targetAmount = parseFloat(targetAmountRaw) || 0;
   const currentAmount = goal ? goal.currentAmount : 0;
   const remaining = Math.max(targetAmount - currentAmount, 0);
+
+  const sourceWallet = useMemo(
+    () => wallets.find((w) => w.id === sourceWalletId) || wallets[0],
+    [wallets, sourceWalletId]
+  );
+  const destinationWallet = useMemo(
+    () => wallets.find((w) => w.id === destinationWalletId) || wallets[wallets.length - 1],
+    [wallets, destinationWalletId]
+  );
+
+  const isSameWallet = sourceWalletId === destinationWalletId;
 
   const calculation = useMemo(() => {
     const today = new Date();
@@ -90,9 +109,7 @@ export default function EditGoalModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || targetAmount <= 0) return;
-
-    const wallet = MOCK_WALLETS.find((w: Wallet) => w.id === selectedWalletId);
+    if (!title.trim() || targetAmount <= 0 || isSameWallet) return;
 
     const updated: GoalItem = {
       ...goal,
@@ -102,8 +119,10 @@ export default function EditGoalModal({
       targetDate,
       frequency,
       monthlySaving: calculation.monthlyReq,
-      walletId: selectedWalletId,
-      walletName: wallet ? wallet.name : goal.walletName,
+      sourceWalletId,
+      sourceWalletName: sourceWallet ? sourceWallet.name : goal.sourceWalletName,
+      destinationWalletId,
+      destinationWalletName: destinationWallet ? destinationWallet.name : goal.destinationWalletName,
       colorTheme,
       status:
         calculation.percentage >= 100
@@ -213,16 +232,15 @@ export default function EditGoalModal({
             </div>
           </div>
 
-          {/* 4. Target Tanggal */}
-          <div className="space-y-1">
-            <label className="text-[11px] font-bold text-[#757A95] uppercase tracking-wider block">
-              Target Tanggal
-            </label>
-            <DatePicker value={targetDate} onChange={setTargetDate} />
-          </div>
-
-          {/* 5. Frekuensi & Sumber Dompet */}
+          {/* 4. Target Tanggal & Frekuensi */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-[11px] font-bold text-[#757A95] uppercase tracking-wider block">
+                Target Tanggal
+              </label>
+              <DatePicker value={targetDate} onChange={setTargetDate} />
+            </div>
+
             <div className="space-y-1">
               <label className="text-[11px] font-bold text-[#757A95] uppercase tracking-wider block">
                 Frekuensi Tabungan
@@ -236,17 +254,41 @@ export default function EditGoalModal({
                 ]}
               />
             </div>
+          </div>
 
-            <div className="space-y-1">
-              <label className="text-[11px] font-bold text-[#757A95] uppercase tracking-wider block">
-                Sumber Dana
-              </label>
-              <WalletSelect
-                value={selectedWalletId}
-                onChange={setSelectedWalletId}
-                wallets={MOCK_WALLETS}
-              />
+          {/* 5. DUAL WALLETS (SUMBER DANA & TUJUAN TABUNGAN) */}
+          <div className="p-3.5 rounded-2xl bg-[#FAF9FE] border border-[#E8E4F8] space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold text-[#242636] uppercase tracking-wider block">
+                  Dompet Sumber Dana
+                </label>
+                <WalletSelect
+                  value={sourceWalletId}
+                  onChange={setSourceWalletId}
+                  wallets={wallets}
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold text-[#5F5ED4] uppercase tracking-wider block">
+                  Dompet Tujuan Tabungan
+                </label>
+                <WalletSelect
+                  value={destinationWalletId}
+                  onChange={setDestinationWalletId}
+                  wallets={wallets}
+                />
+              </div>
             </div>
+
+            {/* Visual Transfer Flow Component */}
+            <GoalTransferFlow
+              sourceWallet={sourceWallet}
+              destinationWallet={destinationWallet}
+              amount={calculation.monthlyReq}
+              mode="create"
+            />
           </div>
 
           {/* 6. Tema Warna */}
@@ -283,7 +325,13 @@ export default function EditGoalModal({
             >
               Batal
             </button>
-            <Button type="submit" variant="primary" size="md" className="flex-1">
+            <Button
+              type="submit"
+              variant="primary"
+              size="md"
+              className="flex-1"
+              disabled={isSameWallet}
+            >
               Simpan Perubahan
             </Button>
           </div>

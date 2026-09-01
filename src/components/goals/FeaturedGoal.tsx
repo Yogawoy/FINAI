@@ -166,6 +166,18 @@ export default function FeaturedGoal({
               </div>
             </div>
 
+            {/* Funding Route Tag */}
+            <div className="px-3.5 py-2 rounded-2xl bg-white/90 border border-black/[0.05] flex items-center justify-between text-xs">
+              <span className="text-[10px] font-bold text-[#757A95] uppercase tracking-wider">
+                Alur Tabungan
+              </span>
+              <div className="flex items-center gap-1.5 font-bold">
+                <span className="text-[#242636]">{goal.sourceWalletName || 'BCA'}</span>
+                <ArrowRight size={12} className="text-[#7C7CE6]" />
+                <span className="text-[#5F5ED4]">{goal.destinationWalletName || 'Tabungan'}</span>
+              </div>
+            </div>
+
             {/* Quick Action Buttons */}
             <div className="flex items-center gap-2.5 pt-1">
               <button

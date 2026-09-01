@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Target, Sparkles, Calendar, TrendingUp, X } from 'lucide-react';
+import { Target, Sparkles, Calendar, TrendingUp, X, ArrowRight, AlertCircle } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
 import DatePicker from '@/components/ui/DatePicker';
@@ -10,11 +10,13 @@ import WalletSelect from '@/components/ui/WalletSelect';
 import { GoalItem, GoalCategoryType, GoalColorTheme, GoalFrequency, Wallet } from '@/types';
 import { formatIDR, MOCK_WALLETS } from '@/data/mockData';
 import GoalVisualIcon, { GOAL_THEME_COLORS } from './GoalVisualIcon';
+import GoalTransferFlow from './GoalTransferFlow';
 
 interface CreateGoalModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreateGoal: (goal: GoalItem) => void;
+  wallets?: Wallet[];
 }
 
 const CATEGORY_OPTIONS: { id: GoalCategoryType; label: string }[] = [
@@ -40,16 +42,33 @@ export default function CreateGoalModal({
   isOpen,
   onClose,
   onCreateGoal,
+  wallets = MOCK_WALLETS,
 }: CreateGoalModalProps) {
   const [title, setTitle] = useState('');
-  const [category, setCategory] = useState<GoalCategoryType>('laptop');
+  const [category, setCategory] = useState<GoalCategoryType>('course');
   const [targetAmountRaw, setTargetAmountRaw] = useState('12000000');
   const [currentAmountRaw, setCurrentAmountRaw] = useState('3000000');
   const [targetDate, setTargetDate] = useState('2026-12-31');
   const [frequency, setFrequency] = useState<GoalFrequency>('monthly');
-  const [selectedWalletId, setSelectedWalletId] = useState('BCA');
+
+  // Dual Wallets: Source & Destination
+  const [sourceWalletId, setSourceWalletId] = useState('w-1'); // Default BCA
+  const [destinationWalletId, setDestinationWalletId] = useState('w-5'); // Default Tabungan Kuliah
+
   const [colorTheme, setColorTheme] = useState<GoalColorTheme>('periwinkle');
   const [notes, setNotes] = useState('');
+
+  // Find wallet objects
+  const sourceWallet = useMemo(
+    () => wallets.find((w) => w.id === sourceWalletId) || wallets[0],
+    [wallets, sourceWalletId]
+  );
+  const destinationWallet = useMemo(
+    () => wallets.find((w) => w.id === destinationWalletId) || wallets[wallets.length - 1],
+    [wallets, destinationWalletId]
+  );
+
+  const isSameWallet = sourceWalletId === destinationWalletId;
 
   // Number parses
   const targetAmount = parseFloat(targetAmountRaw) || 0;
@@ -77,9 +96,7 @@ export default function CreateGoalModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || targetAmount <= 0) return;
-
-    const wallet = MOCK_WALLETS.find((w: Wallet) => w.id === selectedWalletId);
+    if (!title.trim() || targetAmount <= 0 || isSameWallet) return;
 
     const newGoal: GoalItem = {
       id: `goal-${Date.now()}`,
@@ -90,8 +107,10 @@ export default function CreateGoalModal({
       targetDate,
       frequency,
       monthlySaving: calculation.monthlyReq,
-      walletId: selectedWalletId,
-      walletName: wallet ? wallet.name : 'Bank BCA',
+      sourceWalletId,
+      sourceWalletName: sourceWallet ? sourceWallet.name : 'Bank BCA',
+      destinationWalletId,
+      destinationWalletName: destinationWallet ? destinationWallet.name : 'Tabungan',
       colorTheme,
       status:
         calculation.percentage >= 100
@@ -107,8 +126,11 @@ export default function CreateGoalModal({
                 id: `c-${Date.now()}`,
                 amount: currentAmount,
                 date: 'Hari Ini',
-                walletName: wallet ? wallet.name : 'Bank BCA',
-                note: 'Tabungan Awal',
+                sourceWalletId,
+                sourceWalletName: sourceWallet ? sourceWallet.name : 'Bank BCA',
+                destinationWalletId,
+                destinationWalletName: destinationWallet ? destinationWallet.name : 'Tabungan',
+                note: 'Saldo Awal di Dompet Tujuan',
               },
             ]
           : [],
@@ -165,7 +187,7 @@ export default function CreateGoalModal({
               <input
                 type="text"
                 required
-                placeholder="Contoh: Laptop Baru, Liburan Jepang..."
+                placeholder="Contoh: Kuliah, Laptop Baru, Liburan..."
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="w-full px-3.5 py-2.5 bg-[#F8F9FD] border border-black/[0.06] rounded-2xl text-xs sm:text-sm font-semibold text-[#242636] placeholder-[#757A95] focus:outline-none focus:border-[#7C7CE6] focus:bg-white transition-all"
@@ -225,7 +247,7 @@ export default function CreateGoalModal({
               {/* Dana Saat Ini */}
               <div className="space-y-1">
                 <label className="text-[11px] font-bold text-[#757A95] uppercase tracking-wider block">
-                  Dana Saat Ini (Opsional)
+                  Dana Saat Ini (di Dompet Tujuan)
                 </label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-[#757A95]">
@@ -244,16 +266,15 @@ export default function CreateGoalModal({
               </div>
             </div>
 
-            {/* 4. Target Tanggal */}
-            <div className="space-y-1">
-              <label className="text-[11px] font-bold text-[#757A95] uppercase tracking-wider block">
-                Target Tanggal
-              </label>
-              <DatePicker value={targetDate} onChange={setTargetDate} />
-            </div>
-
-            {/* 5. Frekuensi & Sumber Dompet */}
+            {/* 4. Target Tanggal & Frekuensi */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold text-[#757A95] uppercase tracking-wider block">
+                  Target Tanggal
+                </label>
+                <DatePicker value={targetDate} onChange={setTargetDate} />
+              </div>
+
               <div className="space-y-1">
                 <label className="text-[11px] font-bold text-[#757A95] uppercase tracking-wider block">
                   Frekuensi Tabungan
@@ -267,17 +288,51 @@ export default function CreateGoalModal({
                   ]}
                 />
               </div>
+            </div>
 
-              <div className="space-y-1">
-                <label className="text-[11px] font-bold text-[#757A95] uppercase tracking-wider block">
-                  Sumber Dana
-                </label>
-                <WalletSelect
-                  value={selectedWalletId}
-                  onChange={setSelectedWalletId}
-                  wallets={MOCK_WALLETS}
-                />
+            {/* =================================================================== */}
+            {/* DUAL WALLETS SELECTION: SUMBER DANA & TUJUAN TABUNGAN               */}
+            {/* =================================================================== */}
+            <div className="p-3.5 rounded-2xl bg-[#FAF9FE] border border-[#E8E4F8] space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* 1. Sumber Dana */}
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-[#242636] uppercase tracking-wider block">
+                    Dompet Sumber Dana
+                  </label>
+                  <p className="text-[10px] text-[#757A95]">
+                    Dompet yang digunakan untuk menyetor tabungan.
+                  </p>
+                  <WalletSelect
+                    value={sourceWalletId}
+                    onChange={setSourceWalletId}
+                    wallets={wallets}
+                  />
+                </div>
+
+                {/* 2. Dompet Tujuan */}
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-[#5F5ED4] uppercase tracking-wider block">
+                    Dompet Tujuan Tabungan
+                  </label>
+                  <p className="text-[10px] text-[#757A95]">
+                    Dompet tempat dana target ini disimpan.
+                  </p>
+                  <WalletSelect
+                    value={destinationWalletId}
+                    onChange={setDestinationWalletId}
+                    wallets={wallets}
+                  />
+                </div>
               </div>
+
+              {/* Visual Transfer Flow Component */}
+              <GoalTransferFlow
+                sourceWallet={sourceWallet}
+                destinationWallet={destinationWallet}
+                amount={calculation.monthlyReq}
+                mode="create"
+              />
             </div>
 
             {/* 6. Pilihan Tema Warna */}
@@ -314,7 +369,13 @@ export default function CreateGoalModal({
               >
                 Batal
               </button>
-              <Button type="submit" variant="primary" size="md" className="flex-1">
+              <Button
+                type="submit"
+                variant="primary"
+                size="md"
+                className="flex-1"
+                disabled={isSameWallet}
+              >
                 Buat Target
               </Button>
             </div>
@@ -367,11 +428,28 @@ export default function CreateGoalModal({
                 </div>
               </div>
 
+              {/* Funding Flow Summary in Preview */}
+              <div className="p-3 rounded-2xl bg-white border border-black/[0.05] space-y-1.5">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#757A95] block">
+                  Alur Setoran
+                </span>
+                <div className="flex items-center justify-between text-xs font-bold text-[#242636]">
+                  <span className="truncate max-w-[90px]">{sourceWallet?.name || 'BCA'}</span>
+                  <div className="flex items-center gap-1 text-[#7C7CE6]">
+                    <span className="text-[10px] font-normal">setor ke</span>
+                    <ArrowRight size={12} />
+                  </div>
+                  <span className="truncate max-w-[90px] text-[#5F5ED4]">
+                    {destinationWallet?.name || 'Tabungan'}
+                  </span>
+                </div>
+              </div>
+
               {/* Auto Calculation Recommendation Box */}
               <div className="p-3 rounded-2xl bg-white border border-black/[0.05] space-y-1">
                 <div className="flex items-center gap-1 text-[11px] font-bold text-[#1B7354]">
                   <TrendingUp size={13} />
-                  <span>Estimasi Kebutuhan Nabung:</span>
+                  <span>Kebutuhan Nabung Bulanan:</span>
                 </div>
                 <div className="text-sm font-extrabold text-[#242636]">
                   {formatIDR(calculation.monthlyReq)} / bulan
