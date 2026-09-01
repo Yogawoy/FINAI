@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
   Receipt,
@@ -128,6 +128,7 @@ const STORAGE_KEY = 'finai-sidebar-groups';
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   // Listen for global open mobile sidebar events (from Header or mobile controls)
@@ -270,6 +271,7 @@ export default function Sidebar() {
           name="Yoga W."
           tier="Member FinAI Pro"
           initials="YW"
+          onLogout={() => router.push('/login')}
         />
       </div>
     </>
