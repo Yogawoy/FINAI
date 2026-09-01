@@ -108,6 +108,7 @@ export default function EditWalletModal({
       onClose={onClose}
       maxWidth="lg"
       hideHeader
+      hideCloseButton={true}
       className="p-6 sm:p-8 overflow-hidden"
     >
       <div className="space-y-5">
