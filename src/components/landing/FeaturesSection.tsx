@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { motion } from 'framer-motion';
 import {
   Receipt,
   Wallet,
@@ -58,9 +59,15 @@ const FEATURES_DATA = [
 
 export default function FeaturesSection() {
   return (
-    <section id="fitur" className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20 scroll-mt-20">
+    <section id="fitur" className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20 scroll-mt-24">
       {/* Section Header */}
-      <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16 space-y-3">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-60px' }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className="text-center max-w-2xl mx-auto mb-12 sm:mb-16 space-y-3"
+      >
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E4E2FB]/70 border border-[#D6D4F7] text-[11px] font-bold uppercase tracking-wider text-[#7C7CE6]">
           Fitur Lengkap
         </div>
@@ -70,11 +77,11 @@ export default function FeaturesSection() {
         <p className="text-sm sm:text-base text-[#757A95] leading-relaxed">
           FinAI membantu kamu memahami uangmu, bukan hanya mencatatnya.
         </p>
-      </div>
+      </motion.div>
 
       {/* 3x2 Grid on Desktop */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {FEATURES_DATA.map((feat) => (
+        {FEATURES_DATA.map((feat, index) => (
           <FeatureCard
             key={feat.title}
             title={feat.title}
@@ -82,6 +89,7 @@ export default function FeaturesSection() {
             icon={feat.icon}
             colorClass={feat.colorClass}
             bgClass={feat.bgClass}
+            index={index}
           />
         ))}
       </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { motion } from 'framer-motion';
 import { Shield, Lock, Check } from 'lucide-react';
 
 const TRUST_POINTS = [
@@ -29,9 +30,15 @@ const TRUST_POINTS = [
 
 export default function TrustSection() {
   return (
-    <section id="tentang" className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24 scroll-mt-20">
+    <section id="tentang" className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24 scroll-mt-24">
       {/* Section Header */}
-      <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16 space-y-3">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-60px' }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className="text-center max-w-2xl mx-auto mb-12 sm:mb-16 space-y-3"
+      >
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D0EFE5] text-[11px] font-bold uppercase tracking-wider text-[#1B7354]">
           Keamanan & Privasi
         </div>
@@ -41,15 +48,20 @@ export default function TrustSection() {
         <p className="text-sm sm:text-base text-[#757A95]">
           Dirancang dengan prinsip perlindungan privasi dan kontrol pengguna yang tidak dapat ditawar.
         </p>
-      </div>
+      </motion.div>
 
       {/* 3 Trust Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-        {TRUST_POINTS.map((pt) => {
+        {TRUST_POINTS.map((pt, index) => {
           const Icon = pt.icon;
           return (
-            <div
+            <motion.div
               key={pt.title}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ duration: 0.45, delay: index * 0.1, ease: 'easeOut' }}
+              whileHover={{ y: -4 }}
               className="p-7 rounded-[24px] bg-white border border-[#E8EAF2] shadow-[0_4px_24px_rgba(36,38,54,0.03)] hover:shadow-[0_12px_32px_rgba(36,38,54,0.07)] transition-all space-y-4 select-none"
             >
               <div
@@ -66,7 +78,7 @@ export default function TrustSection() {
                   {pt.desc}
                 </p>
               </div>
-            </div>
+            </motion.div>
           );
         })}
       </div>

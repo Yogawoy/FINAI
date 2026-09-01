@@ -10,7 +10,13 @@ export default function GoalPreviewSection() {
     <section className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
       <div className="rounded-[32px] bg-white border border-[#E8EAF2] p-8 sm:p-12 lg:p-16 shadow-[0_12px_45px_rgba(36,38,54,0.04)] grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
         {/* Left Column (5 Cols): Editorial */}
-        <div className="lg:col-span-5 space-y-5 text-center lg:text-left">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, margin: '-60px' }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          className="lg:col-span-5 space-y-5 text-center lg:text-left"
+        >
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E4E2FB]/70 border border-[#D6D4F7] text-[11px] font-bold uppercase tracking-wider text-[#7C7CE6]">
             Perencanaan Sasaran
           </div>
@@ -32,10 +38,16 @@ export default function GoalPreviewSection() {
               <ArrowRight size={15} />
             </Link>
           </div>
-        </div>
+        </motion.div>
 
         {/* Right Column (7 Cols): The Target Card Visual */}
-        <div className="lg:col-span-7 flex justify-center">
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, margin: '-60px' }}
+          transition={{ duration: 0.5, delay: 0.15, ease: 'easeOut' }}
+          className="lg:col-span-7 flex justify-center"
+        >
           <div className="w-full max-w-lg p-6 sm:p-8 rounded-[24px] bg-[#FAFBFD] border border-[#E8EAF2] shadow-sm space-y-6 select-none">
             {/* Header row */}
             <div className="flex items-center justify-between">
@@ -101,7 +113,7 @@ export default function GoalPreviewSection() {
               </span>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

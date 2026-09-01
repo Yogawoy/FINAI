@@ -24,7 +24,7 @@ export default function LandingPage() {
       {/* 1. Header & Navigation */}
       <Navbar />
 
-      <main>
+      <main className="pt-20 sm:pt-24">
         {/* 2. Hero Section */}
         <HeroSection />
 

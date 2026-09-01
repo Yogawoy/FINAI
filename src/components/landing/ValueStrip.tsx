@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { motion } from 'framer-motion';
 import { Receipt, Layers, Target, Sparkles } from 'lucide-react';
 
 const VALUE_PILLARS = [
@@ -37,7 +38,13 @@ const VALUE_PILLARS = [
 export default function ValueStrip() {
   return (
     <section className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-      <div className="rounded-[24px] bg-white border border-[#E8EAF2] p-6 sm:p-8 shadow-[0_10px_35px_rgba(36,38,54,0.03)] space-y-6">
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-60px' }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className="rounded-[24px] bg-white border border-[#E8EAF2] p-6 sm:p-8 shadow-[0_10px_35px_rgba(36,38,54,0.03)] space-y-6"
+      >
         <div className="text-center max-w-lg mx-auto">
           <span className="text-[11px] font-bold uppercase tracking-wider text-[#7C7CE6] block mb-1">
             Ekosistem Terpadu
@@ -48,11 +55,15 @@ export default function ValueStrip() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 pt-2">
-          {VALUE_PILLARS.map((pillar) => {
+          {VALUE_PILLARS.map((pillar, idx) => {
             const Icon = pillar.icon;
             return (
-              <div
+              <motion.div
                 key={pillar.label}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: idx * 0.08, ease: 'easeOut' }}
                 className="flex flex-col items-center text-center p-3 rounded-2xl hover:bg-[#FAFBFD] transition-colors select-none"
               >
                 <div
@@ -66,11 +77,11 @@ export default function ValueStrip() {
                 <p className="text-[11px] text-[#757A95] mt-0.5 leading-tight">
                   {pillar.desc}
                 </p>
-              </div>
+              </motion.div>
             );
           })}
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }

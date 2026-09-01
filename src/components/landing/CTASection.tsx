@@ -2,12 +2,19 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { ArrowRight, Sparkles } from 'lucide-react';
 
 export default function CTASection() {
   return (
     <section className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
-      <div className="rounded-[32px] sm:rounded-[36px] p-8 sm:p-14 lg:p-16 text-center bg-gradient-to-br from-[#EAE8FB] via-[#E4E2FB] to-[#D8E4FA] border border-white/80 shadow-[0_20px_50px_rgba(124,124,230,0.12)] relative overflow-hidden space-y-6 select-none">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96, y: 24 }}
+        whileInView={{ opacity: 1, scale: 1, y: 0 }}
+        viewport={{ once: true, margin: '-60px' }}
+        transition={{ duration: 0.6, ease: 'easeOut' }}
+        className="rounded-[32px] sm:rounded-[36px] p-8 sm:p-14 lg:p-16 text-center bg-gradient-to-br from-[#EAE8FB] via-[#E4E2FB] to-[#D8E4FA] border border-white/80 shadow-[0_20px_50px_rgba(124,124,230,0.12)] relative overflow-hidden space-y-6 select-none"
+      >
         {/* Ambient decorative blur circles */}
         <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-white/40 blur-2xl pointer-events-none" />
         <div className="absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-[#7C7CE6]/15 blur-2xl pointer-events-none" />
@@ -43,7 +50,7 @@ export default function CTASection() {
             </Link>
           </div>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }

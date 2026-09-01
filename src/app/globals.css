@@ -16,6 +16,10 @@
   --border-glass: rgba(255, 255, 255, 0.85);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 /* Hide default browser scrollbars across all pages and elements */
 html,
 body,
