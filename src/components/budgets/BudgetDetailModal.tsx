@@ -120,6 +120,7 @@ export default function BudgetDetailModal({
       onClose={onClose}
       maxWidth="2xl"
       hideHeader
+      hideCloseButton={true}
       className="p-6 sm:p-8 space-y-6"
     >
       {/* ========================================================================= */}
@@ -147,53 +148,67 @@ export default function BudgetDetailModal({
           </div>
         </div>
 
-        {/* Action Menu (Edit, Duplicate, Delete) */}
-        <div className="relative">
+        {/* Top-Right Action Buttons: Kebab Menu + Close Button */}
+        <div className="flex items-center gap-2">
+          {/* Action Menu (Edit, Duplicate, Delete) */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-[#757A95] hover:text-[#242636] hover:bg-black/[0.04] transition-colors cursor-pointer"
+              title="Menu Opsi"
+            >
+              <MoreVertical size={18} />
+            </button>
+
+            {isMenuOpen && (
+              <div className="absolute right-0 top-full mt-1.5 w-44 p-1.5 bg-white border border-black/[0.08] rounded-2xl shadow-[0_12px_30px_rgba(36,38,54,0.12)] z-30 space-y-0.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    onEdit(budget);
+                  }}
+                  className="w-full px-3 py-2 rounded-xl text-left text-xs font-semibold text-[#242636] hover:bg-[#F8F9FD] flex items-center gap-2 cursor-pointer"
+                >
+                  <Pencil size={13} className="text-[#7C7CE6]" />
+                  <span>Edit Anggaran</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    onDuplicate(budget);
+                  }}
+                  className="w-full px-3 py-2 rounded-xl text-left text-xs font-semibold text-[#242636] hover:bg-[#F8F9FD] flex items-center gap-2 cursor-pointer"
+                >
+                  <Copy size={13} className="text-[#10B981]" />
+                  <span>Duplikasi Anggaran</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    onDelete(budget);
+                  }}
+                  className="w-full px-3 py-2 rounded-xl text-left text-xs font-semibold text-[#B83A38] hover:bg-[#FFF1F0] flex items-center gap-2 cursor-pointer"
+                >
+                  <Trash2 size={13} />
+                  <span>Hapus Anggaran</span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Close Button */}
           <button
             type="button"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            onClick={onClose}
             className="w-8 h-8 rounded-full flex items-center justify-center text-[#757A95] hover:text-[#242636] hover:bg-black/[0.04] transition-colors cursor-pointer"
+            title="Tutup"
           >
-            <MoreVertical size={18} />
+            <X size={18} />
           </button>
-
-          {isMenuOpen && (
-            <div className="absolute right-0 top-full mt-1 w-44 p-1.5 bg-white border border-black/[0.08] rounded-2xl shadow-[0_12px_30px_rgba(36,38,54,0.12)] z-30 space-y-0.5">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  onEdit(budget);
-                }}
-                className="w-full px-3 py-2 rounded-xl text-left text-xs font-semibold text-[#242636] hover:bg-[#F8F9FD] flex items-center gap-2 cursor-pointer"
-              >
-                <Pencil size={13} className="text-[#7C7CE6]" />
-                <span>Edit Anggaran</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  onDuplicate(budget);
-                }}
-                className="w-full px-3 py-2 rounded-xl text-left text-xs font-semibold text-[#242636] hover:bg-[#F8F9FD] flex items-center gap-2 cursor-pointer"
-              >
-                <Copy size={13} className="text-[#10B981]" />
-                <span>Duplikasi Anggaran</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  onDelete(budget);
-                }}
-                className="w-full px-3 py-2 rounded-xl text-left text-xs font-semibold text-[#B83A38] hover:bg-[#FFF1F0] flex items-center gap-2 cursor-pointer"
-              >
-                <Trash2 size={13} />
-                <span>Hapus Anggaran</span>
-              </button>
-            </div>
-          )}
         </div>
       </div>
 
