@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, Bell, Command } from 'lucide-react';
+import { Search, Bell, Command, Menu } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
 
@@ -22,13 +22,23 @@ export default function Header({
   return (
     <>
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#242636]">
-            {title}
-          </h1>
-          <p className="text-xs sm:text-sm text-[#757A95] mt-0.5 font-medium">
-            {subtitle}
-          </p>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent('open-mobile-sidebar'))}
+            className="lg:hidden w-10 h-10 rounded-2xl bg-white/80 border border-[#E8EAF2] flex items-center justify-center text-[#757A95] hover:text-[#242636] transition-colors cursor-pointer shadow-xs shrink-0"
+            aria-label="Buka Menu Navigasi"
+          >
+            <Menu size={18} />
+          </button>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#242636]">
+              {title}
+            </h1>
+            <p className="text-xs sm:text-sm text-[#757A95] mt-0.5 font-medium">
+              {subtitle}
+            </p>
+          </div>
         </div>
 
         {/* Header Right Action Controls */}
