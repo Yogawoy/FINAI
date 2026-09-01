@@ -159,11 +159,43 @@ export interface DaySpending {
   avg: number;
 }
 
+export type AIActionType = 'expense' | 'income' | 'goal_contribution' | 'budget_check' | 'analytics_insight';
+
+export interface AIFinancialAction {
+  id: string;
+  type: AIActionType;
+  title: string;
+  amount: number;
+  category?: string;
+  sourceWallet?: string;
+  destinationWallet?: string;
+  date: string;
+  status: 'pending' | 'confirmed' | 'cancelled' | 'success';
+  note?: string;
+}
+
+export interface AIInsightData {
+  type: 'budget' | 'goal' | 'analytics';
+  title: string;
+  subtitle?: string;
+  metrics: {
+    label: string;
+    value: string;
+    highlight?: boolean;
+    color?: string;
+  }[];
+  actionLabel?: string;
+  actionHref?: string;
+}
+
 export interface AIMessage {
   id: string;
   sender: 'user' | 'assistant';
   content: string;
   timestamp: string;
+  action?: AIFinancialAction;
+  insight?: AIInsightData;
+  error?: boolean;
   quickInsights?: {
     label: string;
     value: string;
@@ -171,3 +203,4 @@ export interface AIMessage {
 }
 
 export type AICoreState = 'idle' | 'thinking' | 'responding';
+
