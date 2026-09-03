@@ -9,6 +9,7 @@ export type ErrorCode =
   | 'INVALID_CREDENTIALS'
   | 'SESSION_EXPIRED'
   | 'INSUFFICIENT_BALANCE'
+  | 'WALLET_IN_USE'
   | 'CONFLICT'
   | 'INTERNAL_ERROR';
 

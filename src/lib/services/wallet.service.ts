@@ -2,6 +2,13 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { CreateWalletInput, UpdateWalletInput } from '@/lib/validations/wallet';
 
+export class WalletInUseError extends Error {
+  constructor(message: string = 'Wallet masih digunakan dan tidak dapat dihapus.') {
+    super(message);
+    this.name = 'WalletInUseError';
+  }
+}
+
 export class WalletService {
   /**
    * Get all wallets for authenticated user
@@ -53,7 +60,6 @@ export class WalletService {
     if (input.type !== undefined) data.type = input.type;
     if (input.institution !== undefined) data.institution = input.institution;
     if (input.accountLast4 !== undefined) data.accountLast4 = input.accountLast4;
-    if (input.balance !== undefined) data.balance = new Prisma.Decimal(input.balance);
 
     return prisma.wallet.update({
       where: { id: walletId },
@@ -67,6 +73,35 @@ export class WalletService {
   static async deleteWallet(userId: string, walletId: string) {
     const existing = await this.getWalletById(userId, walletId);
     if (!existing) return null;
+
+    const usage = await prisma.wallet.findFirst({
+      where: {
+        id: walletId,
+        userId,
+      },
+      select: {
+        _count: {
+          select: {
+            transactions: true,
+            goalContributions: true,
+            sourceGoals: true,
+            destinationGoals: true,
+          },
+        },
+      },
+    });
+
+    if (!usage) return null;
+
+    const isInUse =
+      usage._count.transactions > 0 ||
+      usage._count.goalContributions > 0 ||
+      usage._count.sourceGoals > 0 ||
+      usage._count.destinationGoals > 0;
+
+    if (isInUse) {
+      throw new WalletInUseError();
+    }
 
     return prisma.wallet.delete({
       where: { id: walletId },

@@ -11,15 +11,14 @@ export const CreateWalletSchema = z.object({
     .number()
     .min(0, 'Saldo awal tidak boleh negatif')
     .default(0),
-});
+}).strict();
 
 export const UpdateWalletSchema = z.object({
   name: z.string().min(2, 'Nama dompet minimal 2 karakter').max(50).optional(),
   type: WalletTypeEnum.optional(),
   institution: z.string().max(50).optional().nullable(),
   accountLast4: z.string().max(10).optional().nullable(),
-  balance: z.coerce.number().min(0, 'Saldo tidak boleh negatif').optional(),
-});
+}).strict();
 
 export const TransferWalletSchema = z.object({
   fromWalletId: z.string().uuid('ID dompet asal tidak valid'),

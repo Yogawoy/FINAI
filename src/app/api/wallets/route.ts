@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { WalletService } from '@/lib/services/wallet.service';
+import { serializeWallet, serializeWallets } from '@/lib/serializers/wallet';
 import { CreateWalletSchema } from '@/lib/validations/wallet';
 import { apiSuccess, apiError } from '@/lib/api-response';
 
@@ -12,7 +13,7 @@ export async function GET() {
     }
 
     const wallets = await WalletService.getWallets(session.userId);
-    return apiSuccess({ wallets });
+    return apiSuccess({ wallets: serializeWallets(wallets) });
   } catch (error) {
     console.error('Get Wallets API Error:', error);
     return apiError('INTERNAL_ERROR', 'Gagal memuat daftar dompet', 500);
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest) {
     }
 
     const wallet = await WalletService.createWallet(session.userId, result.data);
-    return apiSuccess({ wallet }, 201);
+    return apiSuccess({ wallet: serializeWallet(wallet) }, 201);
   } catch (error) {
     console.error('Create Wallet API Error:', error);
     return apiError('INTERNAL_ERROR', 'Gagal membuat dompet baru', 500);
