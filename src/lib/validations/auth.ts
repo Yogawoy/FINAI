@@ -12,6 +12,7 @@ export const RegisterSchema = z.object({
 export const LoginSchema = z.object({
   email: z.string().email('Format email tidak valid'),
   password: z.string().min(1, 'Password wajib diisi'),
+  rememberMe: z.boolean().optional(),
 });
 
 export type RegisterInput = z.infer<typeof RegisterSchema>;

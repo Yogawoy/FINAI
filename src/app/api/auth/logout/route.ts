@@ -1,10 +1,12 @@
-import { cookies } from 'next/headers';
-import { AUTH_COOKIE_NAME } from '@/lib/auth';
-import { apiSuccess } from '@/lib/api-response';
+import { logoutUser } from '@/lib/services/auth.service';
+import { apiSuccess, apiError } from '@/lib/api-response';
 
 export async function POST() {
-  const cookieStore = await cookies();
-  cookieStore.delete(AUTH_COOKIE_NAME);
-
-  return apiSuccess({ message: 'Berhasil keluar' });
+  try {
+    const response = await logoutUser();
+    return apiSuccess(response.data, response.statusCode);
+  } catch (error) {
+    console.error('Logout API Error:', error);
+    return apiError('INTERNAL_ERROR', 'Terjadi kesalahan sistem saat keluar', 500);
+  }
 }

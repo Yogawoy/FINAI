@@ -47,6 +47,8 @@ export default function RegisterForm({
 
     if (!fullName.trim()) {
       newErrors.fullName = 'Nama lengkap wajib diisi';
+    } else if (fullName.trim().length < 2) {
+      newErrors.fullName = 'Nama minimal 2 karakter';
     }
 
     if (!email.trim()) {
@@ -83,12 +85,35 @@ export default function RegisterForm({
 
     setIsLoading(true);
 
-    // Simulate account registration
-    setTimeout(() => {
-      setIsLoading(false);
-      // Redirect to main app dashboard
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: fullName.trim(),
+          email: email.trim(),
+          password,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        setErrorMessage(data?.error?.message || 'Pendaftaran gagal. Silakan coba lagi.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Success -> Redirect to main dashboard
       router.push('/app');
-    }, 700);
+      router.refresh();
+    } catch (err) {
+      console.error('Register submit error:', err);
+      setErrorMessage('Terjadi kesalahan jaringan. Silakan coba lagi.');
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -119,6 +144,7 @@ export default function RegisterForm({
             onChange={(e) => {
               setFullName(e.target.value);
               if (errors.fullName) setErrors((prev) => ({ ...prev, fullName: undefined }));
+              if (errorMessage) setErrorMessage(null);
             }}
             icon={<User size={16} />}
             error={errors.fullName}
@@ -135,6 +161,7 @@ export default function RegisterForm({
             onChange={(e) => {
               setEmail(e.target.value);
               if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
+              if (errorMessage) setErrorMessage(null);
             }}
             icon={<Mail size={16} />}
             error={errors.email}
@@ -153,6 +180,7 @@ export default function RegisterForm({
             onChange={(e) => {
               setPassword(e.target.value);
               if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
+              if (errorMessage) setErrorMessage(null);
             }}
             error={errors.password}
             disabled={isLoading}
@@ -167,6 +195,7 @@ export default function RegisterForm({
             onChange={(e) => {
               setConfirmPassword(e.target.value);
               if (errors.confirmPassword) setErrors((prev) => ({ ...prev, confirmPassword: undefined }));
+              if (errorMessage) setErrorMessage(null);
             }}
             error={errors.confirmPassword}
             disabled={isLoading}

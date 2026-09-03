@@ -61,12 +61,35 @@ export default function LoginForm({
 
     setIsLoading(true);
 
-    // Simulate authentication processing
-    setTimeout(() => {
-      setIsLoading(false);
-      // Redirect to main app dashboard
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email.trim(),
+          password,
+          rememberMe,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        setErrorMessage(data?.error?.message || 'Email atau password tidak sesuai.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Success -> Redirect to main dashboard
       router.push('/app');
-    }, 650);
+      router.refresh();
+    } catch (err) {
+      console.error('Login submit error:', err);
+      setErrorMessage('Terjadi kesalahan jaringan. Silakan coba lagi.');
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -97,6 +120,7 @@ export default function LoginForm({
           onChange={(e) => {
             setEmail(e.target.value);
             if (errors.email) setErrors((prev) => ({ ...prev, email: undefined }));
+            if (errorMessage) setErrorMessage(null);
           }}
           icon={<Mail size={16} />}
           error={errors.email}
@@ -113,13 +137,14 @@ export default function LoginForm({
           onChange={(e) => {
             setPassword(e.target.value);
             if (errors.password) setErrors((prev) => ({ ...prev, password: undefined }));
+            if (errorMessage) setErrorMessage(null);
           }}
           error={errors.password}
           disabled={isLoading}
           topRightAction={
             <button
               type="button"
-              onClick={onForgotPassword || (() => alert('Fitur reset kata sandi telah dikirim ke email Anda.'))}
+              onClick={onForgotPassword || (() => setErrorMessage('Fitur reset kata sandi belum tersedia saat ini.'))}
               className="text-xs font-semibold text-[#7C7CE6] hover:text-[#5F5ED4] transition-colors cursor-pointer"
             >
               Lupa password?
