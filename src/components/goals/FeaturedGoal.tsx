@@ -12,7 +12,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { GoalItem } from '@/types';
-import { formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
 import GoalVisualIcon, { GOAL_THEME_COLORS } from './GoalVisualIcon';
 import GoalStatusBadge from './GoalStatusBadge';
 

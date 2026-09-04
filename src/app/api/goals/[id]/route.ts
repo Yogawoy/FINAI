@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { GoalService } from '@/lib/services/goal.service';
+import { serializeGoal } from '@/lib/serializers/goal';
 import { UpdateGoalSchema } from '@/lib/validations/goal';
 import { apiSuccess, apiError } from '@/lib/api-response';
 
@@ -21,7 +22,7 @@ export async function GET(
       return apiError('NOT_FOUND', 'Target tidak ditemukan atau bukan milik Anda', 404);
     }
 
-    return apiSuccess({ goal });
+    return apiSuccess({ goal: serializeGoal(goal) });
   } catch (error) {
     console.error('Get Goal by ID Error:', error);
     return apiError('INTERNAL_ERROR', 'Gagal memuat detail target', 500);
@@ -57,7 +58,7 @@ export async function PATCH(
       return apiError('NOT_FOUND', 'Target tidak ditemukan atau bukan milik Anda', 404);
     }
 
-    return apiSuccess({ goal: updated });
+    return apiSuccess({ goal: serializeGoal(updated) });
   } catch (error) {
     console.error('Update Goal Error:', error);
     return apiError('INTERNAL_ERROR', 'Gagal memperbarui target', 500);

@@ -4,7 +4,7 @@ import React from 'react';
 import { CircleCheck, Sparkles } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import { Transaction } from '@/types';
-import { formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
 import { getCategoryIcon } from './TransactionRow';
 
 interface TransactionSuccessModalProps {

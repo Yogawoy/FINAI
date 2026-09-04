@@ -16,8 +16,15 @@ import {
   PiggyBank,
 } from 'lucide-react';
 import AnimatedCounter from '@/components/ui/AnimatedCounter';
-import { MOCK_WALLETS, formatIDR } from '@/data/mockData';
-import { Wallet } from '@/types';
+import { formatIDR } from '@/lib/format';
+
+interface WalletDropdownItem {
+  id: string;
+  name: string;
+  type: string;
+  balance: number;
+  accountLast4?: string | null;
+}
 
 interface WalletCardProps {
   balance?: number;
@@ -25,6 +32,7 @@ interface WalletCardProps {
   holderName?: string;
   expiry?: string;
   className?: string;
+  wallets?: WalletDropdownItem[];
 }
 
 const getWalletIcon = (type: string) => {
@@ -44,11 +52,12 @@ const getWalletIcon = (type: string) => {
 };
 
 export default function WalletCard({
-  balance = 34850000,
-  cardNumber = '••••  ••••  ••••  4821',
-  holderName = 'Yoga W.',
+  balance = 0,
+  cardNumber = '••••  ••••  ••••  0000',
+  holderName = '',
   expiry = '08/26',
   className = '',
+  wallets = [],
 }: WalletCardProps) {
   const [isBalanceHidden, setIsBalanceHidden] = useState(false);
   const [selectedWalletId, setSelectedWalletId] = useState<string>('all');
@@ -56,11 +65,11 @@ export default function WalletCard({
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Compute active wallet or total
-  const selectedWallet: Wallet | undefined = MOCK_WALLETS.find((w) => w.id === selectedWalletId);
+  const selectedWallet = wallets.find((w) => w.id === selectedWalletId);
   const currentBalance = selectedWallet ? selectedWallet.balance : balance;
   const currentAccountLabel = selectedWallet ? selectedWallet.name : 'Semua Dompet (Total)';
   const currentIdentifier = selectedWallet
-    ? selectedWallet.accountIdentifier || cardNumber
+    ? (selectedWallet.accountLast4 ? `•••• ${selectedWallet.accountLast4}` : cardNumber)
     : cardNumber;
 
   // Handle click outside and Escape key to close dropdown
@@ -178,7 +187,7 @@ export default function WalletCard({
 
                 {/* Specific Wallets List */}
                 <div className="pt-1.5 space-y-1 max-h-56 overflow-y-auto no-scrollbar">
-                  {MOCK_WALLETS.map((w) => {
+                  {wallets.map((w) => {
                     const isSelected = selectedWalletId === w.id;
                     return (
                       <button

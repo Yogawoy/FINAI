@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import { BudgetCategory } from '@/types';
-import { formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
 import { getCategoryIconComponent, getCategoryColorTheme } from './BudgetRow';
 
 interface BudgetDetailModalProps {
@@ -39,45 +39,33 @@ interface BudgetDetailModalProps {
   onEdit: (budget: BudgetCategory) => void;
   onDelete: (budget: BudgetCategory) => void;
   onDuplicate: (budget: BudgetCategory) => void;
+  transactions?: any[];
 }
 
-// 7-day spending distribution (mock)
-const DAILY_TREND_DATA = [
-  { day: 'Sen', amount: '80K', val: 80000 },
-  { day: 'Sel', amount: '120K', val: 120000 },
-  { day: 'Rab', amount: '60K', val: 60000 },
-  { day: 'Kam', amount: '150K', val: 150000 },
-  { day: 'Jum', amount: '90K', val: 90000 },
-  { day: 'Sab', amount: '130K', val: 130000 },
-  { day: 'Min', amount: '70K', val: 70000 },
-];
+function getCategoryLabel(cat: string): string {
+  const map: Record<string, string> = {
+    food: 'Makanan & Minuman',
+    transport: 'Transportasi',
+    entertainment: 'Hiburan',
+    shopping: 'Belanja',
+    bills: 'Tagihan',
+    health: 'Kesehatan',
+    education: 'Edukasi',
+    other: 'Lainnya',
+  };
+  return map[cat] || cat.charAt(0).toUpperCase() + cat.slice(1);
+}
 
-const CATEGORY_RECENT_TXS: Record<string, { id: string; title: string; date: string; amount: number; icon: React.ReactNode }[]> = {
-  food: [
-    { id: 'tx-1', title: 'Ayam Geprek Sambal Korek', date: '31 Agt 2026', amount: 28000, icon: <Utensils size={14} className="text-[#5F5ED4]" /> },
-    { id: 'tx-2', title: 'Kopi Susu & Pastry', date: '30 Agt 2026', amount: 22000, icon: <Coffee size={14} className="text-[#5F5ED4]" /> },
-    { id: 'tx-3', title: 'Belanja Supermarket', date: '29 Agt 2026', amount: 150000, icon: <ShoppingBag size={14} className="text-[#5F5ED4]" /> },
-    { id: 'tx-4', title: 'Bakso Urat & Es Teh', date: '28 Agt 2026', amount: 35000, icon: <Utensils size={14} className="text-[#5F5ED4]" /> },
-  ],
-  transport: [
-    { id: 'tx-t1', title: 'GoRide ke Kantor', date: '31 Agt 2026', amount: 24000, icon: <Car size={14} className="text-[#3B82F6]" /> },
-    { id: 'tx-t2', title: 'Bensin Pertamax', date: '29 Agt 2026', amount: 100000, icon: <Fuel size={14} className="text-[#3B82F6]" /> },
-    { id: 'tx-t3', title: 'KRL Commuter Line', date: '28 Agt 2026', amount: 12000, icon: <Train size={14} className="text-[#3B82F6]" /> },
-  ],
-  entertainment: [
-    { id: 'tx-e1', title: 'Tiket Bioskop XXI', date: '30 Agt 2026', amount: 110000, icon: <Film size={14} className="text-[#9333EA]" /> },
-    { id: 'tx-e2', title: 'Board Game Pass', date: '28 Agt 2026', amount: 75000, icon: <Dices size={14} className="text-[#9333EA]" /> },
-  ],
-  shopping: [
-    { id: 'tx-s1', title: 'Kemeja Katun Kasual', date: '29 Agt 2026', amount: 299000, icon: <Shirt size={14} className="text-[#EA580C]" /> },
-    { id: 'tx-s2', title: 'Perawatan Kulit Guardian', date: '26 Agt 2026', amount: 121000, icon: <Sparkle size={14} className="text-[#EA580C]" /> },
-  ],
-  bills: [
-    { id: 'tx-b1', title: 'Listrik PLN Pascabayar', date: '20 Agt 2026', amount: 450000, icon: <Zap size={14} className="text-[#EAB308]" /> },
-    { id: 'tx-b2', title: 'Internet Biznet Fiber', date: '18 Agt 2026', amount: 380000, icon: <Globe size={14} className="text-[#EAB308]" /> },
-    { id: 'tx-b3', title: 'Spotify Family Bulanan', date: '15 Agt 2026', amount: 60000, icon: <Music size={14} className="text-[#EAB308]" /> },
-  ],
-};
+function getCategoryIcon(cat: string) {
+  const map: Record<string, React.ReactNode> = {
+    food: <Utensils size={14} className="text-[#5F5ED4]" />,
+    transport: <Car size={14} className="text-[#3B82F6]" />,
+    entertainment: <Film size={14} className="text-[#9333EA]" />,
+    shopping: <Shirt size={14} className="text-[#EA580C]" />,
+    bills: <Zap size={14} className="text-[#EAB308]" />,
+  };
+  return map[cat] || <WalletCards size={14} className="text-[#7C7CE6]" />;
+}
 
 export default function BudgetDetailModal({
   budget,
@@ -86,6 +74,7 @@ export default function BudgetDetailModal({
   onEdit,
   onDelete,
   onDuplicate,
+  transactions = [],
 }: BudgetDetailModalProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -96,11 +85,21 @@ export default function BudgetDetailModal({
   const isOver = remaining < 0 || percentage > 100;
   const colorTheme = getCategoryColorTheme(budget.category);
 
-  // Fallback transaction list
-  const recentTxs = CATEGORY_RECENT_TXS[budget.category] || [
-    { id: 'tx-def-1', title: `Pembayaran ${budget.name}`, date: '31 Agt 2026', amount: 45000, icon: <WalletCards size={14} className="text-[#7C7CE6]" /> },
-    { id: 'tx-def-2', title: `Belanja ${budget.name}`, date: '29 Agt 2026', amount: 120000, icon: <ShoppingBag size={14} className="text-[#7C7CE6]" /> },
-  ];
+  // Dynamic transactions filtered by budget category (real data, last 30 days, max 4)
+  const categoryTxs = transactions.filter(
+    (tx: any) => String(tx.category).toLowerCase() === String(budget.category).toLowerCase() && String(tx.type).toUpperCase() === 'EXPENSE'
+  );
+  const recentTxs = (categoryTxs.length > 0 ? categoryTxs.slice(0, 4) : []).map((tx: any) => {
+    const d = tx.transactionDate ? new Date(tx.transactionDate) : new Date();
+    return {
+      id: tx.id,
+      title: tx.description,
+      date: d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }),
+      amount: Number(tx.amount),
+      icon: getCategoryIcon(budget.category),
+    };
+  });
+  const hasTxs = recentTxs.length > 0;
 
   // Circular gauge SVG parameters
   const radius = 48;
@@ -109,7 +108,24 @@ export default function BudgetDetailModal({
   const circumference = normalizedRadius * 2 * Math.PI;
   const strokeDashoffset = circumference - (Math.min(percentage, 100) / 100) * circumference;
 
-  const maxDailyVal = Math.max(...DAILY_TREND_DATA.map((d) => d.val));
+  // Dynamic 7-day spending trend from real category transactions (last 7 days)
+  const dayLabels = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'] as const;
+  const today = new Date();
+  const dailyTrend = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today);
+    d.setDate(today.getDate() - (6 - i));
+    const label = dayLabels[d.getDay()];
+    const iso = d.toISOString().split('T')[0];
+    const dayTotal = categoryTxs
+      .filter((tx: any) => {
+        const txIso = tx.transactionDate ? new Date(tx.transactionDate).toISOString().split('T')[0] : '';
+        return txIso === iso;
+      })
+      .reduce((sum: number, tx: any) => sum + Number(tx.amount), 0);
+    return { day: label, val: dayTotal, amount: dayTotal > 0 ? `${Math.round(dayTotal / 1000)}K` : '0' };
+  });
+  const maxDailyVal = Math.max(...dailyTrend.map((d) => d.val), 1);
+  const avgDaily = Math.round(categoryTxs.reduce((s: number, tx: any) => s + Number(tx.amount), 0) / 7);
 
   const periodLabel =
     budget.period === 'weekly' ? 'Anggaran Mingguan' : budget.period === 'custom' ? 'Anggaran Kustom' : 'Anggaran Bulanan';
@@ -121,7 +137,7 @@ export default function BudgetDetailModal({
       maxWidth="2xl"
       hideHeader
       hideCloseButton={true}
-      className="p-6 sm:p-8 space-y-6"
+      className="p-7 sm:p-8 space-y-6 pb-8"
     >
       {/* ========================================================================= */}
       {/* 1. TOP HEADER ROW: CATEGORY + PERIOD + ACTIONS MENU                        */}
@@ -134,9 +150,9 @@ export default function BudgetDetailModal({
             {getCategoryIconComponent(budget.category, 22)}
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-xl font-extrabold text-[#242636] tracking-tight">
-                {budget.name}
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-xl font-extrabold text-[#242636] tracking-tight capitalize">
+                {getCategoryLabel(budget.category)}
               </h3>
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#E4E2FB] text-[#5F5ED4] border border-[#7C7CE6]/20">
                 {periodLabel}
@@ -215,7 +231,7 @@ export default function BudgetDetailModal({
       {/* ========================================================================= */}
       {/* 2. CIRCULAR GAUGE & 3 METRIC CARDS (HERO SECTION)                         */}
       {/* ========================================================================= */}
-      <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-[#F5F4FE] via-[#EDEAFC]/60 to-[#E4E2FB]/40 border border-[#E4E2FB] flex flex-col sm:flex-row items-center justify-between gap-6 relative overflow-hidden">
+      <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-[#F5F4FE] via-[#EDEAFC]/60 to-[#E4E2FB]/40 border border-[#E4E2FB] flex flex-col sm:flex-row items-center justify-between gap-7 relative overflow-hidden">
         {/* Left: Circular Gauge Ring */}
         <div className="flex items-center gap-5">
           <div className="relative w-28 h-28 shrink-0 flex items-center justify-center">
@@ -275,8 +291,8 @@ export default function BudgetDetailModal({
         </div>
 
         {/* Right: 3 Metric Badges */}
-        <div className="grid grid-cols-3 sm:grid-cols-1 gap-2 w-full sm:w-auto shrink-0">
-          <div className="p-2.5 px-4 rounded-2xl bg-white/90 border border-black/[0.04] shadow-2xs space-y-0.5">
+        <div className="grid grid-cols-3 sm:grid-cols-1 gap-3 w-full sm:w-auto shrink-0">
+          <div className="p-3.5 px-4 rounded-2xl bg-white/90 border border-black/[0.04] shadow-2xs space-y-1">
             <span className="text-[10px] font-bold text-[#757A95] uppercase tracking-wider block">
               Batas Plafon
             </span>
@@ -285,7 +301,7 @@ export default function BudgetDetailModal({
             </span>
           </div>
 
-          <div className="p-2.5 px-4 rounded-2xl bg-white/90 border border-black/[0.04] shadow-2xs space-y-0.5">
+          <div className="p-3.5 px-4 rounded-2xl bg-white/90 border border-black/[0.04] shadow-2xs space-y-1">
             <span className="text-[10px] font-bold text-[#757A95] uppercase tracking-wider block">
               Terpakai
             </span>
@@ -294,7 +310,7 @@ export default function BudgetDetailModal({
             </span>
           </div>
 
-          <div className="p-2.5 px-4 rounded-2xl bg-white/90 border border-black/[0.04] shadow-2xs space-y-0.5">
+          <div className="p-3.5 px-4 rounded-2xl bg-white/90 border border-black/[0.04] shadow-2xs space-y-1">
             <span className="text-[10px] font-bold text-[#757A95] uppercase tracking-wider block">
               Sisa Kuota
             </span>
@@ -312,26 +328,26 @@ export default function BudgetDetailModal({
       {/* ========================================================================= */}
       {/* 3. 2-COLUMN BOTTOM: SPENDING TREND (LEFT) & RECENT TRANSACTIONS (RIGHT)   */}
       {/* ========================================================================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* SISI KIRI: Spending Trend Bar Chart (7 cols) */}
-        <div className="lg:col-span-7 space-y-3">
+        <div className="lg:col-span-7 space-y-4">
           <div className="flex items-center justify-between">
             <h4 className="text-xs sm:text-sm font-bold text-[#242636]">
               Tren Pengeluaran 7 Hari Terakhir
             </h4>
             <span className="text-[11px] font-bold text-[#7C7CE6]">
-              Rata-rata: Rp98rb/hari
+              Rata-rata: {avgDaily > 0 ? formatIDR(avgDaily) : 'Rp0'}/hari
             </span>
           </div>
 
-          {/* Simple 2D Soft Bar Graph */}
-          <div className="p-4 rounded-2xl bg-[#F8F9FD] border border-black/[0.04] space-y-3">
-            <div className="h-28 flex items-end justify-between gap-2 pt-2 px-1">
-              {DAILY_TREND_DATA.map((d, i) => {
-                const heightPct = Math.round((d.val / maxDailyVal) * 100);
+          {/* Simple 2D Soft Bar Graph — dynamic */}
+          <div className="p-5 rounded-2xl bg-[#F8F9FD] border border-black/[0.04] space-y-3">
+            <div className="h-28 flex items-end justify-between gap-2.5 pt-2 px-1">
+              {dailyTrend.map((d, i) => {
+                const heightPct = d.val > 0 ? Math.max(8, Math.round((d.val / maxDailyVal) * 100)) : 4;
                 const isHigh = heightPct > 80;
                 return (
-                  <div key={i} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end group">
+                  <div key={i} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
                     <span className="text-[9px] font-bold text-[#757A95] opacity-0 group-hover:opacity-100 transition-opacity">
                       {d.amount}
                     </span>
@@ -351,7 +367,7 @@ export default function BudgetDetailModal({
           </div>
 
           {/* FinAI Smart Insight Card */}
-          <div className="p-3.5 rounded-2xl bg-[#D0EFE5]/40 border border-[#1B7354]/20 flex items-center justify-between gap-3">
+          <div className="p-4.5 rounded-2xl bg-[#D0EFE5]/40 border border-[#1B7354]/20 flex items-center justify-between gap-4">
             <div className="space-y-0.5">
               <div className="flex items-center gap-1.5 text-[#1B7354]">
                 <Sparkles size={13} />
@@ -360,7 +376,7 @@ export default function BudgetDetailModal({
                 </span>
               </div>
               <p className="text-xs text-[#242636] font-medium leading-relaxed">
-                Dengan pola belanja saat ini, pengeluaran pos {budget.name} masih berada dalam batas aman.
+                Dengan pola belanja saat ini, pengeluaran pos {getCategoryLabel(budget.category)} masih berada dalam batas aman.
               </p>
             </div>
 
@@ -380,7 +396,7 @@ export default function BudgetDetailModal({
         </div>
 
         {/* SISI KANAN: Recent Transactions (5 cols) */}
-        <div className="lg:col-span-5 space-y-3">
+        <div className="lg:col-span-5 space-y-4">
           <div className="flex items-center justify-between">
             <h4 className="text-xs sm:text-sm font-bold text-[#242636]">
               Transaksi Terbaru
@@ -395,32 +411,39 @@ export default function BudgetDetailModal({
             </Link>
           </div>
 
-          {/* Transactions list items with SVG icons */}
-          <div className="space-y-2">
-            {recentTxs.map((tx) => (
-              <div
-                key={tx.id}
-                className="p-3 rounded-2xl bg-[#F8F9FD] border border-black/[0.04] hover:bg-[#FAF9FE] flex items-center justify-between transition-colors"
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center shrink-0 shadow-2xs border border-black/[0.04]">
-                    {tx.icon}
+          {/* Transactions list — dynamic, empty state jika belum ada */}
+          <div className="space-y-2.5">
+            {hasTxs ? (
+              recentTxs.map((tx) => (
+                <div
+                  key={tx.id}
+                  className="p-3.5 rounded-2xl bg-[#F8F9FD] border border-black/[0.04] hover:bg-[#FAF9FE] flex items-center justify-between transition-colors"
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center shrink-0 shadow-2xs border border-black/[0.04]">
+                      {tx.icon}
+                    </div>
+                    <div className="min-w-0">
+                      <h5 className="text-xs font-bold text-[#242636] truncate">
+                        {tx.title}
+                      </h5>
+                      <p className="text-[10px] text-[#757A95]">{tx.date}</p>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <h5 className="text-xs font-bold text-[#242636] truncate">
-                      {tx.title}
-                    </h5>
-                    <p className="text-[10px] text-[#757A95]">{tx.date}</p>
-                  </div>
-                </div>
 
-                <div className="text-right shrink-0">
-                  <span className="text-xs sm:text-sm font-black text-[#B83A38]">
-                    -{formatIDR(tx.amount)}
-                  </span>
+                  <div className="text-right shrink-0">
+                    <span className="text-xs sm:text-sm font-black text-[#B83A38]">
+                      -{formatIDR(tx.amount)}
+                    </span>
+                  </div>
                 </div>
+              ))
+            ) : (
+              <div className="p-6 text-center rounded-2xl bg-[#F8F9FD] border border-dashed border-black/[0.06]">
+                <p className="text-xs font-semibold text-[#757A95]">Belum ada transaksi di kategori ini</p>
+                <p className="text-[11px] text-[#A0A4B8] mt-1">Transaksi pengeluaran {budget.name} akan muncul di sini</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>

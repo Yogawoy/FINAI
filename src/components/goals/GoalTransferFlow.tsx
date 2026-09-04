@@ -3,7 +3,7 @@
 import React from 'react';
 import { ArrowDown, AlertCircle, Sparkles } from 'lucide-react';
 import { Wallet } from '@/types';
-import { formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
 
 interface GoalTransferFlowProps {
   sourceWallet?: Wallet | null;

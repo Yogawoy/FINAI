@@ -4,7 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
 import { TransactionCategory, BudgetPeriod } from '@/types';
-import { formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
 import { getCategoryIconComponent } from './BudgetRow';
 import { BUDGET_CATEGORIES } from './BudgetCategorySelector';
 

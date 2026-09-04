@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
 
 export interface FinancialTooltipProps {
   active?: boolean;

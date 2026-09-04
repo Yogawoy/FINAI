@@ -1,12 +1,11 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Plus } from 'lucide-react';
-import Header from '@/components/navigation/Header';
 import Button from '@/components/ui/Button';
-import { Transaction, TransactionCategory, TransactionType } from '@/types';
-import { MOCK_TRANSACTIONS } from '@/data/mockData';
+import { Transaction, TransactionType } from '@/types';
+import { apiClient, mapApiErrorMessage } from '@/lib/api-client';
+import { emitRefresh, onRefresh } from '@/lib/data-refresh';
 
 // Loading & Page Transition
 import TransactionsSkeleton from '@/components/loading/TransactionsSkeleton';
@@ -26,18 +25,36 @@ import TransactionSuccessModal from '@/components/transactions/TransactionSucces
 import TransactionToast from '@/components/transactions/TransactionToast';
 import AITransactionPrompt from '@/components/transactions/AITransactionPrompt';
 
+// Helper to map DB transaction to UI Transaction
+function mapBackendTransactionToUI(tx: any): Transaction {
+  const isIncome = String(tx.type).toUpperCase() === 'INCOME';
+  const type: TransactionType = isIncome ? 'income' : 'expense';
+  const rawDate = tx.transactionDate ? new Date(tx.transactionDate) : new Date();
+  const dateStr = rawDate.toISOString().split('T')[0];
+  const timeStr = rawDate.toTimeString().slice(0, 5);
+
+  return {
+    id: tx.id,
+    type,
+    amount: Number(tx.amount),
+    category: tx.category as any,
+    title: tx.description,
+    date: dateStr,
+    time: timeStr,
+    account: tx.wallet?.name || 'Dompet Utama',
+    paymentMethod: tx.wallet?.type || 'Bank',
+    status: 'completed',
+    note: tx.description,
+    walletId: tx.walletId || tx.wallet?.id || undefined,
+    walletName: tx.wallet?.name || undefined,
+  };
+}
+
 export default function TransactionsPage() {
   const [isLoading, setIsLoading] = useState(true);
-
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 450);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // 1. Data mutasi transaksi (25 catatan realistis)
-  const [transactions, setTransactions] = useState<Transaction[]>(MOCK_TRANSACTIONS);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [wallets, setWallets] = useState<any[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // 2. State Filter & Pencarian
   const [searchQuery, setSearchQuery] = useState('');
@@ -61,8 +78,6 @@ export default function TransactionsPage() {
 
   // 4. Transaksi yang sedang aktif untuk Detail/Edit/Hapus
   const [activeTransaction, setActiveTransaction] = useState<Transaction | null>(null);
-
-  // 5. Notifikasi Toast Mengambang
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -72,13 +87,45 @@ export default function TransactionsPage() {
     }, 3200);
   };
 
-  // 6. Kalkulasi Ringkasan Dinamis
+  const fetchWallets = useCallback(async () => {
+    try {
+      const res = await apiClient.get<{ wallets: any[] }>('/api/wallets');
+      setWallets(res.wallets || []);
+    } catch {
+      // Ignore
+    }
+  }, []);
+
+  const fetchTransactions = useCallback(async () => {
+    try {
+      setErrorMessage(null);
+      const res = await apiClient.get<{ transactions: any[] }>('/api/transactions?limit=100');
+      const mapped = (res.transactions || []).map(mapBackendTransactionToUI);
+      setTransactions(mapped);
+    } catch (err) {
+      setErrorMessage(mapApiErrorMessage(err));
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchTransactions();
+    fetchWallets();
+  }, [fetchTransactions, fetchWallets]);
+
+  useEffect(() => {
+    const off = onRefresh((kind) => {
+      if (kind === 'transaction' || kind === 'transfer' || kind === 'wallet' || kind === 'goal_contribution' || kind === 'all') fetchTransactions();
+    });
+    return off;
+  }, [fetchTransactions]);
+
   const summary = useMemo(() => {
-    const augustTx = transactions.filter((t) => t.date.startsWith('2026-08') || t.date.startsWith('2026-09'));
-    const totalIncome = augustTx
+    const totalIncome = transactions
       .filter((t) => t.type === 'income')
       .reduce((acc, curr) => acc + curr.amount, 0);
-    const totalExpenses = augustTx
+    const totalExpenses = transactions
       .filter((t) => t.type === 'expense')
       .reduce((acc, curr) => acc + curr.amount, 0);
     const net = totalIncome - totalExpenses;
@@ -92,48 +139,52 @@ export default function TransactionsPage() {
     };
   }, [transactions]);
 
-  // 7. Logika Pemfilteran & Pencarian Cepat
   const filteredTransactions = useMemo(() => {
+    const now = new Date();
     return transactions.filter((tx) => {
-      // Filter tipe (Semua / Pengeluaran / Pemasukan)
       if (selectedType !== 'all' && tx.type !== selectedType) {
         return false;
       }
-
-      // Filter kategori
       if (selectedCategory !== 'all' && tx.category !== selectedCategory) {
         return false;
       }
-
-      // Filter rentang tanggal
-      if (selectedDateFilter === 'today' && tx.date !== '2026-08-31') {
-        return false;
+      if (selectedDateFilter !== 'all') {
+        const txDate = new Date(tx.date);
+        if (selectedDateFilter === 'today') {
+          const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          if (txDate < today) return false;
+        } else if (selectedDateFilter === 'week') {
+          const weekAgo = new Date(now);
+          weekAgo.setDate(weekAgo.getDate() - 7);
+          if (txDate < weekAgo) return false;
+        } else if (selectedDateFilter === 'month') {
+          const monthAgo = new Date(now);
+          monthAgo.setMonth(monthAgo.getMonth() - 1);
+          if (txDate < monthAgo) return false;
+        }
       }
-      if (selectedDateFilter === 'week' && tx.date < '2026-08-24') {
-        return false;
-      }
-      if (selectedDateFilter === 'month' && !tx.date.startsWith('2026-08')) {
-        return false;
-      }
-
-      // Kata kunci pencarian
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
         const matchTitle = tx.title.toLowerCase().includes(query);
         const matchCategory = tx.category.toLowerCase().includes(query);
-        const matchNote = tx.note ? tx.note.toLowerCase().includes(query) : false;
-        const matchAccount = tx.account ? tx.account.toLowerCase().includes(query) : false;
-        const matchPayment = tx.paymentMethod ? tx.paymentMethod.toLowerCase().includes(query) : false;
         const matchAmount = tx.amount.toString().includes(query);
 
-        if (!matchTitle && !matchCategory && !matchNote && !matchAccount && !matchPayment && !matchAmount) {
+        if (!matchTitle && !matchCategory && !matchAmount) {
           return false;
         }
       }
-
       return true;
     });
-  }, [transactions, selectedType, selectedCategory, selectedDateFilter, searchQuery]);
+  }, [transactions, selectedType, selectedCategory, searchQuery, selectedDateFilter]);
+
+  const walletOptions = useMemo(() => {
+    return wallets.map((w: any) => ({
+      id: w.id,
+      name: w.name,
+      identifier: w.accountLast4 ? `•••• ${w.accountLast4}` : w.institution || w.type,
+      iconType: String(w.type).toUpperCase() === 'E_WALLET' ? 'ewallet' as const : String(w.type).toUpperCase() === 'CASH' ? 'cash' as const : 'bank' as const,
+    }));
+  }, [wallets]);
 
   const hasActiveFilters =
     searchQuery !== '' ||
@@ -153,31 +204,70 @@ export default function TransactionsPage() {
     setIsAIModalOpen(true);
   };
 
-  // 8. Operasi CRUD
-  const handleAddTransaction = (newTx: Transaction) => {
-    setTransactions((prev) => [newTx, ...prev]);
-    setLastAffectedTransaction(newTx);
-    setSuccessActionType('added');
-    setIsSuccessModalOpen(true);
-    showToast('Transaksi berhasil ditambahkan.');
+  const handleAddTransactionSubmit = async (newTx: any) => {
+    try {
+      const walletId = newTx.walletId;
+      if (!walletId) {
+        if (wallets.length === 0) {
+          showToast('Silakan buat dompet terlebih dahulu sebelum menambah transaksi');
+          return;
+        }
+        showToast('Pilih dompet terlebih dahulu');
+        return;
+      }
+
+      const created = await apiClient.post<{ transaction: any }>('/api/transactions', {
+        walletId,
+        type: newTx.type === 'income' ? 'INCOME' : 'EXPENSE',
+        amount: Number(newTx.amount),
+        category: newTx.category || 'Lainnya',
+        description: newTx.title || 'Transaksi Baru',
+      });
+
+      const mapped = mapBackendTransactionToUI(created.transaction);
+      setLastAffectedTransaction(mapped);
+      setSuccessActionType('added');
+      setIsSuccessModalOpen(true);
+      showToast('Transaksi berhasil ditambahkan.');
+      fetchTransactions();
+      emitRefresh('transaction');
+    } catch (err) {
+      showToast(mapApiErrorMessage(err));
+    }
   };
 
-  const handleUpdateTransaction = (updatedTx: Transaction) => {
-    setTransactions((prev) =>
-      prev.map((tx) => (tx.id === updatedTx.id ? updatedTx : tx))
-    );
-    setLastAffectedTransaction(updatedTx);
-    setSuccessActionType('updated');
-    setIsSuccessModalOpen(true);
-    showToast('Transaksi berhasil diperbarui.');
+  const handleUpdateTransactionSubmit = async (updatedTx: any) => {
+    try {
+      const res = await apiClient.patch<{ transaction: any }>(`/api/transactions/${updatedTx.id}`, {
+        amount: Number(updatedTx.amount),
+        category: updatedTx.category,
+        description: updatedTx.title,
+        type: updatedTx.type === 'income' ? 'INCOME' : 'EXPENSE',
+      });
+
+      const mapped = mapBackendTransactionToUI(res.transaction);
+      setLastAffectedTransaction(mapped);
+      setSuccessActionType('updated');
+      setIsSuccessModalOpen(true);
+      showToast('Transaksi berhasil diperbarui.');
+      fetchTransactions();
+      emitRefresh('transaction');
+    } catch (err) {
+      showToast(mapApiErrorMessage(err));
+    }
   };
 
-  const handleDeleteTransaction = (txId: string) => {
-    setTransactions((prev) => prev.filter((tx) => tx.id !== txId));
-    showToast('Transaksi berhasil dihapus.');
+  const handleDeleteTransactionSubmit = async (txId: string) => {
+    try {
+      await apiClient.delete(`/api/transactions/${txId}`);
+      showToast('Transaksi berhasil dihapus.');
+      fetchTransactions();
+      emitRefresh('transaction');
+    } catch (err) {
+      showToast(mapApiErrorMessage(err));
+    }
   };
 
-  // Handler interaksi baris
   const handleSelectRow = (tx: Transaction) => {
     setActiveTransaction(tx);
     setIsDetailModalOpen(true);
@@ -202,7 +292,12 @@ export default function TransactionsPage() {
   return (
     <PageTransition>
       <div className="space-y-7 max-w-7xl mx-auto pb-16">
-        {/* 1. HEADER HALAMAN */}
+        {errorMessage && (
+          <div className="p-4 rounded-2xl bg-red-50 text-red-600 border border-red-200 text-xs font-semibold">
+            {errorMessage}
+          </div>
+        )}
+
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-[#242636] tracking-tight">
@@ -224,7 +319,6 @@ export default function TransactionsPage() {
           </Button>
         </div>
 
-        {/* 2. RINGKASAN FINANSIAL (4 Metrik Utama) */}
         <TransactionSummary
           income={summary.income}
           expenses={summary.expenses}
@@ -232,7 +326,6 @@ export default function TransactionsPage() {
           avgDaily={summary.avgDaily}
         />
 
-        {/* 3. PANCARIAN & FILTER KAS */}
         <TransactionFilters
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -247,10 +340,8 @@ export default function TransactionsPage() {
           hasActiveFilters={hasActiveFilters}
         />
 
-        {/* 4. BANNER ASISTEN ANALISIS FINAI */}
         <AITransactionBanner onOpenAI={handleOpenAIWithPrompt} />
 
-        {/* 5. DAFTAR ARUS MUTASI KAS KRONOLOGIS */}
         <section className="space-y-3">
           <div className="flex items-center justify-between px-1">
             <span className="text-xs font-extrabold uppercase tracking-widest text-[#757A95]">
@@ -270,26 +361,21 @@ export default function TransactionsPage() {
           />
         </section>
 
-        {/* ========================================================================= */}
-        {/* 6. REDESIGNED MODAL & POPUP SUITE (MATCHING VISUAL REFERENCE)             */}
-        {/* ========================================================================= */}
-
-        {/* Modal 1: Add Transaction (Top-Left in Visual Reference) */}
         <AddTransactionModal
           isOpen={isAddModalOpen}
           onClose={() => setIsAddModalOpen(false)}
-          onAddTransaction={handleAddTransaction}
+          onAddTransaction={handleAddTransactionSubmit}
+          wallets={walletOptions}
         />
 
-        {/* Modal 2: Edit Transaction (Bottom-Left in Visual Reference) */}
         <EditTransactionModal
           transaction={activeTransaction}
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
-          onUpdateTransaction={handleUpdateTransaction}
+          onUpdateTransaction={handleUpdateTransactionSubmit}
+          wallets={walletOptions}
         />
 
-        {/* Modal 3: Transaction Detail Receipt (Top-Center in Visual Reference) */}
         <TransactionDetail
           transaction={activeTransaction}
           isOpen={isDetailModalOpen}
@@ -306,15 +392,13 @@ export default function TransactionsPage() {
           }}
         />
 
-        {/* Modal 4: Delete Confirmation (Top-Right in Visual Reference) */}
         <DeleteTransactionDialog
           transaction={activeTransaction}
           isOpen={isDeleteDialogOpen}
           onClose={() => setIsDeleteDialogOpen(false)}
-          onConfirmDelete={handleDeleteTransaction}
+          onConfirmDelete={handleDeleteTransactionSubmit}
         />
 
-        {/* Modal 5: Filter Transactions Modal (Bottom-Center in Visual Reference) */}
         <FilterTransactionsModal
           isOpen={isFilterModalOpen}
           onClose={() => setIsFilterModalOpen(false)}
@@ -329,7 +413,6 @@ export default function TransactionsPage() {
           onResetFilters={handleResetFilters}
         />
 
-        {/* Modal 6: Transaction Success Modal (Bottom-Right in Visual Reference) */}
         <TransactionSuccessModal
           transaction={lastAffectedTransaction}
           isOpen={isSuccessModalOpen}
@@ -342,7 +425,6 @@ export default function TransactionsPage() {
           actionType={successActionType}
         />
 
-        {/* Panel Tanya FinAI */}
         <AITransactionPrompt
           isOpen={isAIModalOpen}
           onClose={() => {
@@ -352,7 +434,6 @@ export default function TransactionsPage() {
           initialPrompt={initialAIPrompt}
         />
 
-        {/* Notifikasi Toast Mengambang */}
         <TransactionToast
           message={toastMessage}
           onClose={() => setToastMessage(null)}

@@ -51,7 +51,9 @@ export default function WalletSelect({
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const selectedWallet = wallets.find((w) => w.id === value) || wallets[0];
+  // If wallets prop was passed explicitly (even empty), respect it; fallback to DEFAULT only when undefined
+  const effectiveWallets = wallets;
+  const selectedWallet = effectiveWallets.find((w) => w.id === value) || effectiveWallets[0] || null;
 
   // Click outside & Escape
   useEffect(() => {
@@ -95,7 +97,12 @@ export default function WalletSelect({
         onClick={() => setIsOpen(!isOpen)}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        className={`w-full px-3.5 py-2.5 bg-[#F8F9FD] hover:bg-white border transition-all rounded-xl text-xs sm:text-sm flex items-center justify-between text-left cursor-pointer select-none ${
+        disabled={effectiveWallets.length === 0}
+        className={`w-full px-3.5 py-2.5 bg-[#F8F9FD] hover:bg-white border transition-all rounded-xl text-xs sm:text-sm flex items-center justify-between text-left select-none ${
+          effectiveWallets.length === 0
+            ? 'opacity-60 cursor-not-allowed'
+            : 'cursor-pointer'
+        } ${
           isOpen
             ? 'border-[#7C7CE6] bg-white ring-2 ring-[#7C7CE6]/20 shadow-xs'
             : 'border-black/[0.06] hover:border-black/[0.12]'
@@ -106,7 +113,7 @@ export default function WalletSelect({
             {getWalletIcon(selectedWallet?.iconType)}
           </div>
           <span className="truncate font-semibold text-[#242636]">
-            {selectedWallet ? selectedWallet.name : 'Pilih Dompet'}
+            {selectedWallet ? selectedWallet.name : effectiveWallets.length === 0 ? 'Belum ada dompet' : 'Pilih Dompet'}
           </span>
         </div>
 
@@ -129,45 +136,52 @@ export default function WalletSelect({
             role="listbox"
             className="absolute left-0 right-0 top-full mt-1.5 p-1.5 bg-white border border-black/[0.08] rounded-2xl shadow-[0_12px_32px_rgba(36,38,54,0.12)] z-50 max-h-60 overflow-y-auto space-y-0.5"
           >
-            {wallets.map((w) => {
-              const isSelected = w.id === value;
-              return (
-                <button
-                  key={w.id}
-                  type="button"
-                  role="option"
-                  aria-selected={isSelected}
-                  onClick={() => handleSelect(w.id)}
-                  className={`w-full px-3 py-2.5 rounded-xl text-xs sm:text-sm flex items-center justify-between transition-colors cursor-pointer text-left ${
-                    isSelected
-                      ? 'bg-[#EDEAFC] text-[#5F5ED4] font-bold'
-                      : 'text-[#242636] hover:bg-[#F8F9FD]'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div
-                      className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${
-                        isSelected
-                          ? 'bg-white text-[#5F5ED4]'
-                          : 'bg-[#EDEAFC] text-[#7C7CE6]'
-                      }`}
-                    >
-                      {getWalletIcon(w.iconType)}
+            {effectiveWallets.length === 0 ? (
+              <div className="p-4 text-center">
+                <p className="text-xs font-semibold text-[#757A95]">Belum ada dompet</p>
+                <p className="text-[11px] text-[#757A95] mt-0.5">Buat dompet dulu di halaman Dompet</p>
+              </div>
+            ) : (
+              effectiveWallets.map((w) => {
+                const isSelected = w.id === value;
+                return (
+                  <button
+                    key={w.id}
+                    type="button"
+                    role="option"
+                    aria-selected={isSelected}
+                    onClick={() => handleSelect(w.id)}
+                    className={`w-full px-3 py-2.5 rounded-xl text-xs sm:text-sm flex items-center justify-between transition-colors cursor-pointer text-left ${
+                      isSelected
+                        ? 'bg-[#EDEAFC] text-[#5F5ED4] font-bold'
+                        : 'text-[#242636] hover:bg-[#F8F9FD]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div
+                        className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${
+                          isSelected
+                            ? 'bg-white text-[#5F5ED4]'
+                            : 'bg-[#EDEAFC] text-[#7C7CE6]'
+                        }`}
+                      >
+                        {getWalletIcon(w.iconType)}
+                      </div>
+                      <div className="min-w-0">
+                        <span className="block truncate">{w.name}</span>
+                        {w.identifier && (
+                          <span className="text-[10px] text-[#757A95] font-normal block font-mono">
+                            {w.identifier}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <span className="block truncate">{w.name}</span>
-                      {w.identifier && (
-                        <span className="text-[10px] text-[#757A95] font-normal block font-mono">
-                          {w.identifier}
-                        </span>
-                      )}
-                    </div>
-                  </div>
 
-                  {isSelected && <Check size={14} className="text-[#5F5ED4] shrink-0 ml-2" />}
-                </button>
-              );
-            })}
+                    {isSelected && <Check size={14} className="text-[#5F5ED4] shrink-0 ml-2" />}
+                  </button>
+                );
+              })
+            )}
           </motion.div>
         )}
       </AnimatePresence>

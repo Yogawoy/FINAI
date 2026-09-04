@@ -11,6 +11,8 @@ export const CreateWalletSchema = z.object({
     .number()
     .min(0, 'Saldo awal tidak boleh negatif')
     .default(0),
+  color: z.string().max(20).optional().nullable(),
+  icon: z.string().max(20).optional().nullable(),
 }).strict();
 
 export const UpdateWalletSchema = z.object({
@@ -18,6 +20,8 @@ export const UpdateWalletSchema = z.object({
   type: WalletTypeEnum.optional(),
   institution: z.string().max(50).optional().nullable(),
   accountLast4: z.string().max(10).optional().nullable(),
+  color: z.string().max(20).optional().nullable(),
+  icon: z.string().max(20).optional().nullable(),
 }).strict();
 
 export const TransferWalletSchema = z.object({

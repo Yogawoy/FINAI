@@ -4,12 +4,11 @@ import React from 'react';
 import { Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { AIMessage as AIMessageType } from '@/types';
-import AIFinancialActionCard from './AIFinancialActionCard';
-import AIInsightCard from './AIInsightCard';
-import AIError from './AIError';
+import AIResponseRenderer from './AIResponseRenderer';
 
 interface AIMessageProps {
   message: AIMessageType;
+  isConfirming?: boolean;
   onConfirmAction: (actionId: string) => void;
   onCancelAction: (actionId: string) => void;
   onRetry?: () => void;
@@ -17,6 +16,7 @@ interface AIMessageProps {
 
 export default function AIMessage({
   message,
+  isConfirming = false,
   onConfirmAction,
   onCancelAction,
   onRetry,
@@ -33,29 +33,15 @@ export default function AIMessage({
         <Sparkles size={15} />
       </div>
 
-      {/* Message Content Area */}
+      {/* Message Content Area — centralized renderer for all card types */}
       <div className="max-w-[90%] sm:max-w-[75%] space-y-3">
-        {/* Text paragraph */}
-        {message.content && (
-          <div className="px-4 py-3 rounded-2xl rounded-tl-sm bg-white border border-[#E8EAF2] text-[#242636] text-xs sm:text-sm leading-relaxed shadow-2xs whitespace-pre-line">
-            {message.content}
-          </div>
-        )}
-
-        {/* Structured Financial Action Card */}
-        {message.action && (
-          <AIFinancialActionCard
-            action={message.action}
-            onConfirm={onConfirmAction}
-            onCancel={onCancelAction}
-          />
-        )}
-
-        {/* Financial Insight Card */}
-        {message.insight && <AIInsightCard insight={message.insight} />}
-
-        {/* Error State */}
-        {message.error && <AIError message={message.content} onRetry={onRetry} />}
+        <AIResponseRenderer
+          message={message}
+          isConfirming={isConfirming}
+          onConfirmAction={onConfirmAction}
+          onCancelAction={onCancelAction}
+          onRetry={onRetry}
+        />
 
         {/* Timestamp */}
         {message.timestamp && (

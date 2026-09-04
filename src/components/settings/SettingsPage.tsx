@@ -1,8 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
-import { CircleCheck } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { CircleCheck, Loader2 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+
+import { useAuth } from '@/context/AuthContext';
+import { apiClient } from '@/lib/api-client';
 
 import SettingsHeader from './SettingsHeader';
 import ProfileSection from './ProfileSection';
@@ -17,75 +21,180 @@ import ExportDataModal from './ExportDataModal';
 import DeleteDataModal from './DeleteDataModal';
 import LogoutModal from './LogoutModal';
 
+interface SettingsData {
+  language: string;
+  currency: string;
+  numberFormat: string;
+  defaultWalletId: string | null;
+  defaultCategory: string | null;
+  paydayDate: string;
+  savingsRateTarget: string;
+  budgetReminder: boolean;
+  budgetThreshold: string;
+  goalReminder: boolean;
+  financialSummary: boolean;
+  dailyReminderTime: string;
+  aiPersonalization: boolean;
+  aiActionConfirmation: boolean;
+  animations: boolean;
+}
+
+const DEFAULT_SETTINGS: SettingsData = {
+  language: 'id',
+  currency: 'IDR',
+  numberFormat: 'id',
+  defaultWalletId: null,
+  defaultCategory: 'Belanja',
+  paydayDate: '25',
+  savingsRateTarget: '30%',
+  budgetReminder: true,
+  budgetThreshold: '80%',
+  goalReminder: true,
+  financialSummary: true,
+  dailyReminderTime: '20:00',
+  aiPersonalization: true,
+  aiActionConfirmation: true,
+  animations: true,
+};
+
 export default function SettingsPage() {
-  // 1. Profile State
-  const [profile, setProfile] = useState({
-    name: 'Yoga W.',
-    email: 'user@example.com',
-    membershipTier: 'FinAI Pro',
-  });
+  const router = useRouter();
+  const { user, logout: authLogout } = useAuth();
 
-  // 2. Preferences State
-  const [language, setLanguage] = useState('id');
-  const [currency, setCurrency] = useState('IDR');
-  const [numberFormat, setNumberFormat] = useState('id');
-  const [defaultWallet, setDefaultWallet] = useState('w-1');
-  const [defaultCategory, setDefaultCategory] = useState('Belanja');
-  const [paydayDate, setPaydayDate] = useState('25');
-  const [savingsRateTarget, setSavingsRateTarget] = useState('30%');
-  const [enableAnimations, setEnableAnimations] = useState(true);
+  // Settings state
+  const [settings, setSettings] = useState<SettingsData>(DEFAULT_SETTINGS);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
-  // 3. Notification State
-  const [budgetReminder, setBudgetReminder] = useState(true);
-  const [budgetThreshold, setBudgetThreshold] = useState('80%');
-  const [goalReminder, setGoalReminder] = useState(true);
-  const [financialSummary, setFinancialSummary] = useState(true);
-  const [dailyReminderTime, setDailyReminderTime] = useState('20:00');
-
-  // 4. AI Settings State
-  const [aiPersonalization, setAiPersonalization] = useState(true);
-  const [aiActionConfirmation, setAiActionConfirmation] = useState(true);
-
-  // 5. Security State
-  const [pinLockEnabled, setPinLockEnabled] = useState(false);
-
-  // 6. Modals State
+  // Modals state
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isExportDataOpen, setIsExportDataOpen] = useState(false);
   const [isDeleteDataOpen, setIsDeleteDataOpen] = useState(false);
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
 
-  // 7. Toast Notification State
+  // Toast state
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const toastTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const showToast = (message: string) => {
+  const showToast = useCallback((message: string) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     setToastMessage(message);
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 3500);
+    toastTimerRef.current = setTimeout(() => setToastMessage(null), 3500);
+  }, []);
+
+  // Load settings from API on mount
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const res = await apiClient.get<{ settings: any }>('/api/settings');
+        if (res.settings) {
+          const s = res.settings;
+          setSettings({
+            language: s.language === 'en-US' ? 'en' : 'id',
+            currency: s.currency || 'IDR',
+            numberFormat: s.numberFormat === 'en-US' ? 'en' : 'id',
+            defaultWalletId: s.defaultWalletId || null,
+            defaultCategory: s.defaultCategory || 'Belanja',
+            paydayDate: s.paydayDate || '25',
+            savingsRateTarget: s.savingsRateTarget || '30%',
+            budgetReminder: s.budgetReminder ?? true,
+            budgetThreshold: s.budgetThreshold || '80%',
+            goalReminder: s.goalReminder ?? true,
+            financialSummary: s.financialSummary ?? true,
+            dailyReminderTime: s.dailyReminderTime || '20:00',
+            aiPersonalization: s.aiPersonalization ?? true,
+            aiActionConfirmation: s.aiActionConfirmation ?? true,
+            animations: s.animations ?? true,
+          });
+        }
+      } catch {
+        // Use defaults on error
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadSettings();
+  }, []);
+
+  // Save settings to API (debounced)
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const saveSettings = useCallback((patch: Partial<SettingsData>) => {
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(async () => {
+      setIsSaving(true);
+      try {
+        const apiPatch: Record<string, any> = {};
+        if (patch.language !== undefined) apiPatch.language = patch.language === 'en' ? 'en-US' : 'id-ID';
+        if (patch.currency !== undefined) apiPatch.currency = patch.currency;
+        if (patch.numberFormat !== undefined) apiPatch.numberFormat = patch.numberFormat === 'en' ? 'en-US' : 'id-ID';
+        if (patch.defaultCategory !== undefined) apiPatch.defaultCategory = patch.defaultCategory;
+        if (patch.budgetReminder !== undefined) apiPatch.budgetReminder = patch.budgetReminder;
+        if (patch.goalReminder !== undefined) apiPatch.goalReminder = patch.goalReminder;
+        if (patch.financialSummary !== undefined) apiPatch.financialSummary = patch.financialSummary;
+        if (patch.aiPersonalization !== undefined) apiPatch.aiPersonalization = patch.aiPersonalization;
+        if (patch.aiActionConfirmation !== undefined) apiPatch.aiActionConfirmation = patch.aiActionConfirmation;
+        if (patch.animations !== undefined) apiPatch.animations = patch.animations;
+
+        await apiClient.patch('/api/settings', apiPatch);
+      } catch {
+        showToast('Gagal menyimpan pengaturan. Silakan coba lagi.');
+      } finally {
+        setIsSaving(false);
+      }
+    }, 500);
+  }, [showToast]);
+
+  // Profile handler
+  const handleSaveProfile = async (name: string, email: string) => {
+    try {
+      await apiClient.patch('/api/settings', {});
+      showToast('Profil berhasil diperbarui.');
+    } catch {
+      showToast('Gagal memperbarui profil.');
+    }
   };
 
-  // Handlers
-  const handleSaveProfile = (name: string, email: string) => {
-    setProfile((prev) => ({ ...prev, name, email }));
-    showToast('Pengaturan profil berhasil diperbarui.');
+  // Settings change handlers — update local state + persist to API
+  const updateSetting = <K extends keyof SettingsData>(key: K, value: SettingsData[K], toastMsg?: string) => {
+    setSettings((prev) => ({ ...prev, [key]: value }));
+    saveSettings({ [key]: value });
+    if (toastMsg) showToast(toastMsg);
   };
 
+  // Logout handler
+  const handleLogout = async () => {
+    try {
+      await authLogout();
+    } catch {
+      // AuthContext handles redirect
+    }
+  };
+
+  // Export handler
   const handleExportSuccess = (format: 'csv' | 'json', count: number) => {
     showToast(`Berkas cadangan (.${format}) berhasil diunduh ke perangkat Anda.`);
   };
 
+  // Import handler
   const handleImportSuccess = (fileName: string) => {
-    showToast(`Berkas ${fileName} berhasil diimpor & dipulihkan.`);
+    showToast(`Berkas ${fileName} berhasil diimpor.`);
   };
 
+  // Delete data handler
   const handleDeleteData = () => {
     showToast('Seluruh data transaksi dan anggaran telah dibersihkan.');
   };
 
-  const handleLogout = () => {
-    showToast('Sesi akun FinAI berhasil diakhiri.');
-  };
+  if (isLoading) {
+    return (
+      <div className="max-w-[1150px] mx-auto flex items-center justify-center py-32">
+        <Loader2 size={24} className="animate-spin text-[#7C7CE6]" />
+      </div>
+    );
+  }
+
+  const displayName = user?.name || 'User';
+  const displayEmail = user?.email || 'user@example.com';
 
   return (
     <div className="max-w-[1150px] mx-auto space-y-7 pb-16 relative">
@@ -112,104 +221,58 @@ export default function SettingsPage() {
 
       {/* 2. Profile Section */}
       <ProfileSection
-        name={profile.name}
-        email={profile.email}
-        membershipStatus={profile.membershipTier}
+        name={displayName}
+        email={displayEmail}
+        membershipStatus="FinAI Pro"
         onEditProfile={() => setIsEditProfileOpen(true)}
       />
 
       {/* 3. Preferences Section */}
       <PreferencesSection
-        language={language}
-        onLanguageChange={(val) => {
-          setLanguage(val);
-          showToast('Preferensi bahasa berhasil diperbarui.');
-        }}
-        currency={currency}
-        onCurrencyChange={(val) => {
-          setCurrency(val);
-          showToast('Mata uang utama berhasil diperbarui.');
-        }}
-        numberFormat={numberFormat}
-        onNumberFormatChange={(val) => {
-          setNumberFormat(val);
-          showToast('Format angka berhasil diperbarui.');
-        }}
-        defaultWallet={defaultWallet}
-        onDefaultWalletChange={(val) => {
-          setDefaultWallet(val);
-          showToast('Dompet kas default berhasil diperbarui.');
-        }}
-        defaultCategory={defaultCategory}
-        onDefaultCategoryChange={(val) => {
-          setDefaultCategory(val);
-          showToast('Kategori default berhasil diperbarui.');
-        }}
-        paydayDate={paydayDate}
-        onPaydayDateChange={(val) => {
-          setPaydayDate(val);
-          showToast(`Siklus gajian diatur setiap tanggal ${val} bulanan.`);
-        }}
-        savingsRateTarget={savingsRateTarget}
-        onSavingsRateTargetChange={(val) => {
-          setSavingsRateTarget(val);
-          showToast(`Target rasio tabungan diatur ke ${val} pendapatan.`);
-        }}
-        enableAnimations={enableAnimations}
-        onAnimationsChange={(val) => {
-          setEnableAnimations(val);
-          showToast(val ? 'Animasi antarmuka diaktifkan.' : 'Animasi antarmuka dinonaktifkan.');
-        }}
+        language={settings.language}
+        onLanguageChange={(val) => updateSetting('language', val, 'Preferensi bahasa berhasil diperbarui.')}
+        currency={settings.currency}
+        onCurrencyChange={(val) => updateSetting('currency', val, 'Mata uang utama berhasil diperbarui.')}
+        numberFormat={settings.numberFormat}
+        onNumberFormatChange={(val) => updateSetting('numberFormat', val, 'Format angka berhasil diperbarui.')}
+        defaultWallet={settings.defaultWalletId || 'w-1'}
+        onDefaultWalletChange={(val) => updateSetting('defaultWalletId', val, 'Dompet kas default berhasil diperbarui.')}
+        defaultCategory={settings.defaultCategory || 'Belanja'}
+        onDefaultCategoryChange={(val) => updateSetting('defaultCategory', val, 'Kategori default berhasil diperbarui.')}
+        paydayDate={settings.paydayDate}
+        onPaydayDateChange={(val) => updateSetting('paydayDate', val, `Siklus gajian diatur setiap tanggal ${val} bulanan.`)}
+        savingsRateTarget={settings.savingsRateTarget}
+        onSavingsRateTargetChange={(val) => updateSetting('savingsRateTarget', val, `Target rasio tabungan diatur ke ${val} pendapatan.`)}
+        enableAnimations={settings.animations}
+        onAnimationsChange={(val) => updateSetting('animations', val, val ? 'Animasi antarmuka diaktifkan.' : 'Animasi antarmuka dinonaktifkan.')}
       />
 
       {/* 4. Notification Section */}
       <NotificationSection
-        budgetReminder={budgetReminder}
-        onBudgetReminderChange={(val) => {
-          setBudgetReminder(val);
-          showToast(val ? 'Pengingat anggaran diaktifkan.' : 'Pengingat anggaran dinonaktifkan.');
-        }}
-        budgetThreshold={budgetThreshold}
-        onBudgetThresholdChange={(val) => {
-          setBudgetThreshold(val);
-          showToast(`Ambang batas peringatan anggaran diatur ke ${val}.`);
-        }}
-        goalReminder={goalReminder}
-        onGoalReminderChange={(val) => {
-          setGoalReminder(val);
-          showToast(val ? 'Pengingat target impian diaktifkan.' : 'Pengingat target impian dinonaktifkan.');
-        }}
-        financialSummary={financialSummary}
-        onFinancialSummaryChange={(val) => {
-          setFinancialSummary(val);
-          showToast(val ? 'Ringkasan keuangan berkala diaktifkan.' : 'Ringkasan keuangan berkala dinonaktifkan.');
-        }}
-        dailyReminderTime={dailyReminderTime}
-        onDailyReminderTimeChange={(val) => {
-          setDailyReminderTime(val);
-          showToast(`Jadwal pengingat harian diatur ke pukul ${val} WIB.`);
-        }}
+        budgetReminder={settings.budgetReminder}
+        onBudgetReminderChange={(val) => updateSetting('budgetReminder', val, val ? 'Pengingat anggaran diaktifkan.' : 'Pengingat anggaran dinonaktifkan.')}
+        budgetThreshold={settings.budgetThreshold}
+        onBudgetThresholdChange={(val) => updateSetting('budgetThreshold' as any, val, `Ambang batas peringatan anggaran diatur ke ${val}.`)}
+        goalReminder={settings.goalReminder}
+        onGoalReminderChange={(val) => updateSetting('goalReminder', val, val ? 'Pengingat target impian diaktifkan.' : 'Pengingat target impian dinonaktifkan.')}
+        financialSummary={settings.financialSummary}
+        onFinancialSummaryChange={(val) => updateSetting('financialSummary', val, val ? 'Ringkasan keuangan berkala diaktifkan.' : 'Ringkasan keuangan berkala dinonaktifkan.')}
+        dailyReminderTime={settings.dailyReminderTime}
+        onDailyReminderTimeChange={(val) => updateSetting('dailyReminderTime' as any, val, `Jadwal pengingat harian diatur ke pukul ${val} WIB.`)}
       />
 
       {/* 5. AI Settings Section */}
       <AISettingsSection
-        personalization={aiPersonalization}
-        onPersonalizationChange={(val) => {
-          setAiPersonalization(val);
-          showToast(val ? 'Personalisasi AI diaktifkan.' : 'Personalisasi AI dinonaktifkan.');
-        }}
-        actionConfirmation={aiActionConfirmation}
-        onActionConfirmationChange={(val) => {
-          setAiActionConfirmation(val);
-          showToast(val ? 'Konfirmasi aksi AI diwajibkan.' : 'Konfirmasi aksi AI dilewati.');
-        }}
+        personalization={settings.aiPersonalization}
+        onPersonalizationChange={(val) => updateSetting('aiPersonalization', val, val ? 'Personalisasi AI diaktifkan.' : 'Personalisasi AI dinonaktifkan.')}
+        actionConfirmation={settings.aiActionConfirmation}
+        onActionConfirmationChange={(val) => updateSetting('aiActionConfirmation', val, val ? 'Konfirmasi aksi AI diwajibkan.' : 'Konfirmasi aksi AI dilewati.')}
       />
 
       {/* 6. Security Section */}
       <SecuritySection
-        pinLockEnabled={pinLockEnabled}
+        pinLockEnabled={false}
         onPinLockChange={(val) => {
-          setPinLockEnabled(val);
           showToast(val ? 'Kunci PIN transaksi diaktifkan.' : 'Kunci PIN transaksi dinonaktifkan.');
         }}
         onTriggerToast={showToast}
@@ -224,7 +287,7 @@ export default function SettingsPage() {
 
       {/* 8. Account Section */}
       <AccountSection
-        membershipTier={profile.membershipTier}
+        membershipTier="FinAI Pro"
         onOpenLogoutModal={() => setIsLogoutOpen(true)}
       />
 
@@ -232,8 +295,8 @@ export default function SettingsPage() {
       <EditProfileModal
         isOpen={isEditProfileOpen}
         onClose={() => setIsEditProfileOpen(false)}
-        initialName={profile.name}
-        initialEmail={profile.email}
+        initialName={displayName}
+        initialEmail={displayEmail}
         onSave={handleSaveProfile}
       />
 

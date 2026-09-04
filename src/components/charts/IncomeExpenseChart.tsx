@@ -10,10 +10,11 @@ import {
   CartesianGrid,
   Tooltip,
 } from 'recharts';
+import Link from 'next/link';
 import ChartLegend from './ChartLegend';
 import ChartPeriodSelect, { ChartPeriod } from './ChartPeriodSelect';
 import FinancialTooltip from './FinancialTooltip';
-import { formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
 
 export interface ChartDataPoint {
   label: string;
@@ -22,7 +23,11 @@ export interface ChartDataPoint {
   expense: number;
 }
 
-export const SIX_MONTHS_DATA: ChartDataPoint[] = [
+// ---------------------------------------------------------------------------
+// Marketing preview data only — not used by authenticated financial pages.
+// Dashboard/Analytics must pass real `data` prop aggregated from API.
+// ---------------------------------------------------------------------------
+export const PREVIEW_SIX_MONTHS_DATA: ChartDataPoint[] = [
   { label: 'Mar', fullDate: 'Maret 2026', income: 14000000, expense: 8200000 },
   { label: 'Apr', fullDate: 'April 2026', income: 15200000, expense: 8700000 },
   { label: 'Mei', fullDate: 'Mei 2026', income: 16240000, expense: 9850000 },
@@ -31,13 +36,13 @@ export const SIX_MONTHS_DATA: ChartDataPoint[] = [
   { label: 'Agu', fullDate: 'Agustus 2026', income: 16900000, expense: 9100000 },
 ];
 
-export const THREE_MONTHS_DATA: ChartDataPoint[] = [
+export const PREVIEW_THREE_MONTHS_DATA: ChartDataPoint[] = [
   { label: 'Jun', fullDate: 'Juni 2026', income: 14600000, expense: 7100000 },
   { label: 'Jul', fullDate: 'Juli 2026', income: 17800000, expense: 8900000 },
   { label: 'Agu', fullDate: 'Agustus 2026', income: 16900000, expense: 9100000 },
 ];
 
-export const SEVEN_DAYS_DATA: ChartDataPoint[] = [
+export const PREVIEW_SEVEN_DAYS_DATA: ChartDataPoint[] = [
   { label: '25 Agu', fullDate: 'Selasa, 25 Agu 2026', income: 2800000, expense: 1100000 },
   { label: '26 Agu', fullDate: 'Rabu, 26 Agu 2026', income: 1900000, expense: 950000 },
   { label: '27 Agu', fullDate: 'Kamis, 27 Agu 2026', income: 2500000, expense: 1400000 },
@@ -47,14 +52,14 @@ export const SEVEN_DAYS_DATA: ChartDataPoint[] = [
   { label: '31 Agu', fullDate: 'Senin, 31 Agu 2026', income: 5200000, expense: 1900000 },
 ];
 
-export const THIRTY_DAYS_DATA: ChartDataPoint[] = [
+export const PREVIEW_THIRTY_DAYS_DATA: ChartDataPoint[] = [
   { label: 'Mgg 1', fullDate: 'Minggu 1 (1 - 7 Agu 2026)', income: 4100000, expense: 2150000 },
   { label: 'Mgg 2', fullDate: 'Minggu 2 (8 - 14 Agu 2026)', income: 3900000, expense: 2300000 },
   { label: 'Mgg 3', fullDate: 'Minggu 3 (15 - 21 Agu 2026)', income: 4500000, expense: 2200000 },
   { label: 'Mgg 4', fullDate: 'Minggu 4 (22 - 31 Agu 2026)', income: 4400000, expense: 2450000 },
 ];
 
-export const ONE_YEAR_DATA: ChartDataPoint[] = [
+export const PREVIEW_ONE_YEAR_DATA: ChartDataPoint[] = [
   { label: 'Sep', fullDate: 'September 2025', income: 13500000, expense: 7800000 },
   { label: 'Okt', fullDate: 'Oktober 2025', income: 14100000, expense: 8100000 },
   { label: 'Nov', fullDate: 'November 2025', income: 13800000, expense: 7900000 },
@@ -69,43 +74,75 @@ export const ONE_YEAR_DATA: ChartDataPoint[] = [
   { label: 'Agu', fullDate: 'Agustus 2026', income: 16900000, expense: 9100000 },
 ];
 
+// Deprecated aliases — for backwards compat only (landing preview).
+// @deprecated Use PREVIEW_* instead. Not used by production pages.
+export const SIX_MONTHS_DATA = PREVIEW_SIX_MONTHS_DATA;
+export const THREE_MONTHS_DATA = PREVIEW_THREE_MONTHS_DATA;
+export const SEVEN_DAYS_DATA = PREVIEW_SEVEN_DAYS_DATA;
+export const THIRTY_DAYS_DATA = PREVIEW_THIRTY_DAYS_DATA;
+export const ONE_YEAR_DATA = PREVIEW_ONE_YEAR_DATA;
+
 interface IncomeExpenseChartProps {
+  data?: ChartDataPoint[] | null;
+  isLoading?: boolean;
+  error?: string | null;
   variant?: 'dashboard' | 'analytics';
   title?: string;
   subtitle?: string;
   className?: string;
   defaultPeriod?: ChartPeriod;
   showSummary?: boolean;
+  onPeriodChange?: (period: ChartPeriod) => void;
+  period?: ChartPeriod;
 }
 
 export default function IncomeExpenseChart({
+  data: dataProp,
+  isLoading = false,
+  error = null,
   variant = 'dashboard',
   title = 'Keseimbangan Pemasukan vs Pengeluaran',
   subtitle = 'Tren arus kas 6 bulan terakhir',
   className = '',
   defaultPeriod = '6 Bulan',
   showSummary = false,
+  onPeriodChange,
+  period: periodProp,
 }: IncomeExpenseChartProps) {
-  const [period, setPeriod] = useState<ChartPeriod>(defaultPeriod);
+  const [internalPeriod, setInternalPeriod] = useState<ChartPeriod>(defaultPeriod);
+  const controlled = periodProp !== undefined;
+  const period = controlled ? periodProp! : internalPeriod;
 
-  // Dynamic dataset by period
-  const data = useMemo(() => {
+  const handlePeriodChange = (p: ChartPeriod) => {
+    if (!controlled) setInternalPeriod(p);
+    onPeriodChange?.(p);
+  };
+
+  // Data source: if parent provides `data`, use it (real). Otherwise use preview (landing only).
+  const isPreviewMode = dataProp === undefined;
+  const data: ChartDataPoint[] = useMemo(() => {
+    if (dataProp !== undefined) {
+      return dataProp ?? [];
+    }
+    // Preview mode — landing marketing only
     switch (period) {
       case '7 Hari':
-        return SEVEN_DAYS_DATA;
+        return PREVIEW_SEVEN_DAYS_DATA;
       case '30 Hari':
-        return THIRTY_DAYS_DATA;
+        return PREVIEW_THIRTY_DAYS_DATA;
       case '3 Bulan':
-        return THREE_MONTHS_DATA;
+        return PREVIEW_THREE_MONTHS_DATA;
       case '1 Tahun':
-        return ONE_YEAR_DATA;
+        return PREVIEW_ONE_YEAR_DATA;
       case '6 Bulan':
       default:
-        return SIX_MONTHS_DATA;
+        return PREVIEW_SIX_MONTHS_DATA;
     }
-  }, [period]);
+  }, [dataProp, period]);
 
-  // Compute summary averages
+  const hasData = data.length > 0 && data.some((d) => d.income !== 0 || d.expense !== 0);
+
+  // Compute summary averages from real data prop
   const { avgIncome, avgExpense, avgDiff } = useMemo(() => {
     if (!data.length) return { avgIncome: 0, avgExpense: 0, avgDiff: 0 };
     const totalInc = data.reduce((acc, curr) => acc + curr.income, 0);
@@ -119,13 +156,16 @@ export default function IncomeExpenseChart({
     };
   }, [data]);
 
-  // Max value calculation for clean Y Axis domain
+  // Max value from real data only — no hardcoded fallback
   const maxY = useMemo(() => {
-    const maxVal = Math.max(...data.map((d) => Math.max(d.income, d.expense)), 20000000);
+    if (!hasData) return 0;
+    const maxVal = Math.max(...data.map((d) => Math.max(d.income, d.expense)));
+    if (maxVal === 0) return 0;
     return Math.ceil(maxVal / 5000000) * 5000000;
-  }, [data]);
+  }, [data, hasData]);
 
   const yAxisTicks = useMemo(() => {
+    if (maxY === 0) return [0];
     const ticks: number[] = [];
     const step = maxY / 4;
     for (let i = 0; i <= maxY; i += step) {
@@ -160,7 +200,7 @@ export default function IncomeExpenseChart({
           <ChartLegend />
           <ChartPeriodSelect
             value={period}
-            onChange={setPeriod}
+            onChange={handlePeriodChange}
             options={
               variant === 'analytics'
                 ? ['7 Hari', '30 Hari', '3 Bulan', '6 Bulan', '1 Tahun']
@@ -171,133 +211,150 @@ export default function IncomeExpenseChart({
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. RECHARTS SMOOTH LINE AREA CANVAS                                       */}
+      {/* 2. STATES & RECHARTS CANVAS                                               */}
       {/* ========================================================================= */}
-      <div className={`w-full pt-2 ${heightClass}`}>
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart
-            data={data}
-            margin={{ top: 12, right: 12, left: -10, bottom: 4 }}
-          >
-            <defs>
-              {/* Pemasukan Gradient: Soft Purple fading down smoothly */}
-              <linearGradient id="finaiIncomeGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#7C7CE6" stopOpacity={0.14} />
-                <stop offset="90%" stopColor="#7C7CE6" stopOpacity={0.01} />
-                <stop offset="100%" stopColor="#7C7CE6" stopOpacity={0.0} />
-              </linearGradient>
+      {isLoading ? (
+        <div className={`w-full ${heightClass} rounded-2xl bg-[#F8F9FD] border border-black/[0.03] animate-pulse flex items-center justify-center`}>
+          <div className="text-center space-y-2">
+            <div className="w-8 h-8 rounded-full bg-[#E4E2FB] animate-pulse mx-auto" />
+            <p className="text-xs text-[#757A95] font-medium">Memuat data arus kas...</p>
+          </div>
+        </div>
+      ) : error ? (
+        <div className={`w-full ${heightClass} rounded-2xl bg-[#FEF3F2] border border-[#FCE2E0] flex items-center justify-center`}>
+          <div className="text-center space-y-1.5 px-4">
+            <p className="text-xs font-bold text-[#D94F4F]">Gagal memuat data chart</p>
+            <p className="text-xs text-[#757A95]">{error}</p>
+          </div>
+        </div>
+      ) : !hasData ? (
+        <div className={`w-full ${heightClass} rounded-2xl bg-[#F8F9FD] border border-black/[0.03] flex items-center justify-center`}>
+          <div className="text-center space-y-2 px-4">
+            <p className="text-sm font-bold text-[#242636]">Belum ada data arus kas</p>
+            <p className="text-xs text-[#757A95] max-w-sm mx-auto">Catat transaksi pertama untuk melihat tren pemasukan dan pengeluaran Anda di sini.</p>
+            <Link href="/app/transactions" className="inline-flex items-center gap-1.5 mt-1 text-xs font-bold text-[#7C7CE6] hover:text-[#6A69D6] transition-colors">
+              Catat transaksi pertama
+            </Link>
+          </div>
+        </div>
+      ) : (
+        <div className={`w-full pt-2 ${heightClass}`}>
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart
+              data={data}
+              margin={{ top: 12, right: 12, left: -10, bottom: 4 }}
+            >
+              <defs>
+                <linearGradient id="finaiIncomeGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#7C7CE6" stopOpacity={0.14} />
+                  <stop offset="90%" stopColor="#7C7CE6" stopOpacity={0.01} />
+                  <stop offset="100%" stopColor="#7C7CE6" stopOpacity={0.0} />
+                </linearGradient>
+                <linearGradient id="finaiExpenseGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#7FA6FF" stopOpacity={0.14} />
+                  <stop offset="90%" stopColor="#7FA6FF" stopOpacity={0.01} />
+                  <stop offset="100%" stopColor="#7FA6FF" stopOpacity={0.0} />
+                </linearGradient>
+              </defs>
 
-              {/* Pengeluaran Gradient: Soft Sky Blue fading down smoothly */}
-              <linearGradient id="finaiExpenseGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#7FA6FF" stopOpacity={0.14} />
-                <stop offset="90%" stopColor="#7FA6FF" stopOpacity={0.01} />
-                <stop offset="100%" stopColor="#7FA6FF" stopOpacity={0.0} />
-              </linearGradient>
-            </defs>
+              <CartesianGrid
+                strokeDasharray="4 4"
+                stroke="#E8EAF2"
+                vertical={false}
+                horizontal={true}
+              />
 
-            {/* Horizontal-Only Grid: Very light, dashed, subtle */}
-            <CartesianGrid
-              strokeDasharray="4 4"
-              stroke="#E8EAF2"
-              vertical={false}
-              horizontal={true}
-            />
+              <XAxis
+                dataKey="label"
+                stroke="#8A8FA8"
+                fontSize={12}
+                fontWeight={500}
+                tickLine={false}
+                axisLine={false}
+                dy={10}
+              />
 
-            {/* X Axis */}
-            <XAxis
-              dataKey="label"
-              stroke="#8A8FA8"
-              fontSize={12}
-              fontWeight={500}
-              tickLine={false}
-              axisLine={false}
-              dy={10}
-            />
+              <YAxis
+                domain={[0, maxY]}
+                ticks={yAxisTicks}
+                stroke="#8A8FA8"
+                fontSize={12}
+                fontWeight={500}
+                tickLine={false}
+                axisLine={false}
+                dx={-4}
+                tickFormatter={(v: number) => {
+                  if (v === 0) return '0Jt';
+                  return `${Math.round(v / 1000000)}Jt`;
+                }}
+              />
 
-            {/* Y Axis: 0Jt, 5Jt, 10Jt, 15Jt, 20Jt format */}
-            <YAxis
-              domain={[0, maxY]}
-              ticks={yAxisTicks}
-              stroke="#8A8FA8"
-              fontSize={12}
-              fontWeight={500}
-              tickLine={false}
-              axisLine={false}
-              dx={-4}
-              tickFormatter={(v: number) => {
-                if (v === 0) return '0Jt';
-                return `${Math.round(v / 1000000)}Jt`;
-              }}
-            />
+              <Tooltip
+                content={<FinancialTooltip />}
+                cursor={{
+                  stroke: '#7C7CE6',
+                  strokeWidth: 1.5,
+                  strokeDasharray: '3 3',
+                  strokeOpacity: 0.35,
+                }}
+              />
 
-            {/* Custom Tooltip with Subtle Vertical Cursor Line */}
-            <Tooltip
-              content={<FinancialTooltip />}
-              cursor={{
-                stroke: '#7C7CE6',
-                strokeWidth: 1.5,
-                strokeDasharray: '3 3',
-                strokeOpacity: 0.35,
-              }}
-            />
+              <Area
+                type="monotone"
+                dataKey="income"
+                name="Pemasukan"
+                stroke="#7C7CE6"
+                strokeWidth={2.8}
+                fillOpacity={1}
+                fill="url(#finaiIncomeGrad)"
+                animationDuration={850}
+                animationEasing="ease-out"
+                dot={{
+                  r: 4,
+                  stroke: '#7C7CE6',
+                  strokeWidth: 2,
+                  fill: '#FFFFFF',
+                }}
+                activeDot={{
+                  r: 6,
+                  stroke: '#7C7CE6',
+                  strokeWidth: 3,
+                  fill: '#FFFFFF',
+                }}
+              />
 
-            {/* Area Pemasukan (Line 1) */}
-            <Area
-              type="monotone"
-              dataKey="income"
-              name="Pemasukan"
-              stroke="#7C7CE6"
-              strokeWidth={2.8}
-              fillOpacity={1}
-              fill="url(#finaiIncomeGrad)"
-              animationDuration={850}
-              animationEasing="ease-out"
-              dot={{
-                r: 4,
-                stroke: '#7C7CE6',
-                strokeWidth: 2,
-                fill: '#FFFFFF',
-              }}
-              activeDot={{
-                r: 6,
-                stroke: '#7C7CE6',
-                strokeWidth: 3,
-                fill: '#FFFFFF',
-              }}
-            />
-
-            {/* Area Pengeluaran (Line 2) */}
-            <Area
-              type="monotone"
-              dataKey="expense"
-              name="Pengeluaran"
-              stroke="#7FA6FF"
-              strokeWidth={2.8}
-              fillOpacity={1}
-              fill="url(#finaiExpenseGrad)"
-              animationDuration={850}
-              animationEasing="ease-out"
-              dot={{
-                r: 4,
-                stroke: '#7FA6FF',
-                strokeWidth: 2,
-                fill: '#FFFFFF',
-              }}
-              activeDot={{
-                r: 6,
-                stroke: '#7FA6FF',
-                strokeWidth: 3,
-                fill: '#FFFFFF',
-              }}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
+              <Area
+                type="monotone"
+                dataKey="expense"
+                name="Pengeluaran"
+                stroke="#7FA6FF"
+                strokeWidth={2.8}
+                fillOpacity={1}
+                fill="url(#finaiExpenseGrad)"
+                animationDuration={850}
+                animationEasing="ease-out"
+                dot={{
+                  r: 4,
+                  stroke: '#7FA6FF',
+                  strokeWidth: 2,
+                  fill: '#FFFFFF',
+                }}
+                activeDot={{
+                  r: 6,
+                  stroke: '#7FA6FF',
+                  strokeWidth: 3,
+                  fill: '#FFFFFF',
+                }}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      )}
 
       {/* ========================================================================= */}
       {/* 3. OPTIONAL SUMMARY (FOR ANALYTICS PAGE)                                  */}
       {/* ========================================================================= */}
-      {(showSummary || variant === 'analytics') && (
+      {(showSummary || variant === 'analytics') && hasData && (
         <div className="pt-3 border-t border-[#E8EAF2]/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-6 flex-wrap">
             <span className="text-[#757A95]">

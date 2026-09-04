@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { BudgetService } from '@/lib/services/budget.service';
+import { serializeBudget, serializeBudgets } from '@/lib/serializers/budget';
 import { CreateBudgetSchema } from '@/lib/validations/budget';
 import { apiSuccess, apiError } from '@/lib/api-response';
 
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
     const year = searchParams.get('year') ? Number(searchParams.get('year')) : undefined;
 
     const budgets = await BudgetService.getBudgets(session.userId, month, year);
-    return apiSuccess({ budgets });
+    return apiSuccess({ budgets: serializeBudgets(budgets) });
   } catch (error) {
     console.error('Get Budgets API Error:', error);
     return apiError('INTERNAL_ERROR', 'Gagal memuat pos anggaran', 500);
@@ -43,7 +44,7 @@ export async function POST(request: NextRequest) {
     }
 
     const budget = await BudgetService.createBudget(session.userId, result.data);
-    return apiSuccess({ budget }, 201);
+    return apiSuccess({ budget: serializeBudget(budget) }, 201);
   } catch (error: unknown) {
     console.error('Create Budget API Error:', error);
     const message = error instanceof Error ? error.message : 'Gagal membuat pos anggaran';

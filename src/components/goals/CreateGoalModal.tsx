@@ -8,7 +8,7 @@ import DatePicker from '@/components/ui/DatePicker';
 import SegmentedControl from '@/components/ui/SegmentedControl';
 import WalletSelect from '@/components/ui/WalletSelect';
 import { GoalItem, GoalCategoryType, GoalColorTheme, GoalFrequency, Wallet } from '@/types';
-import { formatIDR, MOCK_WALLETS } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
 import GoalVisualIcon, { GOAL_THEME_COLORS } from './GoalVisualIcon';
 import GoalTransferFlow from './GoalTransferFlow';
 
@@ -42,14 +42,19 @@ export default function CreateGoalModal({
   isOpen,
   onClose,
   onCreateGoal,
-  wallets = MOCK_WALLETS,
+  wallets = [],
 }: CreateGoalModalProps) {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState<GoalCategoryType>('course');
+  const getDefaultTargetDate = () => { const d = new Date(); d.setMonth(d.getMonth() + 6); return d.toISOString().split('T')[0]; };
   const [targetAmountRaw, setTargetAmountRaw] = useState('12000000');
   const [currentAmountRaw, setCurrentAmountRaw] = useState('3000000');
-  const [targetDate, setTargetDate] = useState('2026-12-31');
+  const [targetDate, setTargetDate] = useState(getDefaultTargetDate());
   const [frequency, setFrequency] = useState<GoalFrequency>('monthly');
+
+  React.useEffect(() => {
+    if (isOpen && !targetDate) setTargetDate(getDefaultTargetDate());
+  }, [isOpen]);
 
   // Dual Wallets: Source & Destination
   const [sourceWalletId, setSourceWalletId] = useState('w-1'); // Default BCA
@@ -57,6 +62,7 @@ export default function CreateGoalModal({
 
   const [colorTheme, setColorTheme] = useState<GoalColorTheme>('periwinkle');
   const [notes, setNotes] = useState('');
+  const [autoDeposit, setAutoDeposit] = useState(false);
 
   // Find wallet objects
   const sourceWallet = useMemo(
@@ -75,24 +81,35 @@ export default function CreateGoalModal({
   const currentAmount = parseFloat(currentAmountRaw) || 0;
   const remaining = Math.max(targetAmount - currentAmount, 0);
 
-  // Auto calculate required monthly saving
+  // Auto calculate required saving — respects frekuensi bulanan/mingguan + tampil dual
   const calculation = useMemo(() => {
     const today = new Date();
-    const target = new Date(targetDate || '2026-12-31');
+    const target = new Date(targetDate || getDefaultTargetDate());
     const diffTime = target.getTime() - today.getTime();
-    const diffDays = Math.max(Math.ceil(diffTime / (1000 * 60 * 60 * 24)), 30);
+    const diffDays = Math.max(Math.ceil(diffTime / (1000 * 60 * 60 * 24)), 7);
     const months = Math.max(Math.round(diffDays / 30), 1);
-    const monthlyReq = Math.ceil(remaining / months);
+    const weeks = Math.max(Math.ceil(diffDays / 7), 1);
+    let monthlyReq: number, weeklyReq: number;
+    if (frequency === 'weekly') {
+      weeklyReq = remaining > 0 ? Math.ceil(remaining / weeks) : 0;
+      monthlyReq = Math.ceil(weeklyReq * 4.33);
+    } else {
+      monthlyReq = remaining > 0 ? Math.ceil(remaining / months) : 0;
+      weeklyReq = Math.ceil(monthlyReq / 4.33);
+    }
 
     return {
       months,
-      monthlyReq: remaining > 0 ? monthlyReq : 0,
+      weeks,
+      monthlyReq,
+      weeklyReq,
+      primaryReq: frequency === 'weekly' ? weeklyReq : monthlyReq,
       percentage:
         targetAmount > 0
           ? Math.min(Math.round((currentAmount / targetAmount) * 100), 100)
           : 0,
     };
-  }, [targetAmount, currentAmount, remaining, targetDate]);
+  }, [targetAmount, currentAmount, remaining, targetDate, frequency]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,6 +124,8 @@ export default function CreateGoalModal({
       targetDate,
       frequency,
       monthlySaving: calculation.monthlyReq,
+      weeklySaving: calculation.weeklyReq as any,
+      autoDeposit,
       sourceWalletId,
       sourceWalletName: sourceWallet ? sourceWallet.name : 'Bank BCA',
       destinationWalletId,
@@ -315,7 +334,16 @@ export default function CreateGoalModal({
               </div>
             </div>
 
-            {/* 6. Pilihan Tema Warna */}
+            {/* 6. Setoran Otomatis mengikuti tagihan */}
+            <label className="flex items-center justify-between p-3 rounded-2xl bg-[#F8F9FD] border border-black/[0.06] cursor-pointer gap-3">
+              <div>
+                <span className="text-xs font-bold text-[#242636] block">Setoran Otomatis mengikuti tagihan</span>
+                <span className="text-[10px] text-[#757A95]">Auto-debit {frequency === 'weekly' ? 'mingguan' : 'bulanan'} sebesar {formatIDR(calculation.primaryReq)} ke {destinationWallet?.name || 'tabungan'}</span>
+              </div>
+              <input type="checkbox" checked={autoDeposit} onChange={(e) => setAutoDeposit(e.target.checked)} className="w-10 h-6 accent-[#7C7CE6]" />
+            </label>
+
+            {/* 7. Pilihan Tema Warna */}
             <div className="space-y-1">
               <label className="text-[11px] font-bold text-[#757A95] uppercase tracking-wider block">
                 Warna Tema
@@ -368,7 +396,7 @@ export default function CreateGoalModal({
                     {title.trim() || 'Nama Target Impian'}
                   </h4>
                   <span className="text-[11px] text-[#757A95] block">
-                    Target: {targetDate || '31 Des 2026'}
+                    Target: {targetDate ? new Date(targetDate).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-'}
                   </span>
                 </div>
               </div>
@@ -394,23 +422,38 @@ export default function CreateGoalModal({
               <GoalTransferFlow
                 sourceWallet={sourceWallet}
                 destinationWallet={destinationWallet}
-                amount={calculation.monthlyReq}
+                amount={calculation.primaryReq}
                 mode="create"
               />
             </div>
 
-            {/* Auto Calculation Recommendation Box */}
-            <div className="p-3 rounded-2xl bg-white border border-black/[0.05] space-y-1">
+            {/* Auto Calculation Recommendation Box — dual per bulan & per minggu */}
+            <div className="p-3 rounded-2xl bg-white border border-black/[0.05] space-y-2">
               <div className="flex items-center gap-1 text-[11px] font-bold text-[#1B7354]">
                 <TrendingUp size={13} />
-                <span>Kebutuhan Nabung Bulanan:</span>
+                <span>Kebutuhan Nabung {frequency === 'weekly' ? 'Mingguan' : 'Bulanan'}:</span>
               </div>
               <div className="text-sm font-extrabold text-[#242636]">
-                {formatIDR(calculation.monthlyReq)} / bulan
+                {formatIDR(calculation.primaryReq)} / {frequency === 'weekly' ? 'minggu' : 'bulan'}
+                <span className="text-[11px] font-semibold text-[#757A95] ml-2">
+                  (≈ {formatIDR(frequency === 'weekly' ? calculation.monthlyReq : calculation.weeklyReq)} / {frequency === 'weekly' ? 'bulan' : 'minggu'})
+                </span>
               </div>
               <p className="text-[10px] text-[#757A95] leading-relaxed">
-                Perlu menabung sekitar {formatIDR(calculation.monthlyReq)} per bulan selama {calculation.months} bulan untuk mencapai target tepat waktu.
+                {frequency === 'weekly'
+                  ? `Perlu menabung ${formatIDR(calculation.weeklyReq)}/minggu selama ${calculation.weeks} minggu. Setara ${formatIDR(calculation.monthlyReq)}/bulan.`
+                  : `Perlu menabung ${formatIDR(calculation.monthlyReq)}/bulan selama ${calculation.months} bulan. Setara ${formatIDR(calculation.weeklyReq)}/minggu.`}
               </p>
+              <div className="grid grid-cols-2 gap-2 pt-1 text-center">
+                <div className={`p-2 rounded-xl border ${frequency === 'weekly' ? 'bg-[#EDEAFC] border-[#7C7CE6] text-[#5F5ED4] font-bold' : 'bg-[#F8F9FD] border-black/[0.05] text-[#757A95]'}`}>
+                  <span className="text-[10px] uppercase block">Per Bulan</span>
+                  <span className="text-xs font-extrabold">{formatIDR(calculation.monthlyReq)}</span>
+                </div>
+                <div className={`p-2 rounded-xl border ${frequency === 'weekly' ? 'bg-[#F8F9FD] border-black/[0.05] text-[#757A95]' : 'bg-[#EDEAFC] border-[#7C7CE6] text-[#5F5ED4] font-bold'}`}>
+                  <span className="text-[10px] uppercase block">Per Minggu</span>
+                  <span className="text-xs font-extrabold">{formatIDR(calculation.weeklyReq)}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

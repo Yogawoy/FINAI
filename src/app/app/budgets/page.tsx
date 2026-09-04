@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   PieChart,
@@ -11,7 +11,9 @@ import {
 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { BudgetCategory } from '@/types';
-import { MOCK_BUDGETS, formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
+import { apiClient, mapApiErrorMessage } from '@/lib/api-client';
+import { emitRefresh, onRefresh } from '@/lib/data-refresh';
 
 // Loading & Page Transition
 import BudgetsSkeleton from '@/components/loading/BudgetsSkeleton';
@@ -31,28 +33,41 @@ import DuplicateBudgetModal from '@/components/budgets/DuplicateBudgetModal';
 import TransactionToast from '@/components/transactions/TransactionToast';
 import { computeBudgetHealth } from '@/components/budgets/BudgetHealth';
 
-const MONTH_OPTIONS = [
-  'Juli 2026',
-  'Agustus 2026',
-  'September 2026',
-  'Oktober 2026',
-];
+function getMonthOptions(): string[] {
+  const now = new Date();
+  const fmt = (d: Date) => d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }).replace(/^\w/, (c) => c.toUpperCase());
+  const months: string[] = [];
+  for (let offset = -1; offset <= 2; offset++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+    months.push(fmt(d));
+  }
+  return months;
+}
+const MONTH_OPTIONS = getMonthOptions();
+
+function mapBackendBudgetToUI(b: any): BudgetCategory {
+  return {
+    id: b.id,
+    name: b.category,
+    category: b.category as any,
+    limit: Number(b.limitAmount),
+    spent: Number(b.usedAmount || 0),
+    period: 'monthly',
+    color: '#7C7CE6',
+    icon: 'PieChart',
+    iconName: 'PieChart',
+    status: 'safe',
+  };
+}
 
 export default function BudgetsPage() {
   const [isLoading, setIsLoading] = useState(true);
+  const [budgets, setBudgets] = useState<BudgetCategory[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 450);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // 1. Budgets Local State (Initialized with 6 realistic categories)
-  const [budgets, setBudgets] = useState<BudgetCategory[]>(MOCK_BUDGETS);
-
-  // 2. Selected Month & Dropdown State
-  const [selectedMonth, setSelectedMonth] = useState('Agustus 2026');
+  // 2. Selected Month & Dropdown State — mengikuti bulan hari ini
+  const getCurrentMonthLabel = () => new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }).replace(/^\w/, (c) => c.toUpperCase());
+  const [selectedMonth, setSelectedMonth] = useState(getCurrentMonthLabel());
   const [isMonthDropdownOpen, setIsMonthDropdownOpen] = useState(false);
 
   // 3. Search & Filter State
@@ -69,8 +84,6 @@ export default function BudgetsPage() {
 
   const [activeBudget, setActiveBudget] = useState<BudgetCategory | null>(null);
   const [lastCreatedBudget, setLastCreatedBudget] = useState<BudgetCategory | null>(null);
-
-  // 5. Toast Message State
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -80,7 +93,45 @@ export default function BudgetsPage() {
     }, 3200);
   };
 
-  // 6. Dynamic Computations for Overview
+  const [categoryTransactions, setCategoryTransactions] = useState<any[]>([]);
+
+  const fetchBudgets = useCallback(async () => {
+    try {
+      setErrorMessage(null);
+      const res = await apiClient.get<{ budgets: any[] }>('/api/budgets');
+      const mapped = (res.budgets || []).map(mapBackendBudgetToUI);
+      setBudgets(mapped);
+    } catch (err) {
+      setErrorMessage(mapApiErrorMessage(err));
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const fetchCategoryTransactions = useCallback(async () => {
+    try {
+      const res = await apiClient.get<{ transactions: any[] }>('/api/transactions?limit=100');
+      setCategoryTransactions(res.transactions || []);
+    } catch {
+      // Ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchBudgets();
+    fetchCategoryTransactions();
+  }, [fetchBudgets, fetchCategoryTransactions]);
+
+  useEffect(() => {
+    const off = onRefresh((kind) => {
+      if (kind === 'budget' || kind === 'transaction' || kind === 'all') {
+        fetchBudgets();
+        fetchCategoryTransactions();
+      }
+    });
+    return off;
+  }, [fetchBudgets, fetchCategoryTransactions]);
+
   const totalBudget = useMemo(() => {
     return budgets.reduce((acc, curr) => acc + curr.limit, 0);
   }, [budgets]);
@@ -93,17 +144,13 @@ export default function BudgetsPage() {
   const overallPercentage = totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0;
   const overallHealth = computeBudgetHealth(overallPercentage);
 
-  // 7. Filtered Budgets List
   const filteredBudgets = useMemo(() => {
     return budgets.filter((b) => {
-      // Search matching
       const matchesSearch =
         b.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         b.category.toLowerCase().includes(searchQuery.toLowerCase());
 
       if (!matchesSearch) return false;
-
-      // Filter category matching
       if (selectedFilter === 'all') return true;
 
       const pct = b.limit > 0 ? Math.round((b.spent / b.limit) * 100) : 0;
@@ -112,7 +159,6 @@ export default function BudgetsPage() {
     });
   }, [budgets, searchQuery, selectedFilter]);
 
-  // Counts for filter tabs
   const filterCounts = useMemo(() => {
     let onTrack = 0;
     let almostThere = 0;
@@ -134,36 +180,79 @@ export default function BudgetsPage() {
     };
   }, [budgets]);
 
-  // Handlers for 6 Modal Operations
-  const handleCreateBudget = (newBudget: BudgetCategory) => {
-    setBudgets((prev) => [newBudget, ...prev]);
-    setLastCreatedBudget(newBudget);
-    setIsSuccessModalOpen(true);
-    showToast(`Anggaran "${newBudget.name}" (${formatIDR(newBudget.limit)}) berhasil dibuat.`);
-  };
+  const handleCreateBudgetSubmit = async (newBudget: BudgetCategory) => {
+    try {
+      const now = new Date();
+      const res = await apiClient.post<{ budget: any }>('/api/budgets', {
+        category: newBudget.category || newBudget.name,
+        limitAmount: newBudget.limit,
+        month: now.getMonth() + 1,
+        year: now.getFullYear(),
+      });
 
-  const handleUpdateBudget = (updated: BudgetCategory) => {
-    setBudgets((prev) => prev.map((b) => (b.id === updated.id ? updated : b)));
-    if (activeBudget && activeBudget.id === updated.id) {
-      setActiveBudget(updated);
+      const mapped = mapBackendBudgetToUI(res.budget);
+      setLastCreatedBudget(mapped);
+      setIsSuccessModalOpen(true);
+      showToast(`Anggaran "${mapped.name}" (${formatIDR(mapped.limit)}) berhasil dibuat.`);
+      fetchBudgets();
+      emitRefresh('budget');
+    } catch (err) {
+      showToast(mapApiErrorMessage(err));
     }
-    showToast(`Anggaran "${updated.name}" berhasil diperbarui.`);
   };
 
-  const handleDeleteBudget = (budgetId: string) => {
-    const toDelete = budgets.find((b) => b.id === budgetId);
-    setBudgets((prev) => prev.filter((b) => b.id !== budgetId));
-    if (activeBudget && activeBudget.id === budgetId) {
-      setActiveBudget(null);
+  const handleUpdateBudgetSubmit = async (updated: BudgetCategory) => {
+    try {
+      const res = await apiClient.patch<{ budget: any }>(`/api/budgets/${updated.id}`, {
+        limitAmount: updated.limit,
+      });
+
+      const mapped = mapBackendBudgetToUI(res.budget);
+      if (activeBudget && activeBudget.id === mapped.id) {
+        setActiveBudget(mapped);
+      }
+      showToast(`Anggaran "${mapped.name}" berhasil diperbarui.`);
+      fetchBudgets();
+      emitRefresh('budget');
+    } catch (err) {
+      showToast(mapApiErrorMessage(err));
     }
-    showToast(`Anggaran "${toDelete?.name || 'Item'}" telah dihapus.`);
   };
 
-  const handleDuplicateBudget = (newBudget: BudgetCategory) => {
-    setBudgets((prev) => [newBudget, ...prev]);
-    setLastCreatedBudget(newBudget);
-    setIsSuccessModalOpen(true);
-    showToast(`Anggaran "${newBudget.name}" berhasil diduplikasi.`);
+  const handleDeleteBudgetSubmit = async (budgetId: string) => {
+    try {
+      await apiClient.delete(`/api/budgets/${budgetId}`);
+      if (activeBudget && activeBudget.id === budgetId) {
+        setActiveBudget(null);
+      }
+      showToast('Anggaran telah dihapus.');
+      fetchBudgets();
+      emitRefresh('budget');
+    } catch (err) {
+      showToast(mapApiErrorMessage(err));
+    }
+  };
+
+  const handleDuplicateBudgetSubmit = async (newBudget: BudgetCategory) => {
+    try {
+      const now = new Date();
+      const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      const res = await apiClient.post<{ budget: any }>('/api/budgets', {
+        category: newBudget.category || newBudget.name,
+        limitAmount: newBudget.limit,
+        month: nextMonth.getMonth() + 1,
+        year: nextMonth.getFullYear(),
+      });
+
+      const mapped = mapBackendBudgetToUI(res.budget);
+      setLastCreatedBudget(mapped);
+      setIsSuccessModalOpen(true);
+      showToast(`Anggaran "${mapped.name}" berhasil diduplikasi.`);
+      fetchBudgets();
+      emitRefresh('budget');
+    } catch (err) {
+      showToast(mapApiErrorMessage(err));
+    }
   };
 
   const handleSelectBudget = (budget: BudgetCategory) => {
@@ -196,9 +285,12 @@ export default function BudgetsPage() {
   return (
     <PageTransition>
       <div className="space-y-7 max-w-7xl mx-auto pb-16">
-        {/* ========================================================================= */}
-        {/* 1. PAGE HEADER                                                            */}
-        {/* ========================================================================= */}
+        {errorMessage && (
+          <div className="p-4 rounded-2xl bg-red-50 text-red-600 border border-red-200 text-xs font-semibold">
+            {errorMessage}
+          </div>
+        )}
+
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-black text-[#242636] tracking-tight">
@@ -209,9 +301,7 @@ export default function BudgetsPage() {
             </p>
           </div>
 
-          {/* Date Selector & Create Budget Action */}
           <div className="flex items-center gap-2.5">
-            {/* Month Selector Dropdown */}
             <div className="relative">
               <button
                 type="button"
@@ -228,7 +318,6 @@ export default function BudgetsPage() {
                 />
               </button>
 
-              {/* Dropdown Menu */}
               <AnimatePresence>
                 {isMonthDropdownOpen && (
                   <>
@@ -267,7 +356,6 @@ export default function BudgetsPage() {
               </AnimatePresence>
             </div>
 
-            {/* Create Budget Button */}
             <Button
               type="button"
               variant="primary"
@@ -280,9 +368,6 @@ export default function BudgetsPage() {
           </div>
         </div>
 
-        {/* ========================================================================= */}
-        {/* 2. OVERVIEW CARD & SMART HEALTH METER                                     */}
-        {/* ========================================================================= */}
         <BudgetOverview
           monthLabel={selectedMonth}
           totalBudget={totalBudget}
@@ -293,9 +378,6 @@ export default function BudgetsPage() {
           onQuickCreate={() => setIsCreateModalOpen(true)}
         />
 
-        {/* ========================================================================= */}
-        {/* 3. FINAI BUDGET INSIGHT BANNER                                            */}
-        {/* ========================================================================= */}
         <BudgetInsight
           insightText="Dengan pola belanja saat ini, Anda berpotensi menghemat Rp420.000 pada pos Makanan & Minuman bulan ini."
           category="Makanan & Minuman"
@@ -306,9 +388,6 @@ export default function BudgetsPage() {
           }}
         />
 
-        {/* ========================================================================= */}
-        {/* 4. BUDGETS LIST SECTION & CONTROLS                                        */}
-        {/* ========================================================================= */}
         <section className="space-y-4">
           <div className="flex items-center justify-between px-1">
             <div>
@@ -324,7 +403,6 @@ export default function BudgetsPage() {
             </span>
           </div>
 
-          {/* Search & Filter Toolbar */}
           <BudgetFilters
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
@@ -333,7 +411,6 @@ export default function BudgetsPage() {
             counts={filterCounts}
           />
 
-          {/* Budget Categories Grid */}
           <BudgetList
             budgets={filteredBudgets}
             searchQuery={searchQuery}
@@ -345,26 +422,19 @@ export default function BudgetsPage() {
           />
         </section>
 
-        {/* ========================================================================= */}
-        {/* 5. ALL 6 MODALS SUITE                                                     */}
-        {/* ========================================================================= */}
-
-        {/* Modal 1: Buat Anggaran Baru */}
         <CreateBudgetModal
           isOpen={isCreateModalOpen}
           onClose={() => setIsCreateModalOpen(false)}
-          onCreateBudget={handleCreateBudget}
+          onCreateBudget={handleCreateBudgetSubmit}
         />
 
-        {/* Modal 2: Edit Anggaran */}
         <EditBudgetModal
           budget={activeBudget}
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
-          onUpdateBudget={handleUpdateBudget}
+          onUpdateBudget={handleUpdateBudgetSubmit}
         />
 
-        {/* Modal 3: Detail Anggaran */}
         <BudgetDetailModal
           budget={activeBudget}
           isOpen={isDetailModalOpen}
@@ -372,17 +442,16 @@ export default function BudgetsPage() {
           onEdit={handleEditTrigger}
           onDelete={handleDeleteTrigger}
           onDuplicate={handleDuplicateTrigger}
+          transactions={categoryTransactions}
         />
 
-        {/* Modal 4: Konfirmasi Hapus Anggaran */}
         <DeleteBudgetDialog
           budget={activeBudget}
           isOpen={isDeleteDialogOpen}
           onClose={() => setIsDeleteDialogOpen(false)}
-          onConfirmDelete={handleDeleteBudget}
+          onConfirmDelete={handleDeleteBudgetSubmit}
         />
 
-        {/* Modal 5: Anggaran Dibuat Success Modal */}
         <BudgetSuccessModal
           budget={lastCreatedBudget}
           isOpen={isSuccessModalOpen}
@@ -390,15 +459,13 @@ export default function BudgetsPage() {
           onCreateAnother={() => setIsCreateModalOpen(true)}
         />
 
-        {/* Modal 6: Duplikat Anggaran Modal */}
         <DuplicateBudgetModal
           sourceBudget={activeBudget}
           isOpen={isDuplicateModalOpen}
           onClose={() => setIsDuplicateModalOpen(false)}
-          onDuplicateBudget={handleDuplicateBudget}
+          onDuplicateBudget={handleDuplicateBudgetSubmit}
         />
 
-        {/* Toast Floating Notification */}
         <TransactionToast
           message={toastMessage}
           onClose={() => setToastMessage(null)}

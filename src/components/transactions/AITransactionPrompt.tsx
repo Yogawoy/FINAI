@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
-import { formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
 
 interface AITransactionPromptProps {
   isOpen: boolean;

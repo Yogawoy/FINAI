@@ -60,6 +60,13 @@ export const GOAL_THEME_COLORS: Record<
     bar: 'bg-[#F87171]',
     lightBg: 'bg-[#FFF2F1]',
   },
+  indigo: {
+    bg: 'bg-[#EDEAFC]',
+    text: 'text-[#5F5ED4]',
+    border: 'border-[#7C7CE6]/20',
+    bar: 'bg-[#7C7CE6]',
+    lightBg: 'bg-[#F5F4FE]',
+  },
 };
 
 export default function GoalVisualIcon({

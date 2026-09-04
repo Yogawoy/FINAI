@@ -4,7 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, TrendingUp, Plus, ArrowUpRight } from 'lucide-react';
 import { GoalItem } from '@/types';
-import { formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
 import GoalVisualIcon, { GOAL_THEME_COLORS } from './GoalVisualIcon';
 import GoalStatusBadge from './GoalStatusBadge';
 
@@ -26,6 +26,9 @@ export default function GoalCard({
 
   const remaining = Math.max(goal.targetAmount - goal.currentAmount, 0);
   const theme = GOAL_THEME_COLORS[goal.colorTheme] || GOAL_THEME_COLORS.periwinkle;
+  const isWeekly = goal.frequency === 'weekly';
+  const weeklySaving = (goal.weeklySaving ?? Math.ceil(goal.monthlySaving / 4.33)) || Math.ceil(remaining / Math.max(1, Math.ceil((new Date(goal.targetDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24 * 7))));
+  const monthlySaving = goal.monthlySaving;
 
   const formatDeadline = (d: string) => {
     if (!d) return '';
@@ -64,7 +67,10 @@ export default function GoalCard({
             </div>
           </div>
 
-          <GoalStatusBadge status={goal.status} size="sm" />
+          <div className="flex items-center gap-1.5">
+            {goal.autoDeposit && <span className="text-[9px] font-bold bg-[#D0EFE5] text-[#1B7354] px-2 py-0.5 rounded-full">AUTO {goal.frequency === 'weekly' ? 'Mingguan' : 'Bulanan'}</span>}
+            <GoalStatusBadge status={goal.status} size="sm" />
+          </div>
         </div>
 
         {/* Amount Progress Hierarchy */}
@@ -98,14 +104,17 @@ export default function GoalCard({
         </div>
       </div>
 
-      {/* Bottom Footer: Monthly Saving & Quick Add Button */}
-      <div className="pt-3 border-t border-black/[0.04] flex items-center justify-between">
-        <div className="space-y-0.5">
+      {/* Bottom Footer: Monthly/Weekly Saving & Quick Add Button */}
+      <div className="pt-3 border-t border-black/[0.04] flex items-center justify-between gap-3">
+        <div className="space-y-0.5 min-w-0">
           <span className="text-[10px] font-bold text-[#757A95] uppercase tracking-wider block">
-            Nabung Bulanan
+            {isWeekly ? 'Nabung Mingguan' : 'Nabung Bulanan'}
           </span>
           <span className="text-xs font-extrabold text-[#1B7354] tabular-nums">
-            {formatIDR(goal.monthlySaving)}/bln
+            {formatIDR(isWeekly ? weeklySaving : monthlySaving)}/{isWeekly ? 'mgg' : 'bln'}
+          </span>
+          <span className="text-[10px] text-[#757A95] block">
+            ≈ {formatIDR(isWeekly ? monthlySaving : weeklySaving)}/{isWeekly ? 'bln' : 'mgg'}
           </span>
         </div>
 

@@ -61,6 +61,7 @@ export interface Transaction {
   paymentMethod?: 'Cash' | 'Bank' | 'E-Wallet' | string;
   walletId?: string;
   walletName?: string;
+  status?: string;
 }
 
 export type BudgetPeriod = 'monthly' | 'weekly' | 'custom';
@@ -74,6 +75,7 @@ export interface BudgetCategory {
   limit: number;
   color: string;
   icon: string;
+  iconName?: string;
   dailyVelocity?: string;
   status: 'safe' | 'warning' | 'exceeded';
   period?: BudgetPeriod;
@@ -85,7 +87,7 @@ export interface BudgetCategory {
 
 export type GoalStatus = 'on_track' | 'needs_attention' | 'behind' | 'completed';
 export type GoalFrequency = 'monthly' | 'weekly';
-export type GoalColorTheme = 'periwinkle' | 'lavender' | 'iceblue' | 'mint' | 'peach';
+export type GoalColorTheme = 'periwinkle' | 'lavender' | 'iceblue' | 'mint' | 'peach' | 'indigo';
 export type GoalCategoryType =
   | 'laptop'
   | 'travel'
@@ -116,6 +118,9 @@ export interface GoalItem {
   targetDate: string; // ISO date or readable string
   frequency: GoalFrequency;
   monthlySaving: number;
+  weeklySaving?: number;
+  autoDeposit?: boolean;
+  nextDueDate?: string;
   sourceWalletId: string;
   sourceWalletName: string;
   destinationWalletId: string;
@@ -124,6 +129,7 @@ export interface GoalItem {
   status: GoalStatus;
   notes?: string;
   contributions: GoalContribution[];
+  createdAt?: string;
 }
 
 export interface FinancialGoal {
@@ -159,7 +165,7 @@ export interface DaySpending {
   avg: number;
 }
 
-export type AIActionType = 'expense' | 'income' | 'goal_contribution' | 'budget_check' | 'analytics_insight';
+export type AIActionType = 'expense' | 'income' | 'goal_contribution' | 'transfer' | 'budget_check' | 'analytics_insight';
 
 export interface AIFinancialAction {
   id: string;
@@ -200,6 +206,37 @@ export interface AIMessage {
     label: string;
     value: string;
   }[];
+  // Structured financial cards — read-only, no confirmation
+  budgetCard?: {
+    category: string;
+    limitAmount: number;
+    usedAmount: number;
+    remainingAmount: number;
+    percentage: number;
+    status?: string;
+    period?: string;
+  };
+  goalCard?: {
+    name: string;
+    targetAmount: number;
+    currentAmount: number;
+    remainingAmount: number;
+    percentage: number;
+    deadline?: string | null;
+    category?: string;
+  };
+  walletCard?: {
+    wallets: { name: string; balance: number; type?: string }[];
+    totalBalance: number;
+  };
+  summaryCard?: {
+    period?: string;
+    income: number;
+    expense: number;
+    remaining: number;
+    budgetPercentage?: number;
+    activeGoals?: number;
+  };
 }
 
 export type AICoreState = 'idle' | 'thinking' | 'responding';

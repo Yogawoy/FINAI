@@ -13,6 +13,8 @@ const PROTECTED_API_PREFIXES = [
   '/api/goals',
   '/api/settings',
   '/api/auth/me',
+  '/api/transfers',
+  '/api/ai',
 ];
 
 export function middleware(request: NextRequest) {
@@ -60,8 +62,12 @@ export const config = {
     '/api/transactions/:path*',
     '/api/budgets/:path*',
     '/api/goals/:path*',
+    '/api/settings',
     '/api/settings/:path*',
     '/api/auth/me',
+    '/api/transfers',
+    '/api/transfers/:path*',
+    '/api/ai/:path*',
     '/login',
     '/register',
   ],

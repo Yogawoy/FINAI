@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { GoalService } from '@/lib/services/goal.service';
+import { serializeGoal, serializeGoals } from '@/lib/serializers/goal';
 import { CreateGoalSchema } from '@/lib/validations/goal';
 import { apiSuccess, apiError } from '@/lib/api-response';
 
@@ -12,7 +13,7 @@ export async function GET() {
     }
 
     const goals = await GoalService.getGoals(session.userId);
-    return apiSuccess({ goals });
+    return apiSuccess({ goals: serializeGoals(goals) });
   } catch (error) {
     console.error('Get Goals API Error:', error);
     return apiError('INTERNAL_ERROR', 'Gagal memuat target impian', 500);
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest) {
     }
 
     const goal = await GoalService.createGoal(session.userId, result.data);
-    return apiSuccess({ goal }, 201);
+    return apiSuccess({ goal: serializeGoal(goal) }, 201);
   } catch (error) {
     console.error('Create Goal API Error:', error);
     return apiError('INTERNAL_ERROR', 'Gagal membuat target baru', 500);

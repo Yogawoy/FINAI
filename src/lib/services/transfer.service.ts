@@ -2,16 +2,42 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { TransferWalletInput } from '@/lib/validations/wallet';
 
+export class TransferNotFoundError extends Error {
+  constructor(message: string = 'Dompet tidak ditemukan atau bukan milik Anda') {
+    super(message);
+    this.name = 'TransferNotFoundError';
+  }
+}
+
+export class TransferValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'TransferValidationError';
+  }
+}
+
+export class TransferInsufficientBalanceError extends Error {
+  constructor(message: string = 'Saldo dompet asal tidak mencukupi untuk transfer') {
+    super(message);
+    this.name = 'TransferInsufficientBalanceError';
+  }
+}
+
 export class TransferService {
   /**
-   * Atomic transfer between two wallets owned by the same user
+   * Atomic transfer between two wallets owned by the same user.
+   * Internal transfer does NOT create EXPENSE or INCOME transactions.
    */
   static async transferBetweenWallets(userId: string, input: TransferWalletInput) {
-    const { fromWalletId, toWalletId, amount, date, note } = input;
+    const { fromWalletId, toWalletId, amount } = input;
     const transferAmount = new Prisma.Decimal(amount);
 
+    if (transferAmount.lte(0)) {
+      throw new TransferValidationError('Nominal transfer harus lebih besar dari 0');
+    }
+
     if (fromWalletId === toWalletId) {
-      throw new Error('Dompet asal dan tujuan tidak boleh sama');
+      throw new TransferValidationError('Dompet asal dan tujuan tidak boleh sama');
     }
 
     return prisma.$transaction(async (tx) => {
@@ -21,11 +47,7 @@ export class TransferService {
       });
 
       if (!fromWallet) {
-        throw new Error('Dompet asal tidak ditemukan atau bukan milik Anda');
-      }
-
-      if (fromWallet.balance.lessThan(transferAmount)) {
-        throw new Error('Saldo dompet asal tidak mencukupi untuk transfer');
+        throw new TransferNotFoundError('Dompet asal tidak ditemukan atau bukan milik Anda');
       }
 
       // 2. Check destination wallet ownership
@@ -34,63 +56,41 @@ export class TransferService {
       });
 
       if (!toWallet) {
-        throw new Error('Dompet tujuan tidak ditemukan atau bukan milik Anda');
+        throw new TransferNotFoundError('Dompet tujuan tidak ditemukan atau bukan milik Anda');
       }
 
-      // 3. Debit source wallet
-      const updatedFromWallet = await tx.wallet.update({
-        where: { id: fromWalletId },
+      // 3. Conditional update on source wallet to prevent race conditions
+      const updatedFromCount = await tx.wallet.updateMany({
+        where: {
+          id: fromWalletId,
+          userId,
+          balance: { gte: transferAmount },
+        },
         data: {
-          balance: {
-            decrement: transferAmount,
-          },
+          balance: { decrement: transferAmount },
         },
       });
 
-      // 4. Credit destination wallet
+      if (updatedFromCount.count === 0) {
+        throw new TransferInsufficientBalanceError();
+      }
+
+      // 4. Increment destination wallet balance
       const updatedToWallet = await tx.wallet.update({
         where: { id: toWalletId },
         data: {
-          balance: {
-            increment: transferAmount,
-          },
+          balance: { increment: transferAmount },
         },
       });
 
-      const txDate = date ? new Date(date) : new Date();
-      const description = note || `Transfer ke ${toWallet.name}`;
-
-      // 5. Create expense record on source
-      const outTransaction = await tx.transaction.create({
-        data: {
-          userId,
-          walletId: fromWalletId,
-          type: 'EXPENSE',
-          amount: transferAmount,
-          category: 'Transfer Keluar',
-          description,
-          transactionDate: txDate,
-        },
-      });
-
-      // 6. Create income record on destination
-      const inTransaction = await tx.transaction.create({
-        data: {
-          userId,
-          walletId: toWalletId,
-          type: 'INCOME',
-          amount: transferAmount,
-          category: 'Transfer Masuk',
-          description: `Transfer dari ${fromWallet.name}`,
-          transactionDate: txDate,
-        },
+      // Fetch fresh source wallet state
+      const updatedFromWallet = await tx.wallet.findUniqueOrThrow({
+        where: { id: fromWalletId },
       });
 
       return {
         fromWallet: updatedFromWallet,
         toWallet: updatedToWallet,
-        outTransaction,
-        inTransaction,
       };
     });
   }

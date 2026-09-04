@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import AuthIllustration from './AuthIllustration';
 import LoginForm from './LoginForm';
@@ -15,6 +16,7 @@ export default function AuthTransition({
   initialMode = 'login',
   onModeChange,
 }: AuthTransitionProps) {
+  const router = useRouter();
   const [mode, setMode] = useState<'login' | 'register'>(initialMode);
 
   // Sync mode with initialMode if props change externally
@@ -25,17 +27,13 @@ export default function AuthTransition({
   const handleSwitchToRegister = () => {
     setMode('register');
     if (onModeChange) onModeChange('register');
-    if (typeof window !== 'undefined') {
-      window.history.pushState(null, '', '/register');
-    }
+    router.push('/register');
   };
 
   const handleSwitchToLogin = () => {
     setMode('login');
     if (onModeChange) onModeChange('login');
-    if (typeof window !== 'undefined') {
-      window.history.pushState(null, '', '/login');
-    }
+    router.push('/login');
   };
 
   const isLogin = mode === 'login';

@@ -44,6 +44,8 @@ export class WalletService {
         institution: input.institution || null,
         accountLast4: input.accountLast4 || null,
         balance: new Prisma.Decimal(input.balance ?? 0),
+        color: input.color || null,
+        icon: input.icon || null,
       },
     });
   }
@@ -60,6 +62,8 @@ export class WalletService {
     if (input.type !== undefined) data.type = input.type;
     if (input.institution !== undefined) data.institution = input.institution;
     if (input.accountLast4 !== undefined) data.accountLast4 = input.accountLast4;
+    if (input.color !== undefined) data.color = input.color;
+    if (input.icon !== undefined) data.icon = input.icon;
 
     return prisma.wallet.update({
       where: { id: walletId },

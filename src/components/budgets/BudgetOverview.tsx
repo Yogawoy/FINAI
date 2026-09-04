@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Sparkles, ShieldCheck } from 'lucide-react';
-import { formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
 import BudgetProgress from './BudgetProgress';
 import BudgetHealth from './BudgetHealth';
 

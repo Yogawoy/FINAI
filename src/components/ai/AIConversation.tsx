@@ -10,6 +10,7 @@ import AIEmptyState from './AIEmptyState';
 interface AIConversationProps {
   messages: AIMessageType[];
   isThinking: boolean;
+  confirmingIds?: Set<string>;
   onConfirmAction: (actionId: string) => void;
   onCancelAction: (actionId: string) => void;
   onSelectAction: (prompt: string) => void;
@@ -19,6 +20,7 @@ interface AIConversationProps {
 export default function AIConversation({
   messages,
   isThinking,
+  confirmingIds,
   onConfirmAction,
   onCancelAction,
   onSelectAction,
@@ -47,10 +49,12 @@ export default function AIConversation({
           );
         }
 
+        const isConfirming = msg.action ? confirmingIds?.has(msg.action.id) ?? false : false;
         return (
           <AIMessage
             key={msg.id}
             message={msg}
+            isConfirming={isConfirming}
             onConfirmAction={onConfirmAction}
             onCancelAction={onCancelAction}
             onRetry={onRetry}

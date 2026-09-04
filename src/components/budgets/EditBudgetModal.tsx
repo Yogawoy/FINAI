@@ -23,11 +23,13 @@ export default function EditBudgetModal({
   onClose,
   onUpdateBudget,
 }: EditBudgetModalProps) {
+  const getMonthStart = () => { const d = new Date(); d.setDate(1); return d.toISOString().split('T')[0]; };
+  const getMonthEnd = () => { const d = new Date(); d.setMonth(d.getMonth() + 1, 0); return d.toISOString().split('T')[0]; };
   const [category, setCategory] = useState<TransactionCategory>('food');
   const [amount, setAmount] = useState<number>(1500000);
   const [period, setPeriod] = useState<BudgetPeriod>('monthly');
-  const [startDate, setStartDate] = useState<string>('2026-08-31');
-  const [endDate, setEndDate] = useState<string>('2026-09-30');
+  const [startDate, setStartDate] = useState<string>(getMonthStart());
+  const [endDate, setEndDate] = useState<string>(getMonthEnd());
 
   // Inline Validation states
   const [amountError, setAmountError] = useState<string | undefined>();

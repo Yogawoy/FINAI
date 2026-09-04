@@ -4,7 +4,7 @@ import React from 'react';
 import { Trash2, AlertTriangle, AlertCircle } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import { BudgetCategory } from '@/types';
-import { formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
 import { getCategoryIconComponent, getCategoryColorTheme } from './BudgetRow';
 
 interface DeleteBudgetDialogProps {

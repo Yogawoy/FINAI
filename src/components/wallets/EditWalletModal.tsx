@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import { Wallet, WalletColorTheme, WalletType } from '@/types';
-import { formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
 import { getWalletIconComponent } from './WalletCard';
 
 interface EditWalletModalProps {

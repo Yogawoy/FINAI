@@ -17,7 +17,7 @@ import {
 import Modal from '@/components/ui/Modal';
 import CustomSelect from '@/components/ui/CustomSelect';
 import { Wallet, WalletColorTheme, WalletType } from '@/types';
-import { formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
 import WalletCard, { getWalletIconComponent } from './WalletCard';
 
 interface AddWalletModalProps {
@@ -79,6 +79,8 @@ export default function AddWalletModal({
   const formattedAmountDisplay = numAmount > 0 ? formatIDR(numAmount).replace('Rp', '').trim() : '0';
 
   // Live real-time preview wallet card
+  const expiryStr = `${String(new Date().getMonth() + 1).padStart(2, '0')}/${String((new Date().getFullYear() + 3) % 100).padStart(2, '0')}`;
+  const todayStr = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
   const previewWallet: Wallet = {
     id: 'preview-card',
     name: name.trim() || 'BCA',
@@ -89,8 +91,8 @@ export default function AddWalletModal({
     colorTheme: selectedColor,
     accountIdentifier: identifier.trim() || '•••• •••• •••• 4821',
     holderName: 'Yoga W.',
-    expiry: '08/26',
-    createdDate: 'Hari Ini',
+    expiry: expiryStr,
+    createdDate: todayStr,
     notes: notes,
   };
 
@@ -111,7 +113,7 @@ export default function AddWalletModal({
       colorTheme: selectedColor,
       accountIdentifier: identifier.trim() || undefined,
       holderName: 'Yoga W.',
-      expiry: '08/26',
+      expiry: `${String(new Date().getMonth() + 1).padStart(2, '0')}/${String((new Date().getFullYear() + 3) % 100).padStart(2, '0')}`,
       isArchived: false,
       createdDate: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
       notes: notes.trim() || undefined,

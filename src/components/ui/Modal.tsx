@@ -85,8 +85,8 @@ export default function Modal({
             exit={{ opacity: 0, scale: 0.97, y: 8 }}
             transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
             className={`relative w-full ${getMaxWidthClass()} bg-white rounded-t-[28px] sm:rounded-[28px] ${
-              noPadding ? 'p-0' : 'p-6 sm:p-7'
-            } shadow-[0_16px_45px_rgba(20,22,35,0.12)] border border-[#E8E8F5] max-h-[92vh] overflow-y-auto transform-gpu will-change-[transform,opacity] ${className}`}
+              noPadding ? 'p-0' : 'p-7 sm:p-8'
+            } shadow-[0_16px_45px_rgba(20,22,35,0.12)] border border-[#E8E8F5] max-h-[90vh] sm:max-h-[92vh] overflow-y-auto overscroll-contain scrollbar-thin transform-gpu will-change-[transform,opacity] ${className}`}
           >
             {/* Standard Header if not hidden */}
             {!hideHeader && (

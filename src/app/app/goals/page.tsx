@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Target, Sparkles, CircleCheck } from 'lucide-react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { Plus } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import TransactionToast from '@/components/transactions/TransactionToast';
 import { GoalItem, GoalContribution, Wallet } from '@/types';
-import { MOCK_GOALS_LIST, MOCK_WALLETS, formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
+import { apiClient, mapApiErrorMessage } from '@/lib/api-client';
+import { emitRefresh, onRefresh } from '@/lib/data-refresh';
 
 // Loading & Page Transition
 import GoalsSkeleton from '@/components/loading/GoalsSkeleton';
@@ -23,20 +24,50 @@ import GoalDetailModal from '@/components/goals/GoalDetailModal';
 import DeleteGoalDialog from '@/components/goals/DeleteGoalDialog';
 import AddContributionModal from '@/components/goals/AddContributionModal';
 
+function mapBackendGoalToUI(g: any): GoalItem {
+  const currentAmount = Number(g.currentAmount);
+  const targetAmount = Number(g.targetAmount);
+  const isCompleted = currentAmount >= targetAmount;
+
+  return {
+    id: g.id,
+    title: g.name,
+    category: g.category as any,
+    targetAmount,
+    currentAmount,
+    targetDate: g.deadline ? new Date(g.deadline).toISOString().split('T')[0] : '',
+    frequency: (String(g.frequency).toLowerCase() === 'weekly' ? 'weekly' : 'monthly') as any,
+    monthlySaving: 0,
+    autoDeposit: Boolean(g.autoDeposit),
+    nextDueDate: g.nextDueDate ? new Date(g.nextDueDate).toISOString().split('T')[0] : undefined,
+    sourceWalletId: g.sourceWalletId || '',
+    destinationWalletId: g.destinationWalletId || '',
+    sourceWalletName: g.sourceWallet?.name || 'Dompet Sumber',
+    destinationWalletName: g.destinationWallet?.name || 'Pos Tabungan',
+    colorTheme: 'indigo',
+    status: isCompleted ? 'completed' : 'on_track',
+    notes: g.name,
+    createdAt: g.createdAt,
+    contributions: (g.contributions || []).map((c: any) => ({
+      id: c.id,
+      goalId: c.goalId,
+      amount: Number(c.amount),
+      date: c.contributionDate ? new Date(c.contributionDate).toISOString().split('T')[0] : '',
+      time: '12:00',
+      sourceWalletId: c.sourceWalletId,
+      destinationWalletId: g.destinationWalletId || '',
+      sourceWalletName: c.sourceWallet?.name || 'Dompet',
+      destinationWalletName: 'Pos Tabungan',
+      note: 'Setoran Target',
+    })),
+  };
+}
+
 export default function GoalsPage() {
-  // Loading State with Smooth Transition
   const [isLoading, setIsLoading] = useState(true);
-
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 450);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // State: Goals List & Wallets
-  const [goals, setGoals] = useState<GoalItem[]>(MOCK_GOALS_LIST);
-  const [wallets, setWallets] = useState<Wallet[]>(MOCK_WALLETS);
+  const [goals, setGoals] = useState<GoalItem[]>([]);
+  const [wallets, setWallets] = useState<Wallet[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // State: Active Modals
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -59,7 +90,79 @@ export default function GoalsPage() {
     setToastMessage(msg);
   };
 
-  // Calculations for Summary
+  const fetchGoals = useCallback(async () => {
+    try {
+      setErrorMessage(null);
+      const res = await apiClient.get<{ goals: any[] }>('/api/goals');
+      const mapped = (res.goals || []).map(mapBackendGoalToUI);
+      setGoals(mapped);
+    } catch (err) {
+      setErrorMessage(mapApiErrorMessage(err));
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const fetchWallets = useCallback(async () => {
+    try {
+      const res = await apiClient.get<{ wallets: any[] }>('/api/wallets');
+      const mappedWallets = (res.wallets || []).map((w: any) => ({
+        id: w.id,
+        name: w.name,
+        type: (w.type === 'E_WALLET' ? 'ewallet' : w.type === 'CASH' ? 'cash' : 'bank') as any,
+        balance: Number(w.balance),
+        currency: 'IDR',
+        icon: 'Bank',
+        colorTheme: 'indigo' as any,
+      }));
+      setWallets(mappedWallets);
+    } catch {
+      // Ignore background error
+    }
+  }, []);
+
+  // Auto-deposit runner: jika ada goal dengan autoDeposit && nextDueDate <= hari ini, auto stor
+  const hasRunAutoRef = React.useRef(false);
+  useEffect(() => {
+    if (hasRunAutoRef.current || isLoading) return;
+    const dueGoals = goals.filter((g) => (g as any).autoDeposit && (g as any).nextDueDate && new Date((g as any).nextDueDate) <= new Date() && g.currentAmount < g.targetAmount);
+    if (dueGoals.length === 0) return;
+    hasRunAutoRef.current = true;
+    (async () => {
+      for (const g of dueGoals) {
+        const remaining = g.targetAmount - g.currentAmount;
+        const isWeekly = g.frequency === 'weekly';
+        const amount = isWeekly ? Math.ceil((g.monthlySaving || 0) / 4.33) || Math.ceil(remaining / 4) : g.monthlySaving || Math.ceil(remaining / 6);
+        const payAmount = Math.min(amount, remaining);
+        if (payAmount <= 0) continue;
+        try {
+          await apiClient.post(`/api/goals/${g.id}/contributions`, { sourceWalletId: g.sourceWalletId, amount: payAmount });
+          showToast(`Setoran otomatis ${formatIDR(payAmount)}/${isWeekly ? 'minggu' : 'bulan'} untuk "${g.title}" berhasil.`);
+        } catch (e) {
+          showToast(mapApiErrorMessage(e));
+        }
+      }
+      fetchGoals();
+      fetchWallets();
+      hasRunAutoRef.current = false;
+    })();
+  }, [goals, isLoading]);
+
+  useEffect(() => {
+    fetchGoals();
+    fetchWallets();
+  }, [fetchGoals, fetchWallets]);
+
+  useEffect(() => {
+    const off = onRefresh((kind) => {
+      if (kind === 'goal' || kind === 'goal_contribution' || kind === 'wallet' || kind === 'all') {
+        fetchGoals();
+        fetchWallets();
+      }
+    });
+    return off;
+  }, [fetchGoals, fetchWallets]);
+
   const summary = useMemo(() => {
     const totalTarget = goals.reduce((acc, g) => acc + g.targetAmount, 0);
     const totalSaved = goals.reduce((acc, g) => acc + g.currentAmount, 0);
@@ -77,122 +180,135 @@ export default function GoalsPage() {
     };
   }, [goals]);
 
-  // Featured Goal: Top priority active goal
   const featuredGoal = useMemo(() => {
     if (goals.length === 0) return null;
     return goals[0];
   }, [goals]);
 
-  // Filtered and Sorted Goals List (for Grid)
   const filteredGoals = useMemo(() => {
     let result = [...goals];
 
-    // Search query
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(
         (g) =>
           g.title.toLowerCase().includes(q) ||
-          (g.notes && g.notes.toLowerCase().includes(q)) ||
-          g.sourceWalletName.toLowerCase().includes(q) ||
-          g.destinationWalletName.toLowerCase().includes(q)
+          (g.notes && g.notes.toLowerCase().includes(q))
       );
     }
 
-    // Status filter
     if (selectedFilter === 'active') {
       result = result.filter((g) => g.currentAmount < g.targetAmount);
     } else if (selectedFilter === 'completed') {
       result = result.filter((g) => g.currentAmount >= g.targetAmount || g.status === 'completed');
-    } else if (selectedFilter === 'attention') {
-      result = result.filter((g) => g.status === 'needs_attention' || g.status === 'behind');
-    }
-
-    // Sort option
-    if (selectedSort === 'deadline_asc') {
-      result.sort((a, b) => (a.targetDate || '').localeCompare(b.targetDate || ''));
-    } else if (selectedSort === 'progress_desc') {
-      result.sort((a, b) => {
-        const pctA = a.targetAmount > 0 ? a.currentAmount / a.targetAmount : 0;
-        const pctB = b.targetAmount > 0 ? b.currentAmount / b.targetAmount : 0;
-        return pctB - pctA;
-      });
-    } else if (selectedSort === 'progress_asc') {
-      result.sort((a, b) => {
-        const pctA = a.targetAmount > 0 ? a.currentAmount / a.targetAmount : 0;
-        const pctB = b.targetAmount > 0 ? b.currentAmount / b.targetAmount : 0;
-        return pctA - pctB;
-      });
     }
 
     return result;
-  }, [goals, searchQuery, selectedFilter, selectedSort]);
+  }, [goals, searchQuery, selectedFilter]);
 
-  // Handlers for Goal Lifecycle
-  const handleCreateGoal = (newGoal: GoalItem) => {
-    setGoals((prev) => [newGoal, ...prev]);
-    showToast(`Target "${newGoal.title}" berhasil dibuat.`);
-  };
-
-  const handleUpdateGoal = (updatedGoal: GoalItem) => {
-    setGoals((prev) => prev.map((g) => (g.id === updatedGoal.id ? updatedGoal : g)));
-    setActiveGoal(updatedGoal);
-    showToast(`Target "${updatedGoal.title}" berhasil diperbarui.`);
-  };
-
-  const handleDeleteGoal = (goalId: string) => {
-    const target = goals.find((g) => g.id === goalId);
-    setGoals((prev) => prev.filter((g) => g.id !== goalId));
-    setIsDetailModalOpen(false);
-    showToast(`Target "${target?.title || 'Impian'}" berhasil dihapus.`);
-  };
-
-  const handleAddContribution = (goalId: string, contribution: GoalContribution) => {
-    // 1. Update wallet balances (Internal Transfer: Source -amount, Destination +amount)
-    setWallets((prevWallets) =>
-      prevWallets.map((w) => {
-        if (w.id === contribution.sourceWalletId) {
-          return { ...w, balance: Math.max(w.balance - contribution.amount, 0) };
-        }
-        if (w.id === contribution.destinationWalletId) {
-          return { ...w, balance: w.balance + contribution.amount };
-        }
-        return w;
-      })
-    );
-
-    // 2. Update Goal currentAmount and contributions history
-    setGoals((prev) =>
-      prev.map((g) => {
-        if (g.id === goalId) {
-          const newCurrent = g.currentAmount + contribution.amount;
-          const isDone = newCurrent >= g.targetAmount;
-          return {
-            ...g,
-            currentAmount: newCurrent,
-            status: isDone ? 'completed' : g.status,
-            contributions: [contribution, ...g.contributions],
-          };
-        }
-        return g;
-      })
-    );
-
-    // If active in detail modal, update active state too
-    if (activeGoal && activeGoal.id === goalId) {
-      const newCurrent = activeGoal.currentAmount + contribution.amount;
-      setActiveGoal({
-        ...activeGoal,
-        currentAmount: newCurrent,
-        status: newCurrent >= activeGoal.targetAmount ? 'completed' : activeGoal.status,
-        contributions: [contribution, ...activeGoal.contributions],
+  const handleCreateGoalSubmit = async (newGoal: GoalItem) => {
+    try {
+      const freq = String(newGoal.frequency).toUpperCase() === 'WEEKLY' ? 'WEEKLY' : 'MONTHLY';
+      const res = await apiClient.post<{ goal: any }>('/api/goals', {
+        name: newGoal.title,
+        category: newGoal.category || 'Lainnya',
+        targetAmount: newGoal.targetAmount,
+        deadline: newGoal.targetDate ? new Date(newGoal.targetDate).toISOString() : new Date(Date.now() + 86400000 * 180).toISOString(),
+        sourceWalletId: newGoal.sourceWalletId || undefined,
+        destinationWalletId: newGoal.destinationWalletId || undefined,
+        frequency: freq,
+        autoDeposit: Boolean((newGoal as any).autoDeposit),
       });
-    }
 
-    showToast('Tabungan berhasil ditambahkan.');
+      const createdGoal = res.goal;
+
+      // If user entered initial saving (Dana Saat Ini) > 0, immediately store as first contribution
+      if (newGoal.currentAmount > 0 && newGoal.sourceWalletId) {
+        try {
+          await apiClient.post(`/api/goals/${createdGoal.id}/contributions`, {
+            sourceWalletId: newGoal.sourceWalletId,
+            amount: newGoal.currentAmount,
+          });
+        } catch (contribErr) {
+          showToast(`${mapApiErrorMessage(contribErr)} — target dibuat namun setoran awal 300k gagal.`);
+          fetchGoals();
+          fetchWallets();
+          return;
+        }
+      }
+
+      const mapped = mapBackendGoalToUI(createdGoal);
+      if (newGoal.currentAmount > 0) {
+        showToast(`Target "${mapped.title}" berhasil dibuat dengan setoran awal ${formatIDR(newGoal.currentAmount)}.`);
+      } else {
+        showToast(`Target "${mapped.title}" berhasil dibuat.`);
+      }
+      fetchGoals();
+      fetchWallets();
+      emitRefresh('goal');
+      if (newGoal.currentAmount > 0) emitRefresh('goal_contribution');
+    } catch (err) {
+      showToast(mapApiErrorMessage(err));
+    }
   };
 
-  // Modal Opener Triggers
+  const handleUpdateGoalSubmit = async (updatedGoal: GoalItem) => {
+    try {
+      const freq = String(updatedGoal.frequency).toUpperCase() === 'WEEKLY' ? 'WEEKLY' : 'MONTHLY';
+      const res = await apiClient.patch<{ goal: any }>(`/api/goals/${updatedGoal.id}`, {
+        name: updatedGoal.title,
+        category: updatedGoal.category,
+        targetAmount: updatedGoal.targetAmount,
+        deadline: updatedGoal.targetDate ? new Date(updatedGoal.targetDate).toISOString() : undefined,
+        frequency: freq,
+        sourceWalletId: updatedGoal.sourceWalletId || null,
+        destinationWalletId: updatedGoal.destinationWalletId || null,
+      });
+
+      const mapped = mapBackendGoalToUI(res.goal);
+      setActiveGoal(mapped);
+      showToast(`Target "${mapped.title}" berhasil diperbarui.`);
+      fetchGoals();
+      emitRefresh('goal');
+    } catch (err) {
+      showToast(mapApiErrorMessage(err));
+    }
+  };
+
+  const handleDeleteGoalSubmit = async (goalId: string) => {
+    try {
+      await apiClient.delete(`/api/goals/${goalId}`);
+      setIsDetailModalOpen(false);
+      showToast('Target berhasil dihapus.');
+      fetchGoals();
+      emitRefresh('goal');
+    } catch (err) {
+      showToast(mapApiErrorMessage(err));
+    }
+  };
+
+  const handleAddContributionSubmit = async (goalId: string, contribution: GoalContribution) => {
+    try {
+      await apiClient.post(`/api/goals/${goalId}/contributions`, {
+        sourceWalletId: contribution.sourceWalletId,
+        amount: contribution.amount,
+      });
+
+      showToast('Tabungan berhasil ditambahkan.');
+      fetchGoals();
+      fetchWallets();
+      emitRefresh('goal_contribution');
+      if (activeGoal && activeGoal.id === goalId) {
+        const refreshed = await apiClient.get<{ goal: any }>(`/api/goals/${goalId}`);
+        if (refreshed.goal) {
+          setActiveGoal(mapBackendGoalToUI(refreshed.goal));
+        }
+      }
+    } catch (err) {
+      showToast(mapApiErrorMessage(err));
+    }
+  };
+
   const handleSelectGoal = (goal: GoalItem) => {
     setActiveGoal(goal);
     setIsDetailModalOpen(true);
@@ -223,9 +339,12 @@ export default function GoalsPage() {
   return (
     <PageTransition>
       <div className="space-y-8 max-w-7xl mx-auto pb-16">
-        {/* ========================================================================= */}
-        {/* 1. PAGE HEADER                                                            */}
-        {/* ========================================================================= */}
+        {errorMessage && (
+          <div className="p-4 rounded-2xl bg-red-50 text-red-600 border border-red-200 text-xs font-semibold">
+            {errorMessage}
+          </div>
+        )}
+
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-[#242636] tracking-tight">
@@ -249,9 +368,6 @@ export default function GoalsPage() {
           </div>
         </div>
 
-        {/* ========================================================================= */}
-        {/* 2. DREAM SUMMARY HERO AREA                                                */}
-        {/* ========================================================================= */}
         <GoalSummary
           totalTarget={summary.totalTarget}
           totalSaved={summary.totalSaved}
@@ -260,9 +376,6 @@ export default function GoalsPage() {
           completedCount={summary.completedCount}
         />
 
-        {/* ========================================================================= */}
-        {/* 3. FEATURED GOAL (HIGHLIGHTED PRIORITY)                                   */}
-        {/* ========================================================================= */}
         {featuredGoal && (
           <FeaturedGoal
             goal={featuredGoal}
@@ -271,9 +384,6 @@ export default function GoalsPage() {
           />
         )}
 
-        {/* ========================================================================= */}
-        {/* 4. GOAL CARDS SECTION (MY GOALS)                                          */}
-        {/* ========================================================================= */}
         <section className="space-y-5">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
@@ -290,7 +400,6 @@ export default function GoalsPage() {
             </span>
           </div>
 
-          {/* Filters & Sorting Toolbar */}
           <GoalFilters
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
@@ -301,7 +410,6 @@ export default function GoalsPage() {
             totalCount={goals.length}
           />
 
-          {/* Goal Cards Grid */}
           <GoalList
             goals={filteredGoals}
             onSelectGoal={handleSelectGoal}
@@ -311,28 +419,21 @@ export default function GoalsPage() {
           />
         </section>
 
-        {/* ========================================================================= */}
-        {/* 5. MODALS SUITE                                                           */}
-        {/* ========================================================================= */}
-
-        {/* Modal 1: Buat Target Baru */}
         <CreateGoalModal
           isOpen={isCreateModalOpen}
           onClose={() => setIsCreateModalOpen(false)}
-          onCreateGoal={handleCreateGoal}
+          onCreateGoal={handleCreateGoalSubmit}
           wallets={wallets}
         />
 
-        {/* Modal 2: Edit Target */}
         <EditGoalModal
           goal={activeGoal}
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
-          onUpdateGoal={handleUpdateGoal}
+          onUpdateGoal={handleUpdateGoalSubmit}
           wallets={wallets}
         />
 
-        {/* Modal 3: Detail Target */}
         <GoalDetailModal
           goal={activeGoal}
           isOpen={isDetailModalOpen}
@@ -342,24 +443,21 @@ export default function GoalsPage() {
           onAddContribution={handleContributionTrigger}
         />
 
-        {/* Modal 4: Konfirmasi Hapus Target */}
         <DeleteGoalDialog
           goal={activeGoal}
           isOpen={isDeleteDialogOpen}
           onClose={() => setIsDeleteDialogOpen(false)}
-          onConfirmDelete={handleDeleteGoal}
+          onConfirmDelete={handleDeleteGoalSubmit}
         />
 
-        {/* Modal 5: Tambah Tabungan / Setor Dana */}
         <AddContributionModal
           goal={activeGoal}
           isOpen={isContributionModalOpen}
           onClose={() => setIsContributionModalOpen(false)}
-          onAddContribution={handleAddContribution}
+          onAddContribution={handleAddContributionSubmit}
           wallets={wallets}
         />
 
-        {/* Floating Toast Notification */}
         <TransactionToast
           message={toastMessage}
           onClose={() => setToastMessage(null)}

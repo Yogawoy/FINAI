@@ -19,7 +19,7 @@ const MOBILE_ITEMS = [
   { label: 'Transaksi', href: '/app/transactions', icon: Receipt },
   { label: 'Anggaran', href: '/app/budgets', icon: PieChart },
   { label: 'Target', href: '/app/goals', icon: Target },
-  { label: 'Asisten', href: '/app/assistant', icon: Sparkles, highlight: true },
+  { label: 'Asisten', href: '/app/ai-assistant', icon: Sparkles, highlight: true },
 ];
 
 export default function MobileBottomNav() {

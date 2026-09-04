@@ -17,7 +17,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { Transaction } from '@/types';
-import { formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
 
 interface TransactionRowProps {
   transaction: Transaction;

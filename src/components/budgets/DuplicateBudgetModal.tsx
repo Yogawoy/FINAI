@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Sparkles, Copy } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import { BudgetCategory, BudgetPeriod } from '@/types';
-import { formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
 import { getCategoryIconComponent, getCategoryColorTheme } from './BudgetRow';
 import BudgetPeriodSelector from './BudgetPeriodSelector';
 import BudgetDatePicker from './BudgetDatePicker';
@@ -22,18 +22,21 @@ export default function DuplicateBudgetModal({
   onClose,
   onDuplicateBudget,
 }: DuplicateBudgetModalProps) {
+  const getNextMonthStart = () => { const d = new Date(); d.setMonth(d.getMonth() + 1, 1); return d.toISOString().split('T')[0]; };
+  const getNextMonthEnd = () => { const d = new Date(); d.setMonth(d.getMonth() + 2, 0); return d.toISOString().split('T')[0]; };
+  const getNextMonthName = () => new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toLocaleDateString('id-ID', { month: 'long' }).replace(/^\w/, (c) => c.toUpperCase());
   const [name, setName] = useState('');
   const [period, setPeriod] = useState<BudgetPeriod>('monthly');
-  const [startDate, setStartDate] = useState('2026-09-01');
-  const [endDate, setEndDate] = useState('2026-09-30');
+  const [startDate, setStartDate] = useState(getNextMonthStart());
+  const [endDate, setEndDate] = useState(getNextMonthEnd());
   const [dateError, setDateError] = useState<string | undefined>();
 
   useEffect(() => {
     if (sourceBudget) {
-      setName(`${sourceBudget.name} (September)`);
+      setName(`${sourceBudget.name} (${getNextMonthName()})`);
       setPeriod(sourceBudget.period || 'monthly');
-      setStartDate('2026-09-01');
-      setEndDate('2026-09-30');
+      setStartDate(getNextMonthStart());
+      setEndDate(getNextMonthEnd());
       setDateError(undefined);
     }
   }, [sourceBudget]);

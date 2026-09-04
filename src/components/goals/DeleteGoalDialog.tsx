@@ -4,7 +4,7 @@ import React from 'react';
 import { Trash2, AlertTriangle, X } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import { GoalItem } from '@/types';
-import { formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
 
 interface DeleteGoalDialogProps {
   goal: GoalItem | null;

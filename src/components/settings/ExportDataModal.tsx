@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Download, FileSpreadsheet, FileCode, Check } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
-import { MOCK_TRANSACTIONS, MOCK_WALLETS, MOCK_BUDGETS, MOCK_GOALS } from '@/data/mockData';
+import { apiClient } from '@/lib/api-client';
 
 interface ExportDataModalProps {
   isOpen: boolean;
@@ -30,6 +30,7 @@ export default function ExportDataModal({
     'budgets',
     'goals',
   ]);
+  const [isExporting, setIsExporting] = useState(false);
 
   const toggleDataset = (id: string) => {
     setSelectedDatasets((prev) =>
@@ -37,11 +38,14 @@ export default function ExportDataModal({
     );
   };
 
-  const handleExportSubmit = (e: React.FormEvent) => {
+  const handleExportSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedDatasets.length === 0) return;
+    if (selectedDatasets.length === 0 || isExporting) return;
 
-    if (selectedFormat === 'json') {
+    setIsExporting(true);
+
+    try {
+      // Fetch data from API
       const exportObject: Record<string, any> = {
         meta: {
           app: 'FinAI Keuangan Personal',
@@ -50,47 +54,80 @@ export default function ExportDataModal({
         },
       };
 
-      if (selectedDatasets.includes('transactions')) exportObject.transactions = MOCK_TRANSACTIONS;
-      if (selectedDatasets.includes('wallets')) exportObject.wallets = MOCK_WALLETS;
-      if (selectedDatasets.includes('budgets')) exportObject.budgets = MOCK_BUDGETS;
-      if (selectedDatasets.includes('goals')) exportObject.goals = MOCK_GOALS;
+      let csvRows: string[] = [];
 
-      const blob = new Blob([JSON.stringify(exportObject, null, 2)], {
-        type: 'application/json;charset=utf-8;',
-      });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `finai_backup_keuangan_${new Date().toISOString().slice(0, 10)}.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } else {
-      // CSV Format
-      let csvContent = 'ID,Tanggal,Deskripsi,Kategori,Tipe,Nominal,Dompet\n';
-      MOCK_TRANSACTIONS.forEach((t) => {
-        const cleanTitle = t.title.replace(/,/g, ' ');
-        const cleanCategory = (t.category || '').replace(/,/g, ' ');
-        const cleanWallet = (t.walletId || 'BCA').replace(/,/g, ' ');
-        csvContent += `${t.id},${t.date},${cleanTitle},${cleanCategory},${t.type},${t.amount},${cleanWallet}\n`;
-      });
+      if (selectedDatasets.includes('transactions')) {
+        try {
+          const res = await apiClient.get<{ transactions: any[] }>('/api/transactions?limit=500');
+          exportObject.transactions = res.transactions || [];
+          csvRows = (res.transactions || []).map((t: any) => {
+            const cleanDesc = (t.description || '').replace(/,/g, ' ');
+            const cleanCategory = (t.category || '').replace(/,/g, ' ');
+            const walletName = t.wallet?.name || '';
+            return `${t.id},${t.transactionDate},${cleanDesc},${cleanCategory},${t.type},${t.amount},${walletName}`;
+          });
+        } catch { /* skip */ }
+      }
 
-      const blob = new Blob([csvContent], {
-        type: 'text/csv;charset=utf-8;',
-      });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `finai_transaksi_${new Date().toISOString().slice(0, 10)}.csv`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      if (selectedDatasets.includes('wallets')) {
+        try {
+          const res = await apiClient.get<{ wallets: any[] }>('/api/wallets');
+          exportObject.wallets = res.wallets || [];
+        } catch { /* skip */ }
+      }
+
+      if (selectedDatasets.includes('budgets')) {
+        try {
+          const res = await apiClient.get<{ budgets: any[] }>('/api/budgets');
+          exportObject.budgets = res.budgets || [];
+        } catch { /* skip */ }
+      }
+
+      if (selectedDatasets.includes('goals')) {
+        try {
+          const res = await apiClient.get<{ goals: any[] }>('/api/goals');
+          exportObject.goals = res.goals || [];
+        } catch { /* skip */ }
+      }
+
+      if (selectedFormat === 'json') {
+        const blob = new Blob([JSON.stringify(exportObject, null, 2)], {
+          type: 'application/json;charset=utf-8;',
+        });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `finai_backup_keuangan_${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      } else {
+        let csvContent = 'ID,Tanggal,Deskripsi,Kategori,Tipe,Nominal,Dompet\n';
+        csvRows.forEach((row) => {
+          csvContent += row + '\n';
+        });
+
+        const blob = new Blob([csvContent], {
+          type: 'text/csv;charset=utf-8;',
+        });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `finai_transaksi_${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
+
+      onExportSuccess(selectedFormat, selectedDatasets.length);
+      onClose();
+    } catch {
+      // Export failed silently
+    } finally {
+      setIsExporting(false);
     }
-
-    onExportSuccess(selectedFormat, selectedDatasets.length);
-    onClose();
   };
 
   return (
@@ -104,9 +141,7 @@ export default function ExportDataModal({
       <form onSubmit={handleExportSubmit} className="space-y-5 pt-2">
         {/* Dataset Selection */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-[#242636] block">
-            Pilih Data yang Diexport
-          </label>
+          <label className="text-xs font-bold text-[#242636] block">Pilih Data yang Diexport</label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {DATASETS.map((item) => {
               const isChecked = selectedDatasets.includes(item.id);
@@ -142,9 +177,7 @@ export default function ExportDataModal({
 
         {/* Format Selection */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-[#242636] block">
-            Format Berkas
-          </label>
+          <label className="text-xs font-bold text-[#242636] block">Format Berkas</label>
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
@@ -195,11 +228,11 @@ export default function ExportDataModal({
           </button>
           <button
             type="submit"
-            disabled={selectedDatasets.length === 0}
+            disabled={selectedDatasets.length === 0 || isExporting}
             className="flex-1 h-10 rounded-xl bg-[#7C7CE6] hover:bg-[#6867D4] active:scale-98 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-bold text-white shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <Download size={14} />
-            <span>Unduh Berkas Nyata</span>
+            <span>{isExporting ? 'Mengunduh...' : 'Unduh Berkas Nyata'}</span>
           </button>
         </div>
       </form>

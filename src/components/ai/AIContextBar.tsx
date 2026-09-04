@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Wallet, Receipt, Target, PieChart, ShieldCheck } from 'lucide-react';
-import { formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
 
 interface AIContextBarProps {
   balance?: number;

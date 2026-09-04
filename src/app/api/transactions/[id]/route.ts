@@ -1,8 +1,14 @@
 import { NextRequest } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { TransactionService } from '@/lib/services/transaction.service';
-import { UpdateTransactionSchema } from '@/lib/validations/transaction';
 import { apiSuccess, apiError } from '@/lib/api-response';
+import { serializeTransaction } from '@/lib/serializers/transaction';
+import {
+  InsufficientBalanceError,
+  TransactionNotFoundError,
+  TransactionService,
+  WalletNotFoundError,
+} from '@/lib/services/transaction.service';
+import { UpdateTransactionSchema } from '@/lib/validations/transaction';
 
 export async function GET(
   request: NextRequest,
@@ -21,7 +27,7 @@ export async function GET(
       return apiError('NOT_FOUND', 'Transaksi tidak ditemukan atau bukan milik Anda', 404);
     }
 
-    return apiSuccess({ transaction });
+    return apiSuccess({ transaction: serializeTransaction(transaction) });
   } catch (error) {
     console.error('Get Transaction by ID Error:', error);
     return apiError('INTERNAL_ERROR', 'Gagal memuat data transaksi', 500);
@@ -57,15 +63,18 @@ export async function PATCH(
       result.data
     );
 
-    if (!updated) {
-      return apiError('NOT_FOUND', 'Transaksi tidak ditemukan atau bukan milik Anda', 404);
+    return apiSuccess({ transaction: serializeTransaction(updated) });
+  } catch (error: unknown) {
+    if (error instanceof TransactionNotFoundError || error instanceof WalletNotFoundError) {
+      return apiError('NOT_FOUND', error.message, 404);
     }
 
-    return apiSuccess({ transaction: updated });
-  } catch (error: unknown) {
+    if (error instanceof InsufficientBalanceError) {
+      return apiError('INSUFFICIENT_BALANCE', error.message, 409);
+    }
+
     console.error('Update Transaction Error:', error);
-    const message = error instanceof Error ? error.message : 'Gagal memperbarui transaksi';
-    return apiError('INTERNAL_ERROR', message, 500);
+    return apiError('INTERNAL_ERROR', 'Gagal memperbarui transaksi', 500);
   }
 }
 
@@ -80,14 +89,14 @@ export async function DELETE(
     }
 
     const { id } = await props.params;
-    const deleted = await TransactionService.deleteTransaction(session.userId, id);
-
-    if (!deleted) {
-      return apiError('NOT_FOUND', 'Transaksi tidak ditemukan atau bukan milik Anda', 404);
-    }
+    await TransactionService.deleteTransaction(session.userId, id);
 
     return apiSuccess({ message: 'Transaksi berhasil dihapus dan saldo dompet telah dipulihkan' });
   } catch (error) {
+    if (error instanceof TransactionNotFoundError) {
+      return apiError('NOT_FOUND', error.message, 404);
+    }
+
     console.error('Delete Transaction Error:', error);
     return apiError('INTERNAL_ERROR', 'Gagal menghapus transaksi', 500);
   }

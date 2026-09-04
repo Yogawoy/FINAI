@@ -216,7 +216,6 @@ async function runTests() {
     name: 'Laptop M4 Pro',
     category: 'Elektronik',
     targetAmount: 20000000,
-    currentAmount: 5000000,
     deadline,
     frequency: 'MONTHLY',
   });

@@ -18,7 +18,7 @@ import {
   Copy,
 } from 'lucide-react';
 import { BudgetCategory, TransactionCategory } from '@/types';
-import { formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
 import BudgetProgress from './BudgetProgress';
 import BudgetHealth, { computeBudgetHealth } from './BudgetHealth';
 

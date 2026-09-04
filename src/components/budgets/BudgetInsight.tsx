@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
-import { formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
 
 interface BudgetInsightProps {
   insightText?: string;

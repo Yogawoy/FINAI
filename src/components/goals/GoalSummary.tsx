@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Target, TrendingUp, Sparkles, CheckCircle2 } from 'lucide-react';
-import { formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
 
 interface GoalSummaryProps {
   totalTarget: number;

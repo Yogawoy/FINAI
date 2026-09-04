@@ -3,7 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, TrendingUp, Target, ArrowDownLeft, ShieldCheck, Wifi } from 'lucide-react';
-import { formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
 
 export default function HeroFinancialVisual() {
   return (

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { ArrowDownLeft, ArrowUpRight, TrendingUp, Calendar, Sparkles } from 'lucide-react';
-import { formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
 
 interface TransactionSummaryProps {
   income: number;

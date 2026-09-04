@@ -4,9 +4,99 @@ import { CreateBudgetInput, UpdateBudgetInput } from '@/lib/validations/budget';
 
 export type BudgetHealthStatus = 'SAFE' | 'WARNING' | 'CRITICAL';
 
+export class BudgetNotFoundError extends Error {
+  constructor(message: string = 'Pos anggaran tidak ditemukan atau bukan milik Anda') {
+    super(message);
+    this.name = 'BudgetNotFoundError';
+  }
+}
+
+export class BudgetConflictError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'BudgetConflictError';
+  }
+}
+
 export class BudgetService {
+  private static async enrichBudgetUsage<T extends {
+    id: string;
+    userId: string;
+    category: string;
+    limitAmount: Prisma.Decimal;
+    month: number;
+    year: number;
+    createdAt: Date;
+    updatedAt: Date;
+  }>(budgets: T[]) {
+    if (budgets.length === 0) return [];
+
+    const periods = new Map<string, { month: number; year: number }>();
+    for (const budget of budgets) {
+      periods.set(`${budget.year}-${budget.month}`, { month: budget.month, year: budget.year });
+    }
+
+    const expenseQueries = Array.from(periods.values()).map(({ month, year }) => {
+      const startOfMonth = new Date(year, month - 1, 1);
+      const endOfMonth = new Date(year, month, 0, 23, 59, 59, 999);
+
+      return prisma.transaction.findMany({
+        where: {
+          userId: budgets[0].userId,
+          type: 'EXPENSE',
+          transactionDate: {
+            gte: startOfMonth,
+            lte: endOfMonth,
+          },
+        },
+        select: {
+          category: true,
+          amount: true,
+          transactionDate: true,
+        },
+      });
+    });
+
+    const expenseResults = await Promise.all(expenseQueries);
+    const expenseByPeriodAndCategory = new Map<string, Prisma.Decimal>();
+
+    for (const expenses of expenseResults) {
+      for (const expense of expenses) {
+        const month = expense.transactionDate.getMonth() + 1;
+        const year = expense.transactionDate.getFullYear();
+        const key = `${year}-${month}-${expense.category.toLowerCase().trim()}`;
+        const current = expenseByPeriodAndCategory.get(key) || new Prisma.Decimal(0);
+        expenseByPeriodAndCategory.set(key, current.plus(expense.amount));
+      }
+    }
+
+    return budgets.map((budget) => {
+      const key = `${budget.year}-${budget.month}-${budget.category.toLowerCase().trim()}`;
+      const usedAmount = expenseByPeriodAndCategory.get(key) || new Prisma.Decimal(0);
+      const remainingAmount = budget.limitAmount.minus(usedAmount);
+      const percentage = budget.limitAmount.gt(0)
+        ? Math.round(usedAmount.mul(100).div(budget.limitAmount).toNumber())
+        : 0;
+
+      let status: BudgetHealthStatus = 'SAFE';
+      if (percentage > 90) {
+        status = 'CRITICAL';
+      } else if (percentage >= 70) {
+        status = 'WARNING';
+      }
+
+      return {
+        ...budget,
+        usedAmount,
+        remainingAmount,
+        percentage,
+        status,
+      };
+    });
+  }
+
   /**
-   * Get all budgets for month/year with computed usedAmount, remainingAmount, percentage, and status
+   * Get all budgets for month/year with computed usage
    */
   static async getBudgets(userId: string, month?: number, year?: number) {
     const currentMonth = month || new Date().getMonth() + 1;
@@ -18,61 +108,25 @@ export class BudgetService {
         month: currentMonth,
         year: currentYear,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: [
+        { year: 'desc' },
+        { month: 'desc' },
+        { createdAt: 'desc' },
+      ],
     });
 
-    // Start & end of requested month
-    const startOfMonth = new Date(currentYear, currentMonth - 1, 1);
-    const endOfMonth = new Date(currentYear, currentMonth, 0, 23, 59, 59, 999);
+    return this.enrichBudgetUsage(budgets);
+  }
 
-    // Fetch all expense transactions for this user within this month
-    const expenses = await prisma.transaction.findMany({
-      where: {
-        userId,
-        type: 'EXPENSE',
-        transactionDate: {
-          gte: startOfMonth,
-          lte: endOfMonth,
-        },
-      },
-      select: {
-        category: true,
-        amount: true,
-      },
+  static async getBudgetById(userId: string, budgetId: string) {
+    const budget = await prisma.budget.findFirst({
+      where: { id: budgetId, userId },
     });
 
-    // Aggregate expense by category
-    const expenseByCategory = new Map<string, Prisma.Decimal>();
-    for (const exp of expenses) {
-      const cat = exp.category.toLowerCase().trim();
-      const current = expenseByCategory.get(cat) || new Prisma.Decimal(0);
-      expenseByCategory.set(cat, current.plus(exp.amount));
-    }
+    if (!budget) return null;
 
-    return budgets.map((b) => {
-      const usedDecimal = expenseByCategory.get(b.category.toLowerCase().trim()) || new Prisma.Decimal(0);
-      const limitDecimal = b.limitAmount;
-      const remainingDecimal = limitDecimal.minus(usedDecimal);
-
-      const limitNum = Number(limitDecimal);
-      const usedNum = Number(usedDecimal);
-      const percentage = limitNum > 0 ? Math.round((usedNum / limitNum) * 100) : 0;
-
-      let status: BudgetHealthStatus = 'SAFE';
-      if (percentage > 90) {
-        status = 'CRITICAL';
-      } else if (percentage >= 70) {
-        status = 'WARNING';
-      }
-
-      return {
-        ...b,
-        usedAmount: usedDecimal,
-        remainingAmount: remainingDecimal,
-        percentage,
-        status,
-      };
-    });
+    const [enriched] = await this.enrichBudgetUsage([budget]);
+    return enriched || null;
   }
 
   /**
@@ -81,7 +135,6 @@ export class BudgetService {
   static async createBudget(userId: string, input: CreateBudgetInput) {
     const { category, limitAmount, month, year } = input;
 
-    // Check if budget for same category and month/year already exists
     const existing = await prisma.budget.findUnique({
       where: {
         userId_category_month_year: {
@@ -94,7 +147,7 @@ export class BudgetService {
     });
 
     if (existing) {
-      throw new Error(`Anggaran untuk kategori '${category}' pada periode ini sudah dibuat`);
+      throw new BudgetConflictError(`Anggaran untuk kategori '${category}' pada periode ini sudah dibuat`);
     }
 
     return prisma.budget.create({
@@ -116,7 +169,28 @@ export class BudgetService {
       where: { id: budgetId, userId },
     });
 
-    if (!existing) return null;
+    if (!existing) {
+      throw new BudgetNotFoundError();
+    }
+
+    const category = input.category ?? existing.category;
+    const month = input.month ?? existing.month;
+    const year = input.year ?? existing.year;
+
+    const duplicate = await prisma.budget.findFirst({
+      where: {
+        id: { not: budgetId },
+        userId,
+        category,
+        month,
+        year,
+      },
+      select: { id: true },
+    });
+
+    if (duplicate) {
+      throw new BudgetConflictError(`Anggaran untuk kategori '${category}' pada periode ini sudah dibuat`);
+    }
 
     const data: Prisma.BudgetUpdateInput = {};
     if (input.category !== undefined) data.category = input.category;
@@ -136,9 +210,12 @@ export class BudgetService {
   static async deleteBudget(userId: string, budgetId: string) {
     const existing = await prisma.budget.findFirst({
       where: { id: budgetId, userId },
+      select: { id: true },
     });
 
-    if (!existing) return null;
+    if (!existing) {
+      throw new BudgetNotFoundError();
+    }
 
     return prisma.budget.delete({
       where: { id: budgetId },

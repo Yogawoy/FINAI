@@ -10,7 +10,14 @@ import {
   Tooltip,
   Cell,
 } from 'recharts';
-import { formatIDR, MOCK_BUDGET_DAILY_TREND, DailySpendingPoint } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
+
+interface DailySpendingPoint {
+  day: string;
+  dayFull: string;
+  amount: number;
+  label: string;
+}
 
 interface BudgetTrendChartProps {
   data?: DailySpendingPoint[];
@@ -40,7 +47,7 @@ const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
 };
 
 export default function BudgetTrendChart({
-  data = MOCK_BUDGET_DAILY_TREND,
+  data = [],
   categoryColor = '#7C7CE6',
   categoryName = 'Category',
 }: BudgetTrendChartProps) {

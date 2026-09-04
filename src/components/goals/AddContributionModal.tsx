@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import { GoalItem, GoalContribution, Wallet } from '@/types';
-import { MOCK_WALLETS, formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
 
 interface AddContributionModalProps {
   goal: GoalItem | null;
@@ -51,13 +51,18 @@ export default function AddContributionModal({
   isOpen,
   onClose,
   onAddContribution,
-  wallets = MOCK_WALLETS,
+  wallets = [],
 }: AddContributionModalProps) {
+  const getTodayISO = () => new Date().toISOString().split('T')[0];
   const [amountRaw, setAmountRaw] = useState('500000');
   const [sourceWalletId, setSourceWalletId] = useState('w-1');
   const [destinationWalletId, setDestinationWalletId] = useState('w-5');
-  const [date, setDate] = useState('2026-09-01');
-  const [note, setNote] = useState('Setoran bulan September');
+  const [date, setDate] = useState(getTodayISO());
+  const [note, setNote] = useState('');
+
+  React.useEffect(() => {
+    if (isOpen) setDate(getTodayISO());
+  }, [isOpen]);
 
   // Custom Dropdowns & Popovers
   const [isSourceOpen, setIsSourceOpen] = useState(false);

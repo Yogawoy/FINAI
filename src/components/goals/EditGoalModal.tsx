@@ -8,7 +8,7 @@ import DatePicker from '@/components/ui/DatePicker';
 import SegmentedControl from '@/components/ui/SegmentedControl';
 import WalletSelect from '@/components/ui/WalletSelect';
 import { GoalItem, GoalCategoryType, GoalColorTheme, GoalFrequency, Wallet } from '@/types';
-import { MOCK_WALLETS, formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
 import GoalTransferFlow from './GoalTransferFlow';
 
 interface EditGoalModalProps {
@@ -43,7 +43,7 @@ export default function EditGoalModal({
   isOpen,
   onClose,
   onUpdateGoal,
-  wallets = MOCK_WALLETS,
+  wallets = [],
 }: EditGoalModalProps) {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState<GoalCategoryType>('course');
@@ -57,6 +57,7 @@ export default function EditGoalModal({
 
   const [colorTheme, setColorTheme] = useState<GoalColorTheme>('periwinkle');
   const [notes, setNotes] = useState('');
+  const [autoDeposit, setAutoDeposit] = useState(false);
 
   useEffect(() => {
     if (goal) {
@@ -69,6 +70,7 @@ export default function EditGoalModal({
       setDestinationWalletId(goal.destinationWalletId || 'w-5');
       setColorTheme(goal.colorTheme || 'periwinkle');
       setNotes(goal.notes || '');
+      setAutoDeposit(Boolean((goal as any).autoDeposit));
     }
   }, [goal]);
 
@@ -91,19 +93,29 @@ export default function EditGoalModal({
     const today = new Date();
     const target = new Date(targetDate || '2026-12-31');
     const diffTime = target.getTime() - today.getTime();
-    const diffDays = Math.max(Math.ceil(diffTime / (1000 * 60 * 60 * 24)), 30);
+    const diffDays = Math.max(Math.ceil(diffTime / (1000 * 60 * 60 * 24)), 7);
     const months = Math.max(Math.round(diffDays / 30), 1);
-    const monthlyReq = Math.ceil(remaining / months);
-
+    const weeks = Math.max(Math.ceil(diffDays / 7), 1);
+    let monthlyReq: number, weeklyReq: number;
+    if (frequency === 'weekly') {
+      weeklyReq = remaining > 0 ? Math.ceil(remaining / weeks) : 0;
+      monthlyReq = Math.ceil(weeklyReq * 4.33);
+    } else {
+      monthlyReq = remaining > 0 ? Math.ceil(remaining / months) : 0;
+      weeklyReq = Math.ceil(monthlyReq / 4.33);
+    }
     return {
       months,
-      monthlyReq: remaining > 0 ? monthlyReq : 0,
+      weeks,
+      monthlyReq,
+      weeklyReq,
+      primaryReq: frequency === 'weekly' ? weeklyReq : monthlyReq,
       percentage:
         targetAmount > 0
           ? Math.min(Math.round((currentAmount / targetAmount) * 100), 100)
           : 0,
     };
-  }, [targetAmount, currentAmount, remaining, targetDate]);
+  }, [targetAmount, currentAmount, remaining, targetDate, frequency]);
 
   if (!goal) return null;
 
@@ -119,6 +131,8 @@ export default function EditGoalModal({
       targetDate,
       frequency,
       monthlySaving: calculation.monthlyReq,
+      weeklySaving: (calculation as any).weeklyReq,
+      autoDeposit,
       sourceWalletId,
       sourceWalletName: sourceWallet ? sourceWallet.name : goal.sourceWalletName,
       destinationWalletId,
@@ -299,7 +313,16 @@ export default function EditGoalModal({
             </div>
           </div>
 
-          {/* 6. Tema Warna */}
+          {/* 6. Setoran Otomatis */}
+          <label className="flex items-center justify-between p-3 rounded-2xl bg-[#F8F9FD] border border-black/[0.06] cursor-pointer gap-3">
+            <div>
+              <span className="text-xs font-bold text-[#242636] block">Setoran Otomatis</span>
+              <span className="text-[10px] text-[#757A95]">Auto {frequency === 'weekly' ? 'mingguan' : 'bulanan'} sesuai tagihan</span>
+            </div>
+            <input type="checkbox" checked={autoDeposit} onChange={(e) => setAutoDeposit(e.target.checked)} className="w-10 h-6 accent-[#7C7CE6]" />
+          </label>
+
+          {/* 7. Tema Warna */}
           <div className="space-y-1">
             <label className="text-[11px] font-bold text-[#757A95] uppercase tracking-wider block">
               Warna Tema

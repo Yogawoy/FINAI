@@ -14,15 +14,17 @@ import Modal from '@/components/ui/Modal';
 import DatePicker from '@/components/ui/DatePicker';
 import TimePicker from '@/components/ui/TimePicker';
 import WalletSelect from '@/components/ui/WalletSelect';
+import type { WalletOption } from '@/components/ui/WalletSelect';
 import SegmentedControl from '@/components/ui/SegmentedControl';
 import { Transaction, TransactionCategory, TransactionType } from '@/types';
-import { formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
 
 interface EditTransactionModalProps {
   transaction: Transaction | null;
   isOpen: boolean;
   onClose: () => void;
-  onUpdateTransaction: (updatedTx: Transaction) => void;
+  onUpdateTransaction: (updatedTx: any) => void;
+  wallets?: WalletOption[];
 }
 
 const CORE_CATEGORIES: { id: TransactionCategory; label: string; icon: React.ReactNode }[] = [
@@ -38,6 +40,7 @@ export default function EditTransactionModal({
   isOpen,
   onClose,
   onUpdateTransaction,
+  wallets,
 }: EditTransactionModalProps) {
   const [type, setType] = useState<TransactionType>('expense');
   const [rawAmount, setRawAmount] = useState('');
@@ -45,7 +48,7 @@ export default function EditTransactionModal({
   const [category, setCategory] = useState<TransactionCategory>('food');
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<string>('Cash');
+  const [selectedWalletId, setSelectedWalletId] = useState<string>('Cash');
   const [note, setNote] = useState('');
 
   useEffect(() => {
@@ -56,16 +59,21 @@ export default function EditTransactionModal({
       setCategory(transaction.category);
       setDate(transaction.date);
       setTime(transaction.time);
-      const pm =
-        transaction.paymentMethod === 'Bank' || transaction.account?.includes('BCA')
-          ? 'BCA'
-          : transaction.paymentMethod === 'E-Wallet' || transaction.account?.includes('GoPay')
-          ? 'GoPay'
-          : 'Cash';
-      setPaymentMethod(pm);
+      const walletId = (transaction as any).walletId;
+      if (walletId && wallets?.some((w) => w.id === walletId)) {
+        setSelectedWalletId(walletId);
+      } else if (wallets && wallets.length > 0) {
+        const pm =
+          transaction.paymentMethod === 'Bank' || transaction.account?.includes('BCA')
+            ? wallets.find((w) => w.name.includes('BCA'))?.id
+            : transaction.paymentMethod === 'E-Wallet' || transaction.account?.includes('GoPay')
+            ? wallets.find((w) => w.name.includes('GoPay'))?.id
+            : wallets[0]?.id;
+        setSelectedWalletId(pm || wallets[0].id);
+      }
       setNote(transaction.note || '');
     }
-  }, [transaction]);
+  }, [transaction, wallets]);
 
   if (!transaction) return null;
 
@@ -82,7 +90,8 @@ export default function EditTransactionModal({
     e.preventDefault();
     if (!title || numAmount <= 0) return;
 
-    const updatedTx: Transaction = {
+    const selectedWallet = wallets?.find((w) => w.id === selectedWalletId);
+    const updatedTx: any = {
       ...transaction,
       title: title.trim(),
       category: category,
@@ -90,9 +99,10 @@ export default function EditTransactionModal({
       amount: numAmount,
       date: date,
       time: time,
-      account: paymentMethod === 'BCA' ? 'BCA Prioritas' : paymentMethod === 'GoPay' ? 'GoPay' : paymentMethod === 'Savings' ? 'Pos Tabungan' : 'Uang Tunai',
-      paymentMethod: (paymentMethod === 'BCA' ? 'Bank' : paymentMethod === 'GoPay' ? 'E-Wallet' : 'Cash') as any,
+      account: selectedWallet?.name || selectedWalletId,
+      paymentMethod: 'Bank' as any,
       note: note.trim() || undefined,
+      walletId: selectedWalletId,
     };
 
     onUpdateTransaction(updatedTx);
@@ -273,8 +283,9 @@ export default function EditTransactionModal({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-start">
               <WalletSelect
                 label="Dompet / Sumber Dana"
-                value={paymentMethod}
-                onChange={setPaymentMethod}
+                value={selectedWalletId}
+                onChange={setSelectedWalletId}
+                wallets={wallets}
               />
 
               <div className="space-y-1">

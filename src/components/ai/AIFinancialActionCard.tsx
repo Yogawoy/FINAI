@@ -14,21 +14,25 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { AIFinancialAction } from '@/types';
-import { formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
 
 interface AIFinancialActionCardProps {
   action: AIFinancialAction;
   onConfirm: (actionId: string) => void;
   onCancel: (actionId: string) => void;
+  isConfirming?: boolean;
 }
 
 export default function AIFinancialActionCard({
   action,
   onConfirm,
   onCancel,
+  isConfirming = false,
 }: AIFinancialActionCardProps) {
   const isGoal = action.type === 'goal_contribution';
+  const isTransfer = action.type === 'transfer';
   const isIncome = action.type === 'income';
+  const isFlow = isGoal || isTransfer;
   const isPositive = isGoal || isIncome;
   const isPending = action.status === 'pending';
   const isSuccess = action.status === 'confirmed' || action.status === 'success';
@@ -76,14 +80,16 @@ export default function AIFinancialActionCard({
         <div>
           <span
             className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-              isGoal
+              isTransfer
+                ? 'bg-[#D6E4FA] text-[#3E6FB0]'
+                : isGoal
                 ? 'bg-[#EDEAFC] text-[#5F5ED4]'
                 : isIncome
                 ? 'bg-[#EBF7F2] text-[#1B7354]'
                 : 'bg-[#FEF3F2] text-[#D94F4F]'
             }`}
           >
-            {isGoal ? 'Setoran Tabungan' : isIncome ? 'Pemasukan' : 'Pengeluaran'}
+            {isTransfer ? 'Transfer' : isGoal ? 'Setoran Tabungan' : isIncome ? 'Pemasukan' : 'Pengeluaran'}
           </span>
           <h4 className="text-sm sm:text-base font-bold text-[#242636] mt-1.5">
             {action.title}
@@ -119,9 +125,9 @@ export default function AIFinancialActionCard({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-[#757A95]">
             <Wallet size={13} />
-            <span>{isGoal ? 'Alur Dompet' : 'Dompet Rekening'}</span>
+            <span>{isFlow ? 'Alur Dompet' : 'Dompet Rekening'}</span>
           </div>
-          {isGoal ? (
+          {isFlow ? (
             <div className="flex items-center gap-1.5 font-semibold text-[#242636]">
               <span>{action.sourceWallet || 'BCA'}</span>
               <ArrowRight size={12} className="text-[#757A95]" />
@@ -152,23 +158,36 @@ export default function AIFinancialActionCard({
         <button
           type="button"
           onClick={() => onCancel(action.id)}
-          className="flex-1 py-2 px-3 rounded-xl bg-white border border-[#E8EAF2] hover:bg-[#F8F9FD] text-xs font-bold text-[#757A95] hover:text-[#242636] transition-colors cursor-pointer"
+          disabled={isConfirming}
+          className="flex-1 py-2 px-3 rounded-xl bg-white border border-[#E8EAF2] hover:bg-[#F8F9FD] text-xs font-bold text-[#757A95] hover:text-[#242636] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
         >
           Batal
         </button>
         <button
           type="button"
           onClick={() => onConfirm(action.id)}
-          className="flex-1 py-2 px-3 rounded-xl bg-[#7C7CE6] hover:bg-[#6A69D6] text-xs font-bold text-white shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5"
+          disabled={isConfirming}
+          className="flex-1 py-2 px-3 rounded-xl bg-[#7C7CE6] hover:bg-[#6A69D6] text-xs font-bold text-white shadow-xs transition-all cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Check size={14} />
-          <span>
-            {isGoal
-              ? 'Konfirmasi Setoran'
-              : isIncome
-              ? 'Simpan Pemasukan'
-              : 'Simpan Transaksi'}
-          </span>
+          {isConfirming ? (
+            <>
+              <span className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+              <span>Memproses...</span>
+            </>
+          ) : (
+            <>
+              <Check size={14} />
+              <span>
+                {isTransfer
+                  ? 'Konfirmasi Transfer'
+                  : isGoal
+                  ? 'Konfirmasi Setoran'
+                  : isIncome
+                  ? 'Simpan Pemasukan'
+                  : 'Simpan Transaksi'}
+              </span>
+            </>
+          )}
         </button>
       </div>
     </div>

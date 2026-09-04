@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Search, Bell, Command, Menu } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
+import { useAuth } from '@/context/AuthContext';
 
 interface HeaderProps {
   title?: string;
@@ -12,10 +13,17 @@ interface HeaderProps {
 }
 
 export default function Header({
-  title = 'Selamat siang, Yoga.',
-  subtitle = 'Kondisi keuanganmu bulan ini sangat sehat.',
+  title,
+  subtitle,
   actionButton,
 }: HeaderProps) {
+  const { user } = useAuth();
+  const firstName = user?.name?.split(' ')[0] || 'User';
+  const initials = user?.name ? user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) : 'U';
+
+  const displayTitle = title || `Selamat siang, ${firstName}.`;
+  const displaySubtitle = subtitle || 'Kondisi keuanganmu bulan ini sangat sehat.';
+
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -33,10 +41,10 @@ export default function Header({
           </button>
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#242636]">
-              {title}
+              {displayTitle}
             </h1>
             <p className="text-xs sm:text-sm text-[#757A95] mt-0.5 font-medium">
-              {subtitle}
+              {displaySubtitle}
             </p>
           </div>
         </div>
@@ -68,7 +76,7 @@ export default function Header({
           {/* Profile Avatar Pill */}
           <div className="flex items-center gap-2 pl-1">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#E4E2FB] to-[#D6E4FA] border border-white flex items-center justify-center text-[#7C7CE6] font-extrabold text-xs shadow-xs select-none">
-              YW
+              {initials}
             </div>
           </div>
 

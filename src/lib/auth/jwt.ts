@@ -1,7 +1,12 @@
 import { SignJWT, jwtVerify } from 'jose';
 
-const DEFAULT_SECRET = 'finai-fallback-secret-minimum-32-chars-key-2026';
-const secretKey = new TextEncoder().encode(process.env.AUTH_SECRET || DEFAULT_SECRET);
+function getSecretKey(): Uint8Array {
+  const secret = process.env.AUTH_SECRET;
+  if (!secret || secret.trim().length === 0) {
+    throw new Error('AUTH_SECRET wajib dikonfigurasi — server tidak dapat berjalan tanpa secret yang aman.');
+  }
+  return new TextEncoder().encode(secret);
+}
 
 export interface TokenPayload {
   userId: string;
@@ -17,12 +22,12 @@ export async function signToken(payload: TokenPayload): Promise<string> {
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime(TOKEN_EXPIRATION)
-    .sign(secretKey);
+    .sign(getSecretKey());
 }
 
 export async function verifyToken(token: string): Promise<TokenPayload | null> {
   try {
-    const { payload } = await jwtVerify(token, secretKey);
+    const { payload } = await jwtVerify(token, getSecretKey());
     return {
       userId: payload.userId as string,
       email: payload.email as string,

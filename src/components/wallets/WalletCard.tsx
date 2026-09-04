@@ -12,7 +12,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { Wallet, WalletColorTheme } from '@/types';
-import { formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
 
 interface WalletCardProps {
   wallet: Wallet;

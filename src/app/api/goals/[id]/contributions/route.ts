@@ -1,6 +1,8 @@
 import { NextRequest } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { GoalService } from '@/lib/services/goal.service';
+import { serializeGoal } from '@/lib/serializers/goal';
+import { serializeWallet } from '@/lib/serializers/wallet';
 import { CreateGoalContributionSchema } from '@/lib/validations/goal';
 import { apiSuccess, apiError } from '@/lib/api-response';
 
@@ -35,7 +37,16 @@ export async function POST(
 
     return apiSuccess(
       {
-        ...contributionResult,
+        contribution: {
+          id: contributionResult.contribution.id,
+          goalId: contributionResult.contribution.goalId,
+          sourceWalletId: contributionResult.contribution.sourceWalletId,
+          amount: contributionResult.contribution.amount.toFixed(2),
+          contributionDate: contributionResult.contribution.contributionDate.toISOString(),
+          createdAt: contributionResult.contribution.createdAt.toISOString(),
+        },
+        goal: serializeGoal(contributionResult.goal),
+        wallet: serializeWallet(contributionResult.wallet),
         message: 'Setoran target berhasil dicatat',
       },
       201
@@ -43,11 +54,27 @@ export async function POST(
   } catch (error: unknown) {
     console.error('Goal Contribution API Error:', error);
     const message = error instanceof Error ? error.message : 'Gagal memproses setoran target';
-    const isBalanceError = message.toLowerCase().includes('saldo tidak mencukupi');
+    const isNotFound = message.toLowerCase().includes('tidak ditemukan');
+    const isBalanceError = message.toLowerCase().includes('saldo') && message.toLowerCase().includes('mencukupi');
+    const isOverfunding = message.toLowerCase().includes('exceeds remaining goal amount');
+    const isValidation = message.toLowerCase().includes('harus lebih besar dari 0');
+
+    if (isNotFound) {
+      return apiError('NOT_FOUND', message, 404);
+    }
+
+    if (isOverfunding) {
+      return apiError('VALIDATION_ERROR', 'Setoran melebihi sisa target impian', 400);
+    }
+
+    if (isValidation) {
+      return apiError('VALIDATION_ERROR', message, 400);
+    }
+
     return apiError(
       isBalanceError ? 'INSUFFICIENT_BALANCE' : 'INTERNAL_ERROR',
       message,
-      isBalanceError ? 400 : 500
+      isBalanceError ? 409 : 500
     );
   }
 }

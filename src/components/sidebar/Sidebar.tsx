@@ -16,6 +16,7 @@ import {
   LucideIcon,
 } from 'lucide-react';
 
+import { useAuth } from '@/context/AuthContext';
 import SidebarBrand from './SidebarBrand';
 import SidebarGroup from './SidebarGroup';
 import SidebarItem from './SidebarItem';
@@ -129,6 +130,7 @@ const STORAGE_KEY = 'finai-sidebar-groups';
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { user, logout } = useAuth();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   // Listen for global open mobile sidebar events (from Header or mobile controls)
@@ -149,9 +151,6 @@ export default function Sidebar() {
       for (const item of group.items) {
         if (item.href === '/app' && pathname === '/app') return group.id;
         if (item.href !== '/app' && (pathname === item.href || pathname.startsWith(item.href))) {
-          return group.id;
-        }
-        if (item.id === 'ai-assistant' && pathname.startsWith('/app/assistant')) {
           return group.id;
         }
       }
@@ -200,9 +199,6 @@ export default function Sidebar() {
 
   const isItemActive = (href: string, id: string) => {
     if (href === '/app') return pathname === '/app';
-    if (id === 'ai-assistant') {
-      return pathname.startsWith('/app/ai-assistant') || pathname.startsWith('/app/assistant');
-    }
     return pathname === href || pathname.startsWith(href);
   };
 
@@ -268,10 +264,10 @@ export default function Sidebar() {
         </Link>
 
         <SidebarProfile
-          name="Yoga W."
+          name={user?.name || 'User'}
           tier="Member FinAI Pro"
-          initials="YW"
-          onLogout={() => router.push('/login')}
+          initials={user?.name ? user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) : 'U'}
+          onLogout={() => logout()}
         />
       </div>
     </>

@@ -97,17 +97,22 @@ export class GoalService {
    * Create new goal
    */
   static async createGoal(userId: string, input: CreateGoalInput) {
+    const freq = (input.frequency as string) || 'MONTHLY';
+    const nextDue = new Date();
+    if (freq === 'WEEKLY') nextDue.setDate(nextDue.getDate() + 7);
+    else nextDue.setMonth(nextDue.getMonth() + 1);
     const goal = await prisma.goal.create({
       data: {
         userId,
         name: input.name,
         category: input.category,
         targetAmount: new Prisma.Decimal(input.targetAmount),
-        currentAmount: new Prisma.Decimal(input.currentAmount ?? 0),
         deadline: new Date(input.deadline),
         sourceWalletId: input.sourceWalletId || null,
         destinationWalletId: input.destinationWalletId || null,
-        frequency: input.frequency || 'MONTHLY',
+        frequency: (freq as any) || 'MONTHLY',
+        autoDeposit: input.autoDeposit ?? false,
+        nextDueDate: input.autoDeposit ? nextDue : null,
       },
     });
 
@@ -131,9 +136,29 @@ export class GoalService {
     if (input.name !== undefined) data.name = input.name;
     if (input.category !== undefined) data.category = input.category;
     if (input.targetAmount !== undefined) data.targetAmount = new Prisma.Decimal(input.targetAmount);
-    if (input.currentAmount !== undefined) data.currentAmount = new Prisma.Decimal(input.currentAmount);
     if (input.deadline !== undefined) data.deadline = new Date(input.deadline);
-    if (input.frequency !== undefined) data.frequency = input.frequency;
+    if (input.frequency !== undefined) {
+      (data as any).frequency = input.frequency;
+      // auto-recalculate nextDueDate when frequency changes and autoDeposit is on
+      if ((existing as any).autoDeposit) {
+        const nextDue = new Date();
+        if (input.frequency === 'WEEKLY') nextDue.setDate(nextDue.getDate() + 7);
+        else nextDue.setMonth(nextDue.getMonth() + 1);
+        (data as any).nextDueDate = nextDue;
+      }
+    }
+    if ((input as any).autoDeposit !== undefined) {
+      (data as any).autoDeposit = (input as any).autoDeposit;
+      if ((input as any).autoDeposit) {
+        const freq = (input.frequency as string) || (existing as any).frequency;
+        const nextDue = new Date();
+        if (freq === 'WEEKLY') nextDue.setDate(nextDue.getDate() + 7);
+        else nextDue.setMonth(nextDue.getMonth() + 1);
+        (data as any).nextDueDate = nextDue;
+      } else {
+        (data as any).nextDueDate = null;
+      }
+    }
     if (input.sourceWalletId !== undefined) {
       data.sourceWallet = input.sourceWalletId
         ? { connect: { id: input.sourceWalletId } }
@@ -173,6 +198,8 @@ export class GoalService {
 
   /**
    * Add Goal Contribution with atomic database transaction
+   * Goal contribution is internal transfer and does NOT create EXPENSE transaction.
+   * Rejects any contribution that exceeds remaining goal target amount.
    */
   static async addGoalContribution(
     userId: string,
@@ -181,6 +208,10 @@ export class GoalService {
   ) {
     const { sourceWalletId, amount, contributionDate } = input;
     const contributionAmount = new Prisma.Decimal(amount);
+
+    if (contributionAmount.lte(0)) {
+      throw new Error('Nominal setoran harus lebih besar dari 0');
+    }
 
     return prisma.$transaction(async (tx) => {
       // 1. Verify goal ownership
@@ -192,7 +223,14 @@ export class GoalService {
         throw new Error('Target impian tidak ditemukan atau bukan milik Anda');
       }
 
-      // 2. Verify source wallet ownership
+      // 2. Calculate remaining amount and check overfunding
+      const remainingTarget = goal.targetAmount.minus(goal.currentAmount);
+
+      if (contributionAmount.gt(remainingTarget)) {
+        throw new Error('Contribution exceeds remaining goal amount');
+      }
+
+      // 3. Verify source wallet ownership
       const sourceWallet = await tx.wallet.findFirst({
         where: { id: sourceWalletId, userId },
       });
@@ -201,34 +239,41 @@ export class GoalService {
         throw new Error('Dompet sumber tidak ditemukan atau bukan milik Anda');
       }
 
-      // 3. Verify sufficient balance
-      if (sourceWallet.balance.lessThan(contributionAmount)) {
+      // 4. Conditional decrement on wallet balance to prevent overdraft
+      const updatedWalletCount = await tx.wallet.updateMany({
+        where: {
+          id: sourceWalletId,
+          userId,
+          balance: { gte: contributionAmount },
+        },
+        data: {
+          balance: { decrement: contributionAmount },
+        },
+      });
+
+      if (updatedWalletCount.count === 0) {
         throw new Error('Saldo dompet sumber tidak mencukupi untuk setoran target');
       }
 
-      // 4. Debit source wallet balance
-      const updatedWallet = await tx.wallet.update({
-        where: { id: sourceWalletId },
+      // 5. Conditional increment on goal currentAmount to prevent race condition overfunding
+      const updatedGoalCount = await tx.goal.updateMany({
+        where: {
+          id: goalId,
+          userId,
+          currentAmount: { lte: goal.targetAmount.minus(contributionAmount) },
+        },
         data: {
-          balance: {
-            decrement: contributionAmount,
-          },
+          currentAmount: { increment: contributionAmount },
         },
       });
 
-      // 5. Increment goal currentAmount
-      const updatedGoal = await tx.goal.update({
-        where: { id: goalId },
-        data: {
-          currentAmount: {
-            increment: contributionAmount,
-          },
-        },
-      });
+      if (updatedGoalCount.count === 0) {
+        throw new Error('Contribution exceeds remaining goal amount');
+      }
 
       const txDate = contributionDate ? new Date(contributionDate) : new Date();
 
-      // 6. Create GoalContribution record
+      // 6. Create GoalContribution record + advance nextDueDate if autoDeposit
       const contribution = await tx.goalContribution.create({
         data: {
           goalId,
@@ -237,28 +282,28 @@ export class GoalService {
           contributionDate: txDate,
         },
       });
+      if ((goal as any).autoDeposit) {
+        const nextDue = new Date(txDate);
+        if ((goal as any).frequency === 'WEEKLY') nextDue.setDate(nextDue.getDate() + 7);
+        else nextDue.setMonth(nextDue.getMonth() + 1);
+        await tx.goal.update({ where: { id: goalId }, data: { nextDueDate: nextDue } });
+      }
 
-      // 7. Create Expense Transaction record linked to the wallet
-      const transaction = await tx.transaction.create({
-        data: {
-          userId,
-          walletId: sourceWalletId,
-          type: 'EXPENSE',
-          amount: contributionAmount,
-          category: 'Tabungan & Investasi',
-          description: `Setoran Target: ${goal.name}`,
-          transactionDate: txDate,
-        },
+      const freshGoal = await tx.goal.findUniqueOrThrow({
+        where: { id: goalId },
+      });
+
+      const freshWallet = await tx.wallet.findUniqueOrThrow({
+        where: { id: sourceWalletId },
       });
 
       return {
         contribution,
-        transaction,
         goal: {
-          ...updatedGoal,
-          ...this.computeGoalMetrics(updatedGoal),
+          ...freshGoal,
+          ...this.computeGoalMetrics(freshGoal),
         },
-        wallet: updatedWallet,
+        wallet: freshWallet,
       };
     });
   }

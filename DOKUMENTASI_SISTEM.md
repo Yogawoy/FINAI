@@ -1,294 +1,192 @@
 # 📘 DOKUMENTASI LENGKAP SISTEM FINAI (SPATIAL FINANCE)
 
-> **FinAI** adalah *Personal Finance Assistant* modern berbasis kecerdasan buatan (AI) yang dirancang untuk membantu pengguna mengelola, merencanakan, dan memahami kondisi finansial mereka melalui antarmuka visual spasial yang tenang, elegan, dan intuitif (*Soft Premium Fintech*).
+> Versi: Phase 9 + 8.5.x — AI Groq + Structured Cards + Real Data (September 2026)
 
 ---
 
-## 1. Ringkasan Eksekutif & Filosofi Desain
+## 1. Ringkasan & Stack
 
-FinAI dibangun untuk memecahkan kebiasaan lama pencatatan keuangan manual yang kaku, rumit, dan membosankan. Melalui paradigma **Natural Language $\rightarrow$ Financial Action**, pengguna cukup bercerita atau mengetik transaksi sehari-hari seperti berkirim pesan dengan teman, dan sistem akan mengonversinya menjadi tindakan finansial nyata.
+**FinAI** adalah web app personal finance dengan AI copilot (bukan chatbot teks). Fitur: dompet, transaksi atomik, anggaran bulanan, target impian + kontribusi, analisis tren, dan **Asisten FinAI** Groq yang paham konteks finansial dan merender **card finansial** (bukan paragraf).
 
-### Karakter Estetika (*Soft Premium Fintech*):
-- **Clean & Modern**: Antarmuka minimalis tanpa elemen visual yang tidak relevan.
-- **Calm & Friendly**: Warna-warna pastel lembut yang mengurangi kecemasan dalam mengelola uang.
-- **Intelligent & Trustworthy**: Konfirmasi eksplisit sebelum saldo diubah, privasi data pengguna adalah prioritas tertinggi.
-- **Strict Visual Rules**:
-  - ❌ **Tanpa Emoji** (Semua ikon menggunakan SVG vektor resmi dari `lucide-react`).
-  - ❌ **Tanpa 3D / WebGL** (Fokus pada kecepatan render, micro-animation Framer Motion, dan tipografi presisi).
-  - ❌ **Tanpa Warna Neon / Dark Mode Berlebihan** (Konsistensi palet terang `#F6F7FB` dengan aksen lavender `#7C7CE6`).
+**Stack:** Next.js 16.3 App Router + React 19 + TypeScript strict + Tailwind 4 + Prisma 6.4 + PostgreSQL + Groq `openai/gpt-oss-20b` (fallback xAI `grok-4`) + Recharts + framer-motion + lucide-react + Zod.
+
+**Design tokens:** `primary #7C7CE6`, `lavender #E4E2FB`, `text #242636`, `secondary #757A95`, `border #E8EAF2`, `rounded-2xl`, `shadow [0_6px_24px_rgba(36,38,54,0.04)]`, tanpa emoji, tanpa Three.js.
 
 ---
 
-## 2. Palet Warna & Desain Sistem
+## 2. Struktur Project
 
-| Elemen / Token | Kode Warna | Penggunaan |
-| :--- | :--- | :--- |
-| **Canvas Background** | `#F6F7FB` | Latar belakang utama seluruh halaman |
-| **Surface Card** | `#FFFFFF` | Kontainer kartu, modal popover, dan panel |
-| **Primary Brand** | `#7C7CE6` | Tombol primer, aksen fokus, link aktif, hero emphasis |
-| **Soft Lavender** | `#E4E2FB` | Badge status, background ilustrasi, highlight halus |
-| **Ice Blue** | `#D6E4FA` | Aksen dompet digital, grafik pemasukan |
-| **Mint Green** | `#D0EFE5` / `#1B7354` | Arus kas positif, indikator kesehatan keuangan prima |
-| **Soft Coral** | `#FCE2E0` / `#B83A38` | Alert kesalahan, tag pengeluaran, konfirmasi bahaya |
-| **Primary Text** | `#242636` | Judul, headline, angka saldo utama |
-| **Secondary Text** | `#757A95` | Subtitle, label tanggal, deskripsi bantuan |
-
----
-
-## 3. Peta Rute & Struktur Navigasi Aplikasi
-
-```mermaid
-graph TD
-    Landing["/ (Landing Page)"] --> Login["/login (Autentikasi Masuk)"]
-    Landing --> Register["/register (Pendaftaran Akun)"]
-    Login <-->|Sliding Transition| Register
-    Login --> App["/app (Dashboard Utama)"]
-    Register --> App
-
-    subgraph AppLayout ["Area Aplikasi (/app)"]
-        App --> Transactions["/app/transactions (Riwayat & Input)"]
-        App --> Wallets["/app/wallets (Multi Dompet & Transfer)"]
-        App --> Budgets["/app/budgets (Pos Anggaran Bulanan)"]
-        App --> Goals["/app/goals (Target Tabungan Impian)"]
-        App --> Analytics["/app/analytics (Keseimbangan & Grafik Tren)"]
-        App --> Assistant["/app/ai-assistant (Percakapan Penuh FinAI)"]
-        App --> Settings["/app/settings (Preferensi & Keamanan)"]
-    end
+```
+src/
+  app/
+    page.tsx              # Landing (preview chart)
+    login/ page.tsx       # AuthLayout login
+    register/ page.tsx    # AuthLayout register
+    layout.tsx            # Root + AuthProvider
+    api/
+      auth/{login,register,logout,me}
+      wallets/{route, [id]/route, transfer/route (deprecated alias)}
+      transfers/route      # canonical POST /api/transfers
+      transactions/{route, [id]/route}
+      budgets/{route, [id]/route}
+      goals/{route, [id]/route, [id]/contributions/route}
+      settings/route
+      ai/chat/route        # POST /api/ai/chat → Groq
+    app/                   # Protected (middleware /app/*)
+      layout.tsx           # Sidebar + MobileBottomNav
+      page.tsx             # Dashboard (chart real 6 bulan)
+      wallets/page.tsx
+      transactions/page.tsx
+      budgets/page.tsx
+      goals/page.tsx
+      analytics/page.tsx   # chart real per period + donut/bar real
+      ai-assistant/page.tsx
+      settings/page.tsx
+  components/
+    ai/{AIAssistantPage, AIMessage, AIConversation, AIInput, AIHeader, AIContextBar, AIQuickActions,
+        AIFinancialActionCard, AIThinking, AIError, AIEmptyState, AIResponseRenderer,
+        cards/{BudgetCard, GoalCard, WalletCard (WalletSummaryCard), SummaryCard, TransferActionCard, GoalContributionCard}}
+    charts/{IncomeExpenseChart, FinancialTooltip, ChartLegend, ChartPeriodSelect}
+    wallets/*, transactions/*, budgets/*, goals/*, navigation/*, sidebar/*, settings/*, ui/*, loading/*
+  lib/
+    ai/{grok.ts, ai.prompts.ts, ai.schemas.ts}
+    auth/{session.ts, password.ts, jwt.ts, auth.ts}
+    services/{wallet, transaction, transfer, budget, goal, settings, auth}.service.ts
+    serializers/{wallet, transaction, budget, goal}.ts
+    validations/{wallet, transaction, budget, goal, auth, settings}.ts
+    api-client.ts, api-response.ts, db.ts, format.ts, data-refresh.ts
+  context/AuthContext.tsx
+  types/index.ts
+prisma/{schema.prisma, seed.ts, migrations/}
 ```
 
 ---
 
-## 4. Alur Kerja Utama Sistem (*Core User Flows*)
-
-### 🔄 Alur 1: Onboarding & Autentikasi Pengguna
-1. **Landing Page (`/`)**:
-   - Pengguna disambut oleh pesan utama *"Kelola keuanganmu. Lebih mudah dengan FinAI"*.
-   - Melihat visualisasi dompet aktif, ritme belanja 7 hari, target progres laptop, dan insight AI.
-   - Menekan tombol **"Mulai Gratis"** diarahkan ke `/register`, atau **"Masuk"** ke `/login`.
-2. **Single-Interface Auth Transition**:
-   - Halaman Login dan Register tidak melakukan *hard page reload*.
-   - Transisi pergeseran panel fisik menggunakan Framer Motion:
-     - **Login**: Ilustrasi lanskap organik di **KIRI**, form di **KANAN**.
-     - **Register**: Form di **KIRI**, ilustrasi lanskap di **KANAN**.
-   - Validasi data input *real-time* inline dengan ikon `AlertCircle` tanpa alert bawaan browser.
-3. **Pemberian Hak Akses**:
-   - Setelah login/register berhasil, sistem langsung mengarahkan pengguna ke ruang kerja utama (`/app`).
-
----
-
-### 💬 Alur 2: Pencatatan Transaksi Berbasis AI (*Natural Language $\rightarrow$ Action Card*)
-Alur revolusioner yang membedakan FinAI dari aplikasi pencatatan konvensional:
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor User as Pengguna
-    participant UI as Chat Interface
-    participant NLP as FinAI Engine
-    participant DB as State Kas & Dompet
-
-    User->>UI: Ketik: "Tadi siang makan nasi padang 25 ribu pakai QRIS BCA"
-    UI->>NLP: Parsing Intent, Kategori, Nominal, dan Dompet
-    NLP-->>UI: Output JSON Action Card (Pengeluaran: Rp25.000, Makanan, BCA)
-    UI->>User: Menampilkan Kartu Aksi Visual + Tombol [Simpan Transaksi]
-    User->>UI: Klik [Simpan Transaksi]
-    UI->>DB: Mutasi Saldo: BCA (-Rp25.000), Catat Transaksi Baru
-    DB-->>UI: Update State Realtime
-    UI->>User: Notifikasi Berhasil & Saldo Dompet Terupdate
-```
-
----
-
-### 💳 Alur 3: Manajemen Multi-Dompet & Transfer Saldo
-1. **Halaman Dompet (`/app/wallets`)**:
-   - Menampilkan total kekayaan bersih (*Net Worth*) dan daftar seluruh kantong keuangan (BCA, Mandiri, Cash/Tunai, GoPay, OVO).
-2. **Pembuatan Dompet Baru**:
-   - Pengguna memilih nama dompet, tipe (Bank, E-Wallet, Tunai), dan saldo awal.
-3. **Penyelarasan Saldo & Pemindahan Dana**:
-   - Pengguna menekan tombol *"Pindah Saldo / Transfer"*.
-   - Memilih dompet sumber $\rightarrow$ dompet tujuan $\rightarrow$ nominal transfer.
-   - Sistem secara atomik mengurangi saldo sumber dan menambah saldo tujuan secara instan tanpa selisih.
-
----
-
-### 🎯 Alur 4: Perencanaan Target Impian & Setoran Tabungan
-1. **Halaman Target (`/app/goals`)**:
-   - Menampilkan target finansial jangka pendek dan jangka panjang (e.g. *Laptop Baru*, *Dana Darurat*, *Liburan ke Jepang*).
-2. **Kalkulator Cerdas**:
-   - Pengguna memasukkan nominal target dan tenggat waktu (bulan/tahun).
-   - Sistem otomatis menghitung rekomendasi setoran bulanan yang realistis (contoh: *Rp2.125.000 / bulan selama 4 bulan tersisa*).
-3. **Eksekusi Tambah Tabungan (*Contribution Modal*)**:
-   - Pengguna memilih tombol *"Tambah Tabungan"*.
-   - Memilih dompet sumber pendanaan dan nominal setoran.
-   - Saldo dompet berkurang dan progres persentase target impian bertambah secara *real-time*.
-
----
-
-### 📊 Alur 5: Pengawasan Anggaran & Evaluasi Analitis
-1. **Pos Anggaran Bulanan (`/app/budgets`)**:
-   - Pengguna menentukan batas maksimal pengeluaran per kategori (e.g. *Makanan & Minuman: Rp3.000.000/bulan*).
-   - Indikator bar visual menampilkan rasio pemakaian:
-     - **Aman (< 70%)**: Mint Green.
-     - **Waspada (70% - 90%)**: Soft Orange.
-     - **Kritis / Overbudget (> 90%)**: Soft Coral.
-2. **Keseimbangan Arus Kas (`/app/analytics`)**:
-   - Grafik garis interaktif 6 bulan membandingkan total pemasukan vs total pengeluaran.
-   - Fitur hover tooltip untuk melihat detail mutasi kas per bulan.
-
----
-
-## 5. Rincian Fitur & Modul Sistem
-
-### 1. Modul Landing Page (`/`)
-- **Fixed Floating Navbar**: Menempel di bagian atas layar dengan indikator garis progres scroll, transisi elevasi saat digulir, dan menu drawer responsif untuk mobile.
-- **Hero Section**: Headline utama, tombol CTA *Mulai Gratis* & *Lihat Cara Kerja*, serta komposisi visual spasial interaktif (kartu dompet mengambang, mini spending bar 7 hari, target laptop, dan kartu insight AI).
-- **Value Strip**: 4 pilar ringkas (*Catat, Atur, Rencanakan, Pahami*).
-- **Fitur Lengkap (Grid 3 × 2)**: 6 kartu fitur dengan efek hover angkat mikro (`translateY(-3px)`).
-- **AI Action Preview**: Simulasi interaktif pengubahan bahasa alami ke kartu transaksi kas.
-- **How It Works**: Panduan 3 langkah praktis onboarding (`01`, `02`, `03`).
-- **Target & Analisis Preview**: Showcase kartu target dan komponen grafik garis interaktif aplikasi.
-- **Keamanan & Trust**: 3 kartu jaminan privasi data, kontrol pengguna, dan konfirmasi AI.
-- **CTA Final & Footer**: Akses langsung pendaftaran dan informasi hak cipta.
-
----
-
-### 2. Modul Autentikasi (`/login` & `/register`)
-- **Sliding Panel Orchestration**: Perpindahan Login $\leftrightarrow$ Register secara fisik di dalam satu kontainer tanpa reload halaman.
-- **Visual Lanskap Organik**: Lanskap pegunungan berkabut, danau lavender, siluet rusa bertanduk, dan pembatas gelombang S-curve SVG.
-- **Form Login**: Email, Password (dengan tombol intip), Lupa password, Checkbox kustom "Ingat saya", tombol masuk ber-spinner, dan tombol SSO Google & Apple.
-- **Form Register**: Grid 2 kolom (Nama Lengkap, Email, Password, Konfirmasi Password), helper minimal 8 karakter, persetujuan Syarat & Privasi, serta tombol submit.
-- **Validasi Kustom**: Deteksi kesalahan format email dan kecocokan kata sandi secara instan dengan alert warna soft coral.
-
----
-
-### 3. Modul Dashboard Utama (`/app`)
-- **Global Sidebar**: Pengelompokan menu fungsional dengan accordion/dropdown yang dapat diciutkan, indikator halaman aktif, dan profil pengguna dengan menu keluar (*Logout*).
-- **Header Finansial**: Salam personal, tanggal real-time bahasa Indonesia, dan status sinkronisasi akun.
-- **Kartu Total Saldo Spasial**: Total saldo agregat, kartu master wallet, dan dropdown pilihan filter dompet yang tidak terpotong radius.
-- **Aksi Cepat 8 Tombol**: Tombol tindakan instan (*Catat Pemasukan, Catat Pengeluaran, Transfer Antar Dompet, Tambah Dompet, Buat Target Baru, Lihat Laporan, Atur Anggaran, Tanya FinAI*).
-- **Ringkasan Arus Kas**: Widget perbandingan pemasukan bulanan, pengeluaran bulanan, dan tabungan tersimpan.
-- **Grafik Keseimbangan**: Visualisasi grafik garis interaktif arus kas 6 bulan.
-- **Riwayat Mutasi Terkini**: Daftar transaksi mutasi terakhir dengan badge kategori dan nominal berwarna dinamis.
-
----
-
-### 4. Modul Transaksi (`/app/transactions`)
-- Filter pencarian cepat berdasarkan nama transaksi, kategori pengeluaran/pemasukan, dan rentang tanggal.
-- Tombol tambah transaksi manual dengan modal form lengkap.
-- Aksi edit dan hapus transaksi dengan pembaruan otomatis ke saldo dompet terkait.
-- Fitur ekspor laporan transaksi ke format CSV / data terstruktur.
-
----
-
-### 5. Modul Dompet (`/app/wallets`)
-- Tampilan kartu dompet virtual dengan kode identitas sensor (`•••• 4821`), logo institusi, dan saldo aktif.
-- Modal tambah dompet baru (Bank, Dompet Digital, Kas Tunai).
-- Modal transfer dana antar-dompet dengan pencatatan otomatis di riwayat transaksi.
-
----
-
-### 6. Modul Anggaran (`/app/budgets`)
-- Pembuatan pos anggaran belanja bulanan berdasarkan kategori.
-- Progress bar persentase pemakaian anggaran dengan batas peringatan dini sebelum defisit.
-- Ringkasan sisa anggaran yang masih aman untuk dibelanjakan pada sisa hari berjalan.
-
----
-
-### 7. Modul Target Impian (`/app/goals`)
-- Kartu sasaran tabungan dengan gambar/ikon representatif, target nominal, dan tenggat waktu.
-- Kalkulasi otomatis jumlah tabungan yang harus disisihkan per bulan.
-- Modal *"Tambah Setoran"* yang mendebit saldo dompet dan meningkatkan progres tabungan.
-
----
-
-### 8. Modul Analisis (`/app/analytics`)
-- Evaluasi mendalam kesehatan finansial: rasio tabungan, pengeluaran terbesar per kategori (*Pie Chart Breakdown*), dan tren arus kas jangka panjang.
-- Insight rekomendasi finansial otomatis dari FinAI untuk penghematan pos anggaran yang bocor halus.
-
----
-
-### 9. Modul Asisten FinAI Percakapan Penuh (`/app/ai-assistant`)
-- Antarmuka chat dua arah yang cerdas dan responsif.
-- Quick Prompt Buttons (contoh: *"Berapa sisa anggaranku?"*, *"Analisis pengeluaran minggu ini"*, *"Catat makan siang 30rb"*).
-- Kartu aksi transaksi interaktif di dalam balon chat dengan tombol konfirmasi satu klik.
-
----
-
-### 10. Modul Pengaturan (`/app/settings`)
-- **Profil Pengguna**: Nama lengkap, email, foto profil avatar, dan tanggal bergabung.
-- **Preferensi Finansial**: Pilihan mata uang utama (IDR, USD, EUR), format tanggal, dan bahasa antarmuka (Bahasa Indonesia).
-- **Keamanan & Privasi**: Ubah kata sandi, autentikasi dua faktor (2FA), dan kontrol pencadangan data.
-- **Notifikasi**: Pengaturan pengingat pos anggaran harian dan laporan mingguan.
-
----
-
-## 6. Struktur Arsitektur Kode (*Codebase Hierarchy*)
+## 3. Arsitektur Data
 
 ```
-c:\laragon\www\FINAI\
-├── src\
-│   ├── app\
-│   │   ├── page.tsx                 # Route Landing Page (/)
-│   │   ├── login\page.tsx           # Route Login (/login)
-│   │   ├── register\page.tsx        # Route Register (/register)
-│   │   ├── layout.tsx               # Root HTML Layout & Font Setup
-│   │   ├── globals.css              # Style System, Custom Glass & Tokens
-│   │   └── app\
-│   │       ├── page.tsx             # Dashboard Utama (/app)
-│   │       ├── transactions\page.tsx# Halaman Transaksi
-│   │       ├── wallets\page.tsx     # Halaman Dompet
-│   │       ├── budgets\page.tsx     # Halaman Anggaran
-│   │       ├── goals\page.tsx       # Halaman Target Impian
-│   │       ├── analytics\page.tsx   # Halaman Analisis
-│   │       ├── ai-assistant\page.tsx# Halaman Asisten FinAI
-│   │       └── settings\page.tsx    # Halaman Pengaturan
-│   ├── components\
-│   │   ├── landing\                 # Komponen Modular Landing Page
-│   │   │   ├── LandingPage.tsx
-│   │   │   ├── Navbar.tsx           # Fixed Floating Navbar + Scroll Progress
-│   │   │   ├── HeroSection.tsx      # Hero Headline + Visual
-│   │   │   ├── HeroFinancialVisual.tsx # Komposisi Workspace Spasial
-│   │   │   ├── ValueStrip.tsx       # 4 Pilar Nilai
-│   │   │   ├── FeaturesSection.tsx  # Grid 3x2 Fitur
-│   │   │   ├── AISection.tsx        # Natural Language -> Action Showcase
-│   │   │   ├── HowItWorksSection.tsx# Langkah 01, 02, 03
-│   │   │   ├── GoalPreviewSection.tsx # Preview Target Tabungan
-│   │   │   ├── AnalyticsPreviewSection.tsx # Preview Grafik Garis
-│   │   │   ├── TrustSection.tsx     # 3 Kartu Keamanan
-│   │   │   ├── CTASection.tsx       # Banner Ajakan Pendaftaran
-│   │   │   ├── Footer.tsx           # Footer Brand & Legal
-│   │   │   └── MobileMenu.tsx       # Drawer Mobile Nav
-│   │   ├── auth\                    # Komponen Modular Autentikasi
-│   │   │   ├── AuthLayout.tsx
-│   │   │   ├── AuthTransition.tsx   # Slider Framer Motion Login <-> Register
-│   │   │   ├── AuthIllustration.tsx # Visual Lanskap + Gelombang S-Curve
-│   │   │   ├── LoginForm.tsx
-│   │   │   ├── RegisterForm.tsx
-│   │   │   ├── AuthInput.tsx
-│   │   │   ├── PasswordInput.tsx
-│   │   │   ├── AuthCheckbox.tsx
-│   │   │   └── SocialAuthButtons.tsx
-│   │   ├── sidebar\                 # Navigasi Global Dashboard
-│   │   │   ├── Sidebar.tsx
-│   │   │   ├── SidebarNavGroup.tsx
-│   │   │   └── SidebarProfile.tsx
-│   │   ├── charts\                  # Grafik Interaktif
-│   │   │   └── IncomeExpenseChart.tsx
-│   │   ├── wallet\                  # Kartu Dompet Virtual
-│   │   │   └── WalletCard.tsx
-│   │   └── ui\                      # Reusable UI Primitives
-│   └── data\
-│       └── mockData.ts              # Data Mock Kas, Dompet, Transaksi, & Profil
-└── public\
-    └── images\
-        └── auth-landscape.jpg       # Artwork Visual Lanskap Organik
+Frontend (useState + apiClient)
+  ↓ {GET,POST,PATCH,DELETE} JSON {success, data}
+API Route (auth via getCurrentUser() → session.userId, Zod safeParse)
+  ↓ Service (ownership where:{userId}, Prisma.$transaction)
+  ↓ PrismaClient → PostgreSQL (Decimal 15,2, UUID, indexes)
 ```
+
+**Sync:** `src/lib/data-refresh.ts` (`CustomEvent 'finai:refresh'` + `emitRefresh('transaction'|'wallet'|'transfer'|'budget'|'goal')` + `onRefresh`) — tanpa localStorage finansial, DB source of truth.
 
 ---
 
-## 7. Keunggulan Kompetitif Sistem FinAI
+## 4. Database (schema.prisma)
 
-1. **Bukan Sekadar Formulir Kering**: Antarmuka visual yang hidup dengan kartu spasial membuat pengguna merasa memiliki kendali penuh atas kekayaannya.
-2. **Efisiensi Waktu dengan AI**: Mengurangi gesekan mental saat mencatat pengeluaran; cukup tulis kalimat santai, biarkan AI yang menyusun pembukuan.
-3. **Privasi & Keamanan Tanpa Kompromi**: Data keuangan tersusun rapi dan setiap eksekusi transfer atau penghapusan saldo memerlukan konfirmasi eksplisit dari pengguna.
-4. **Performa Instan**: Didukung Next.js App Router dengan Turbopack dan build statis cepat tanpa beban library 3D yang memberatkan perangkat pengguna.
+- **User** `{id, name, email @unique, passwordHash, avatarUrl}` → `wallets, transactions, budgets, goals, sessions, settings`
+- **Session** `{userId, tokenHash @unique (sha256), expiresAt}` — httpOnly `finai_session` 7/30d
+- **Wallet** `{userId, name, type BANK/E_WALLET/CASH, balance Decimal default 0, institution, accountLast4, color, icon}`
+- **Transaction** `{userId, walletId → Wallet, type INCOME/EXPENSE, amount Decimal, category, description, transactionDate}`
+- **Budget** `{userId, category, limitAmount Decimal, month, year} @unique[userId,category,month,year]` + computed `usedAmount, remaining, percentage, status SAFE(<70)/WARNING(70-90)/CRITICAL(>90)`
+- **Goal** `{userId, name, category, targetAmount, currentAmount default 0, deadline, sourceWalletId, destinationWalletId, frequency WEEKLY/MONTHLY, autoDeposit, nextDueDate} + contributions`
+- **GoalContribution** `{goalId → Goal, sourceWalletId → Wallet, amount Decimal, contributionDate}`
+- **UserSettings** `{userId @unique, language, currency, defaultWalletId, budgetReminder, goalReminder, financialSummary, aiPersonalization, aiActionConfirmation @default true, animations}`
+
+---
+
+## 5. Auth
+
+- `POST /api/auth/register` → hash bcrypt 12 + create user + settings defaults + `createSession` (30d) + cookie
+- `POST /api/auth/login` → `comparePassword` + `createSession` (30d jika rememberMe else 7d)
+- `GET /api/auth/me` → `validateSessionToken` (hash, expiry, delete expired)
+- `POST /api/auth/logout` → `deleteSession` + `cookie delete`
+- **Middleware** `src/middleware.ts` (proxy) — `PROTECTED_PAGE_PREFIX /app` + `PROTECTED_API_PREFIXES` (wallets, transactions, budgets, goals, settings, auth/me, transfers, ai) — 401 JSON jika API tanpa cookie, 302 `/login?redirect=` jika page, redirect `/login|/register → /app` jika sudah auth. **Matcher** cover `/app/:path*`, `/api/wallets/:path*`, `/api/transactions/:path*`, `/api/budgets/:path*`, `/api/goals/:path*`, `/api/settings`, `/api/settings/:path*`, `/api/transfers`, `/api/transfers/:path*`, `/api/ai/:path*`.
+- **JWT legacy** `src/lib/auth/jwt.ts` — sekarang `getSecretKey()` throw jika `AUTH_SECRET` kosong (hapus fallback hardcoded).
+
+---
+
+## 6. Wallet API
+
+- `GET /api/wallets` → `WalletService.getWallets(userId)` → `serializeWallets`
+- `POST /api/wallets` → `CreateWalletSchema {name 2-50, type BANK/E_WALLET/CASH default BANK, institution ≤50, accountLast4 ≤10, balance ≥0 default 0, color, icon} strict` → `prisma.wallet.create {userId, balance Decimal}`
+- `GET /api/wallets/[id]`, `PATCH /api/wallets/[id]` → `UpdateWalletSchema {name?, type?, institution?, accountLast4?, color?, icon?} strict` — **tanpa balance** (logika bisnis: saldo hanya via transaksi)
+- `DELETE /api/wallets/[id]` → cek `_count {transactions, goalContributions, sourceGoals, destinationGoals}` → throw `WalletInUseError` 409 jika terpakai → `apiError WALLET_IN_USE`
+- Ownership selalu `where:{id, userId}` — client tidak kontrol `userId`.
+
+---
+
+## 7. Transaction API
+
+- `GET /api/transactions?walletId&type&category&startDate&endDate&limit&offset` → `TransactionService.getTransactions` (Prisma where + include wallet)
+- `POST /api/transactions` → `CreateTransactionSchema {walletId uuid, type INCOME/EXPENSE, amount >0 finite, category 1-50, description 1-255, transactionDate?} strict` → `prisma.$transaction`: verify wallet ownership, `if EXPENSE && balance < amount → InsufficientBalanceError 409`, `wallet.update {balance: decrement/increment}`, `transaction.create`
+- `PATCH /api/transactions/[id]` → reverse efek lama (`increment` jika EXPENSE else `decrement`), validate wallet baru & balance, apply baru, `transaction.update`
+- `DELETE /api/transactions/[id]` → reverse balance lalu `transaction.delete` — semua atomik.
+
+**Serialisasi:** `amount` dan `balance` sebagai `string Decimal "12500000.00"` via `serializeWallet/Transaction`.
+
+---
+
+## 8. Transfer API (Canonical)
+
+- `POST /api/transfers` (legacy alias `POST /api/wallets/transfer` → delegate `transfersPOST`) → `TransferWalletSchema {fromWalletId uuid, toWalletId uuid, amount >0, date?, note ≤200}` → `TransferService.transferBetweenWallets`: `prisma.$transaction` → `wallet.updateMany where:{id:from, userId, balance gte amount} decrement` (0 → `TransferInsufficientBalanceError`), `wallet.update where:{id:to} increment` — **tidak buat EXPENSE/INCOME transaction** (internal transfer).
+- Frontend Dashboard `POST /api/transfers`, AI `POST /api/transfers` — tidak via dua transaksi.
+
+---
+
+## 9. Budget API
+
+- `GET /api/budgets?month&year` → `BudgetService.getBudgets(userId, month, year)` → `enrichBudgetUsage`: `prisma.transaction.findMany where type EXPENSE + month window` → `usedAmount, remainingAmount, percentage, status SAFE/WARNING/CRITICAL` per `year-month-category`.
+- `POST /api/budgets` → `CreateBudgetSchema {category 1-50, limitAmount >0, month 1-12, year 2020-2100}` → 409 CONFLICT jika sudah ada
+- `PATCH /api/budgets/[id]` → `UpdateBudgetSchema {limitAmount?}` (hanya limit di UI)
+- `DELETE /api/budgets/[id]`
+
+**Dashboard preview** hanya `limitAmount`, `period/startDate` di modal tidak dikirim (by design).
+
+---
+
+## 10. Goal & Contribution API
+
+- `GET /api/goals` → `GoalService.getGoals` + `computeGoalMetrics {remaining, progress%, remainingMonths, recommendedMonthly}`
+- `POST /api/goals` → `CreateGoalSchema {name 2-100, category 1-50, targetAmount >0, deadline, sourceWalletId?, destinationWalletId?, frequency WEEKLY/MONTHLY default MONTHLY, autoDeposit?}` → `currentAmount 0`
+- `PATCH /api/goals/[id]` → update + `nextDueDate` recalc jika `autoDeposit` toggle
+- `DELETE /api/goals/[id]`
+- **Contribution:** `POST /api/goals/[id]/contributions` → `CreateGoalContributionSchema {sourceWalletId uuid, amount >0, contributionDate?} strict` → `prisma.$transaction`: verify goal ownership, `remaining = target - current`, `if amount > remaining throw`, `wallet.updateMany balance gte amount decrement` (409 jika saldo kurang), `goal.update currentAmount increment` (race-proof `where currentAmount <= target - amount`), `goalContribution.create`, advance `nextDueDate` jika `autoDeposit`.
+- **Initial funding** di GoalsPage: `if newGoal.currentAmount >0 → POST /api/goals/[id]/contributions` — bukan via transaksi.
+- Frontend Goals: create `POST /api/goals` + optional initial contribution, edit `PATCH`, delete `DELETE`, add contribution `POST /api/goals/[id]/contributions`.
+
+---
+
+## 11. Settings API
+
+- `GET /api/settings` → `SettingsService.getUserSettings`
+- `PATCH /api/settings` → `UpdateSettingsSchema` (language, currency, budgetReminder, goalReminder, financialSummary, aiPersonalization, aiActionConfirmation, animations) — dipakai AI toggle `Konfirmasi Sebelum Eksekusi Aksi`.
+
+---
+
+## 12. Asisten FinAI — Groq
+
+**Provider:** Groq `openai/gpt-oss-20b` (`https://api.groq.com/openai/v1`, fallback xAI `grok-4` `https://api.x.ai/v1`) — `src/lib/ai/grok.ts` (`callGrok`, `AbortController 25s`, `response_format: json_object`, 401→500 sanitized, 429→rate limit). Env `GROQ_API_KEY` (primary) / `XAI_API_KEY`, `getProviderConfig()` prioritaskan Groq.
+
+**Prompt** (`ai.prompts.ts`): larangan mengarang, wallet resolution via UUID persis (`a1b2c3d4...`), kategori `food/transport/...`, amount string, 8 contoh + budget/goal/wallet/summary/insight. Context per request: `wallets{id,name,type,balance} + goals + budgets{limit/used/remaining/%/status} + 5 transaksi` — minimal aman.
+
+**Route** `POST /api/ai/chat` (`src/app/api/ai/chat/route.ts`): `auth → isGrokConfigured → Zod {message 1-2000, history[10] max20} → build context (prisma 20/20/5 + BudgetService enriched) → callGrok → return {response, meta:{provider, model, timestamp}}` — never expose key, never trust `userId` dari body.
+
+**Schema** (`ai.schemas.ts`): `AIChatRequestSchema`, `GrokStructuredResponseSchema` discriminated union `text|financial_action|clarification|error|budget|goal|wallet|summary|insight` — `financial_action {action:create_transaction|transfer|goal_contribution, payload:{transactionType, amount:"10000", walletId, ...}, requiresConfirmation:true}` + read-only cards `budget{category,limit,used,remaining,%,period}`, `goal{name,target,current,remaining,%,deadline}`, `wallet{wallets[], totalBalance}`, `summary{period,income,expense,remaining,budget%,activeGoals}`.
+
+**UI** (`src/components/ai/`):
+- `AIAssistantPage.tsx` — `fetchContextData` (wallets+goals+budgets+tx+settings), `handleSendMessage` → `POST /api/ai/chat` → map `financial_action` (validate `isValidWalletId` vs `liveWallets`, resolve `walletName→id`, auto `wallets.length===1`, clarification jika unresolved, `wallets.length===0 → belum punya dompet`), `pendingMetaRef` + `confirmingIds` guard, `handleConfirmAction` → `POST /api/transactions|transfers|contributions` + `emitRefresh` + `fetchContextData`, `handleCancelAction`, `aiActionConfirmation` refetch + auto `finai:auto-confirm` 500ms jika toggle OFF.
+- `AIResponseRenderer.tsx` — central switch: `text → Jawaban FinAI card`, `financial_action expense/income → AIFinancialActionCard`, `transfer → TransferActionCard`, `goal_contribution → GoalContributionCard` (progress `25%→30%`), `budget → BudgetCard`, `goal → GoalCard`, `wallet → WalletSummaryCard`, `summary → SummaryCard`, `insight → AIInsightCard`, `error → AIError`.
+- **Cards** (`cards/`): `BudgetCard`, `GoalCard`, `WalletCard`, `SummaryCard`, `TransferActionCard`, `GoalContributionCard` — putih `rounded-2xl border #E8EAF2 shadow [0_6px_24px]`, badge `EDEAFC/#5F5ED4`, progress, grid Terpakai/Sisa, responsive (`ArrowRight` desktop `ArrowDown` mobile).
+- **Safety:** Grok hanya proposal, mutasi hanya `[Confirm]` → existing API, `requiresConfirmation:true`, anti double-click (`confirmingIds` + disabled + spinner), `emitRefresh` sync global.
+
+**Chart:** `IncomeExpenseChart` presentational `data: ChartDataPoint[]` + `isLoading/error` + empty `Belum ada data arus kas` + CTA `/app/transactions` — Dashboard agregasi 6 bulan, Analytics agregasi `7H/30H/3B/6B/12B` dari `GET /api/transactions` real (bukan `SIX_MONTHS_DATA`).
+
+---
+
+## 13. Validasi & Keamanan
+
+- **Lint/Build:** `npm run lint (tsc --noEmit) PASS 0`, `npm run build PASS 26 pages + /api/ai/chat`
+- **Tests:** `npx tsx tests/ai.test.ts 27/27 PASS` (validation, structured, 429, natural: ayam geprek 10k, kopi 25k GoPay, gaji 5jt BCA, nabung 500k kuliah NOT expense, transfer 200k)
+- **Keamanan:** `DATABASE_URL`, `GROQ_API_KEY` hanya server (`grok.ts`, `db.ts`), 0 `NEXT_PUBLIC_`, `finai_session` httpOnly, `AUTH_SECRET` wajib (throw jika kosong), ownership `where:{userId}`, financial `localStorage` 0 (hanya `finai-sidebar-groups`).
+
+---
+
+## 14. Alur User Cont. 9 Flow (PASS via inspection)
+
+Landing→Register→Dashboard, Add Wallet, Add Transaction→balance, Transfer→source- destinasi, Goal+Contribution, Budget, Analytics real, AI Assistant, Settings→Logout→Login persists.
+

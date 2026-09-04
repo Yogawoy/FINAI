@@ -14,14 +14,16 @@ import Modal from '@/components/ui/Modal';
 import DatePicker from '@/components/ui/DatePicker';
 import TimePicker from '@/components/ui/TimePicker';
 import WalletSelect from '@/components/ui/WalletSelect';
+import type { WalletOption } from '@/components/ui/WalletSelect';
 import SegmentedControl from '@/components/ui/SegmentedControl';
 import { Transaction, TransactionCategory, TransactionType } from '@/types';
-import { formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
 
 interface AddTransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddTransaction: (newTx: Transaction) => void;
+  onAddTransaction: (newTx: any) => void;
+  wallets?: WalletOption[];
 }
 
 // 5 Core quick category cards with SVG icons
@@ -37,15 +39,32 @@ export default function AddTransactionModal({
   isOpen,
   onClose,
   onAddTransaction,
+  wallets,
 }: AddTransactionModalProps) {
   const [type, setType] = useState<TransactionType>('expense');
   const [rawAmount, setRawAmount] = useState('10000');
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState<TransactionCategory>('food');
-  const [date, setDate] = useState('2026-08-31');
-  const [time, setTime] = useState('12:42');
-  const [paymentMethod, setPaymentMethod] = useState<string>('Cash');
+  const getTodayISO = () => new Date().toISOString().split('T')[0];
+  const getNowTime = () => new Date().toTimeString().slice(0, 5);
+  const [date, setDate] = useState(getTodayISO());
+  const [time, setTime] = useState(getNowTime());
+  const [selectedWalletId, setSelectedWalletId] = useState<string>(wallets?.[0]?.id || 'Cash');
   const [note, setNote] = useState('');
+
+  React.useEffect(() => {
+    if (wallets && wallets.length > 0) {
+      const exists = wallets.some((w) => w.id === selectedWalletId);
+      if (!exists) setSelectedWalletId(wallets[0].id);
+    }
+  }, [wallets]);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      setDate(getTodayISO());
+      setTime(getNowTime());
+    }
+  }, [isOpen]);
 
   const numAmount = parseFloat(rawAmount.replace(/\D/g, '')) || 0;
 
@@ -59,8 +78,13 @@ export default function AddTransactionModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || numAmount <= 0) return;
+    if (wallets && wallets.length === 0) return;
 
-    const newTx: Transaction = {
+    const walletId = selectedWalletId;
+    const selectedWallet = wallets?.find((w) => w.id === walletId);
+    const accountName = selectedWallet?.name || walletId;
+
+    const newTx: any = {
       id: `tx-${Date.now()}`,
       title: title.trim(),
       category: category,
@@ -68,9 +92,10 @@ export default function AddTransactionModal({
       amount: numAmount,
       date: date,
       time: time,
-      account: paymentMethod === 'BCA' ? 'BCA Prioritas' : paymentMethod === 'GoPay' ? 'GoPay' : paymentMethod === 'Savings' ? 'Pos Tabungan' : 'Uang Tunai',
-      paymentMethod: (paymentMethod === 'BCA' ? 'Bank' : paymentMethod === 'GoPay' ? 'E-Wallet' : 'Cash') as any,
+      account: accountName,
+      paymentMethod: 'Bank' as any,
       note: note.trim() || undefined,
+      walletId,
     };
 
     onAddTransaction(newTx);
@@ -270,8 +295,9 @@ export default function AddTransactionModal({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-start">
               <WalletSelect
                 label="Dompet / Sumber Dana"
-                value={paymentMethod}
-                onChange={setPaymentMethod}
+                value={selectedWalletId}
+                onChange={setSelectedWalletId}
+                wallets={wallets}
               />
 
               <div className="space-y-1">

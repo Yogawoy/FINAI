@@ -4,7 +4,7 @@ import React from 'react';
 import { CircleCheck } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import { Wallet } from '@/types';
-import { formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
 import { getWalletIconComponent, formatWalletTypeLabel } from './WalletCard';
 
 interface WalletSuccessModalProps {

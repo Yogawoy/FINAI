@@ -21,7 +21,7 @@ import {
 import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
 import { GoalItem, GoalContribution } from '@/types';
-import { formatIDR } from '@/data/mockData';
+import { formatIDR } from '@/lib/format';
 import GoalVisualIcon, { GOAL_THEME_COLORS } from './GoalVisualIcon';
 import GoalStatusBadge from './GoalStatusBadge';
 import GoalTimeline from './GoalTimeline';
@@ -55,6 +55,8 @@ export default function GoalDetailModal({
 
   const remaining = Math.max(goal.targetAmount - goal.currentAmount, 0);
   const theme = GOAL_THEME_COLORS[goal.colorTheme] || GOAL_THEME_COLORS.periwinkle;
+  const isWeekly = goal.frequency === 'weekly';
+  const weeklySaving = ((goal as any).weeklySaving ?? Math.ceil(goal.monthlySaving / 4.33)) || 0;
 
   const formatDeadline = (d: string) => {
     if (!d) return '31 Desember 2026';
@@ -233,11 +235,12 @@ export default function GoalDetailModal({
 
           <div className="p-3 rounded-2xl bg-white border border-black/[0.05] text-center space-y-0.5">
             <span className="text-[10px] font-bold text-[#757A95] uppercase tracking-wider block">
-              Rencana Menabung
+              Rencana {isWeekly ? 'Mingguan' : 'Bulanan'}
             </span>
             <div className="text-xs sm:text-sm font-extrabold text-[#1B7354] tabular-nums">
-              {formatIDR(goal.monthlySaving)}/bln
+              {formatIDR(isWeekly ? weeklySaving : goal.monthlySaving)}/{isWeekly ? 'mgg' : 'bln'}
             </div>
+            <span className="text-[10px] text-[#757A95] block">≈ {formatIDR(isWeekly ? goal.monthlySaving : weeklySaving)}/{isWeekly ? 'bln' : 'mgg'}</span>
           </div>
 
           <div className="p-3 rounded-2xl bg-white border border-black/[0.05] text-center space-y-0.5">
@@ -261,7 +264,8 @@ export default function GoalDetailModal({
         <div className="p-4 rounded-2xl bg-white border border-black/[0.05] space-y-2.5">
           <div className="flex items-center justify-between text-xs">
             <span className="text-[#757A95]">
-              Target Bulan Ini: <strong className="text-[#242636]">{formatIDR(goal.monthlySaving)}</strong>
+              Target {isWeekly ? 'Minggu' : 'Bulan'} Ini: <strong className="text-[#242636]">{formatIDR(isWeekly ? weeklySaving : goal.monthlySaving)}</strong>
+              <span className="text-[#A0A4B8] ml-1">({formatIDR(isWeekly ? goal.monthlySaving : weeklySaving)}/{isWeekly ? 'bln' : 'mgg'})</span>
             </span>
             <span className="font-extrabold text-[#1B7354]">
               Tersisihkan: {formatIDR(thisMonthSaved)} ({monthlyPlanProgress}%)
@@ -345,7 +349,7 @@ export default function GoalDetailModal({
         <p className="text-xs text-[#166534] leading-relaxed">
           {percentage >= 100
             ? `Target ${goal.title} telah tercapai 100%! Dana aman tersimpan di ${goal.destinationWalletName}.`
-            : `Menyetor ${formatIDR(goal.monthlySaving)}/bulan dari ${goal.sourceWalletName} ke ${goal.destinationWalletName} akan memastikan target tercapai tepat pada ${formatDeadline(goal.targetDate)} tanpa mengganggu pos pengeluaran rutin.`}
+            : `Menyetor ${formatIDR(isWeekly ? weeklySaving : goal.monthlySaving)}/${isWeekly ? 'minggu' : 'bulan'} (≈ ${formatIDR(isWeekly ? goal.monthlySaving : weeklySaving)}/${isWeekly ? 'bulan' : 'minggu'}) dari ${goal.sourceWalletName} ke ${goal.destinationWalletName} akan memastikan target tercapai tepat pada ${formatDeadline(goal.targetDate)}.`}
         </p>
       </div>
 
