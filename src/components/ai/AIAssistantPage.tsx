@@ -33,6 +33,29 @@ interface PendingActionMeta {
   sourceWalletIdResolved?: string;
   destWalletIdResolved?: string;
   goalIdResolved?: string;
+  goalCurrentAmount?: number;
+  goalTargetAmount?: number;
+}
+
+function generateActionId(): string {
+  // Unique per pending action — dipakai untuk pending/loading/success/cancelled.
+  // Date.now saja bisa tabrakan jika dua aksi dibuat dalam 1ms yang sama.
+  return `ai-action-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function toValidISODate(value?: string | null): string | undefined {
+  if (!value) return undefined;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return undefined;
+  return value;
+}
+
+interface LiveGoal {
+  id: string;
+  name: string;
+  category: string;
+  currentAmount: number;
+  targetAmount: number;
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -93,7 +116,7 @@ export default function AIAssistantPage() {
   const [balance, setBalance] = useState(0);
   const [monthlyExpense, setMonthlyExpense] = useState(0);
   const [wallets, setWallets] = useState<{ id: string; name: string; type: string; balance: number }[]>([]);
-  const [goals, setGoals] = useState<{ id: string; name: string; category: string }[]>([]);
+  const [goals, setGoals] = useState<LiveGoal[]>([]);
   const [budgetsCount, setBudgetsCount] = useState(0);
   const [contextDate, setContextDate] = useState('');
   const [aiActionConfirmation, setAiActionConfirmation] = useState<boolean>(true);
@@ -126,7 +149,17 @@ export default function AIAssistantPage() {
       }
 
       if (goalsRes.status === 'fulfilled') {
-        setGoals((goalsRes.value.goals || []).map((g: { id: string; name: string; category: string }) => ({ id: g.id, name: g.name, category: g.category })));
+        setGoals(
+          (goalsRes.value.goals || []).map(
+            (g: { id: string; name: string; category: string; currentAmount?: string; targetAmount?: string }) => ({
+              id: g.id,
+              name: g.name,
+              category: g.category,
+              currentAmount: Number(g.currentAmount ?? 0) || 0,
+              targetAmount: Number(g.targetAmount ?? 0) || 0,
+            })
+          )
+        );
       }
 
       if (budgetsRes.status === 'fulfilled') {
@@ -200,8 +233,16 @@ export default function AIAssistantPage() {
       }
       if (liveGoals.length === 0) {
         try {
-          const gRes = await apiClient.get<{ goals: { id: string; name: string; category: string }[] }>('/api/goals');
-          liveGoals = (gRes.goals || []).map((g) => ({ id: g.id, name: g.name, category: g.category }));
+          const gRes = await apiClient.get<{
+            goals: { id: string; name: string; category: string; currentAmount?: string; targetAmount?: string }[];
+          }>('/api/goals');
+          liveGoals = (gRes.goals || []).map((g) => ({
+            id: g.id,
+            name: g.name,
+            category: g.category,
+            currentAmount: Number(g.currentAmount ?? 0) || 0,
+            targetAmount: Number(g.targetAmount ?? 0) || 0,
+          }));
           if (liveGoals.length > 0) setGoals(liveGoals);
         } catch {
           // keep empty
@@ -211,7 +252,7 @@ export default function AIAssistantPage() {
       try {
         const data = await apiClient.post<{
           response: {
-            type: 'text' | 'financial_action' | 'clarification' | 'error' | 'budget' | 'goal' | 'wallet' | 'summary' | 'insight';
+            type: 'text' | 'financial_action' | 'clarification' | 'error' | 'budget' | 'goal' | 'wallet' | 'summary' | 'insight' | 'spending_breakdown';
             message?: string;
             action?: string;
             payload?: GroqPayload;
@@ -320,7 +361,14 @@ export default function AIAssistantPage() {
             return;
           }
 
-          const actionId = `act-${Date.now()}`;
+          const actionId = generateActionId();
+
+          // Snapshot goal asli untuk progress card — jangan menebak angka.
+          const goalForDisplay: LiveGoal | undefined =
+            (resolvedGoalId ? gList.find((g) => g.id === resolvedGoalId) : undefined) ??
+            (payload.goalName
+              ? gList.find((g) => g.name.toLowerCase().includes(payload.goalName!.toLowerCase()))
+              : undefined);
 
           // Save meta for confirmation execution
           pendingMetaRef.current.set(actionId, {
@@ -330,6 +378,8 @@ export default function AIAssistantPage() {
             sourceWalletIdResolved: resolvedSourceId || undefined,
             destWalletIdResolved: resolvedDestId || undefined,
             goalIdResolved: resolvedGoalId || undefined,
+            goalCurrentAmount: goalForDisplay?.currentAmount,
+            goalTargetAmount: goalForDisplay?.targetAmount,
           });
 
           // Map to AIFinancialAction
@@ -376,6 +426,8 @@ export default function AIAssistantPage() {
               destinationWallet: destWalletNameForDisplay,
               date: dateLabel,
               status: 'pending',
+              goalCurrentAmount: goalForDisplay?.currentAmount,
+              goalTargetAmount: goalForDisplay?.targetAmount,
             },
           };
 
@@ -526,6 +578,54 @@ export default function AIAssistantPage() {
           return;
         }
 
+        if ((grok as any).type === 'spending_breakdown' && (grok as any).data) {
+          const d = (grok as any).data;
+          const msg: AIMessageType = {
+            id: `ai-${Date.now()}`,
+            sender: 'assistant',
+            content: grok.message || 'Pengeluaran terbesar kamu:',
+            timestamp: timeStr,
+            spendingBreakdownCard: {
+              items: (d.items || []).map((item: any) => ({
+                category: item.category,
+                total: Number(item.total),
+                percentage: typeof item.percentage === 'number' ? item.percentage : undefined,
+              })),
+              period: d.period,
+            },
+          };
+          setMessages((prev) => [...prev, msg]);
+          return;
+        }
+
+        if ((grok as any).type === 'financial_plan' && (grok as any).data) {
+          const d = (grok as any).data;
+          const msg: AIMessageType = {
+            id: `ai-${Date.now()}`,
+            sender: 'assistant',
+            content: grok.message || 'Rencana keuangan:',
+            timestamp: timeStr,
+            financialPlanCard: {
+              targetName: String(d.targetName || ''),
+              targetAmount: Number(d.targetAmount) || 0,
+              currentAmount: Number(d.currentAmount) || 0,
+              remainingAmount: Number(d.remainingAmount) || 0,
+              durationMonths: Number(d.durationMonths) || 0,
+              requiredMonthlySaving: Number(d.requiredMonthlySaving) || 0,
+              monthlyIncome: Number(d.monthlyIncome) || 0,
+              monthlyExpense: Number(d.monthlyExpense) || 0,
+              monthlyNetCashFlow: Number(d.monthlyNetCashFlow) || 0,
+              requiredPercentageOfNet: Number(d.requiredPercentageOfNet) || 0,
+              feasibility: typeof d.feasibility === 'string' ? d.feasibility : 'insufficient_data',
+              assumptions: Array.isArray(d.assumptions) ? d.assumptions.filter((x: any) => typeof x === 'string') : [],
+              relatedGoalId: typeof d.relatedGoalId === 'string' ? d.relatedGoalId : null,
+              wallets: (liveWallets.length > 0 ? liveWallets : wallets).map((w) => ({ id: w.id, name: w.name })),
+            },
+          };
+          setMessages((prev) => [...prev, msg]);
+          return;
+        }
+
         // type === 'text'
         const textMsg: AIMessageType = {
           id: `ai-${Date.now()}`,
@@ -574,7 +674,14 @@ export default function AIAssistantPage() {
       setConfirmingIds((prev) => new Set(prev).add(actionId));
 
       const { actionType, groqPayload, walletIdResolved, sourceWalletIdResolved, destWalletIdResolved, goalIdResolved } = meta;
+      // Payload terstruktur dari AI — JANGAN parse ulang teks pesan.
       const amountNum = Number(groqPayload.amount);
+      if (!Number.isFinite(amountNum) || amountNum <= 0) {
+        throw new Error('Nominal tidak valid.');
+      }
+      // Tanggal terstruktur (opsional) — dipetakan ke nama field tiap API.
+      // Tanggal invalid diabaikan agar backend memakai default hari ini.
+      const actionDate = toValidISODate(groqPayload.date);
 
       try {
         if (actionType === 'create_transaction') {
@@ -587,6 +694,7 @@ export default function AIAssistantPage() {
             amount: amountNum,
             category: groqPayload.category || 'other',
             description: groqPayload.description || 'Transaksi via FinAI Assistant',
+            ...(actionDate ? { transactionDate: actionDate } : {}),
           });
         } else if (actionType === 'goal_contribution') {
           // Could be goal_contribution or transfer routed via goal_contribution visual
@@ -597,6 +705,7 @@ export default function AIAssistantPage() {
               fromWalletId: sourceWalletIdResolved,
               toWalletId: destWalletIdResolved,
               amount: amountNum,
+              ...(actionDate ? { date: actionDate } : {}),
             });
           } else {
             const goalId = goalIdResolved || groqPayload.goalId;
@@ -613,6 +722,7 @@ export default function AIAssistantPage() {
             await apiClient.post(`/api/goals/${targetGoalId}/contributions`, {
               sourceWalletId: sourceWalletIdResolved,
               amount: amountNum,
+              ...(actionDate ? { contributionDate: actionDate } : {}),
             });
           }
         } else if (actionType === 'transfer') {
@@ -623,39 +733,66 @@ export default function AIAssistantPage() {
             fromWalletId: fromId,
             toWalletId: toId,
             amount: amountNum,
+            ...(actionDate ? { date: actionDate } : {}),
           });
         } else {
           throw new Error('Tipe aksi belum didukung.');
         }
 
-        // Success — update card to confirmed
+        // Success — update card to confirmed and trigger refresh
         setMessages((prev) =>
           prev.map((msg) =>
-            msg.action && msg.action.id === actionId ? { ...msg, action: { ...msg.action, status: 'confirmed' as const } } : msg
+            msg.action && msg.action.id === actionId ? { ...msg, action: { ...msg.action, status: 'success' as const } } : msg
           )
         );
 
-        // Refresh context data + global sync
         fetchContextData();
-        if (actionType === 'create_transaction') emitRefresh('transaction');
-        else if (actionType === 'transfer') emitRefresh('transfer');
-        else if (actionType === 'goal_contribution') emitRefresh('goal_contribution');
+        if (actionType === 'create_transaction') {
+          emitRefresh('transaction');
+          emitRefresh('wallet');
+        } else if (actionType === 'transfer') {
+          emitRefresh('transfer');
+          emitRefresh('wallet');
+          emitRefresh('transaction');
+        } else if (actionType === 'goal_contribution') {
+          emitRefresh('goal_contribution');
+          emitRefresh('goal');
+          emitRefresh('wallet');
+        }
         pendingMetaRef.current.delete(actionId);
       } catch (err) {
-        let msg = mapApiErrorMessage(err);
+        const apiMessage = mapApiErrorMessage(err);
         // Make wallet 404 more actionable for AI flow
-        if (msg.toLowerCase().includes('tidak ditemukan') || msg.toLowerCase().includes('bukan milik')) {
-          msg = 'Dompet tidak ditemukan atau bukan milik Anda. Pastikan dompet masih ada di /app/wallets dan coba lagi. Jika baru buat dompet, refresh halaman.';
-        }
+        const friendlyMessage =
+          apiMessage.toLowerCase().includes('tidak ditemukan') ||
+          apiMessage.toLowerCase().includes('bukan milik')
+            ? 'Dompet tidak ditemukan atau bukan milik Anda. Pastikan dompet masih ada di /app/wallets dan coba lagi. Jika baru buat dompet, refresh halaman.'
+            : apiMessage;
         const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
         const errorMsg: AIMessageType = {
           id: `ai-err-${Date.now()}`,
           sender: 'assistant',
-          content: `Gagal memproses: ${msg}`,
+          content: `Gagal memproses: ${friendlyMessage}`,
           timestamp: timeStr,
           error: true,
         };
         setMessages((prev) => [...prev, errorMsg]);
+
+        // Update action card to show error state on the original action card
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.action && m.action.id === actionId
+              ? {
+                  ...m,
+                  action: {
+                    ...m.action,
+                    status: 'error' as const,
+                    errorMessage: friendlyMessage,
+                  },
+                }
+              : m
+          )
+        );
       } finally {
         setConfirmingIds((prev) => {
           const next = new Set(prev);
@@ -740,6 +877,12 @@ export default function AIAssistantPage() {
           onCancelAction={handleCancelAction}
           onSelectAction={handleSendMessage}
           onRetry={handleRetry}
+          wallets={wallets}
+          onPlanSaved={(goalId) => {
+            emitRefresh('goal');
+            emitRefresh('goal_contribution');
+            emitRefresh('wallet');
+          }}
         />
       </div>
 

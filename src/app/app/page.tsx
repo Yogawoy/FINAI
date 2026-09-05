@@ -134,13 +134,24 @@ export default function DashboardPage() {
   ]);
 
   // Fetch all dashboard data
+  // NOTE: txAccount/transfer* sengaja TIDAK masuk deps — hindari refetch loop
+  // (setTxAccount di dalam fetch memicu callback baru → effect rerun → double fetch).
   const fetchDashboardData = useCallback(async () => {
     try {
       setErrorMessage(null);
 
-      const [walletsRes, transactionsRes, budgetsRes, userRes] = await Promise.allSettled([
+      // Chart 6 bulan butuh window tanggal sendiri — limit=100 tanpa filter
+      // memotong data lama dan membuat agregasi tidak akurat.
+      const sixMonthsAgo = new Date();
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5, 1);
+      sixMonthsAgo.setHours(0, 0, 0, 0);
+
+      const [walletsRes, transactionsRes, chartTxRes, budgetsRes, userRes] = await Promise.allSettled([
         apiClient.get<{ wallets: any[] }>('/api/wallets'),
-        apiClient.get<{ transactions: any[]; total: number }>('/api/transactions?limit=100'),
+        apiClient.get<{ transactions: any[]; total: number }>('/api/transactions?limit=10'),
+        apiClient.get<{ transactions: any[]; total: number }>(
+          `/api/transactions?limit=500&startDate=${encodeURIComponent(sixMonthsAgo.toISOString())}`
+        ),
         apiClient.get<{ budgets: any[] }>('/api/budgets'),
         apiClient.get<{ user: any }>('/api/auth/me'),
       ]);
@@ -157,19 +168,26 @@ export default function DashboardPage() {
         }));
         setWallets(wData);
 
-        if (wData.length > 0 && !txAccount) {
-          setTxAccount(wData[0].id);
+        // Functional set + hanya isi jika kosong — jangan timpa pilihan user
+        // setiap refresh (sebelumnya transferFrom/To selalu direset).
+        if (wData.length > 0) {
+          const firstId = wData[0].id;
+          setTxAccount((prev) => prev || firstId);
         }
         if (wData.length >= 2) {
-          setTransferFrom(wData[0].id);
-          setTransferTo(wData[1].id);
+          const firstId = wData[0].id;
+          const secondId = wData[1].id;
+          setTransferFrom((prev) => prev || firstId);
+          setTransferTo((prev) => prev || secondId);
+        } else if (wData.length === 1) {
+          const onlyId = wData[0].id;
+          setTransferFrom((prev) => prev || onlyId);
         }
       }
 
-      // Process transactions
+      // Process transactions (recent list — selalu tampilkan yang terbaru)
       if (transactionsRes.status === 'fulfilled') {
         const rawList = transactionsRes.value.transactions || [];
-        setRawTransactionsForChart(rawList);
         const txData = rawList.map((tx: any) => {
           const isIncome = String(tx.type).toUpperCase() === 'INCOME';
           const rawDate = tx.transactionDate ? new Date(tx.transactionDate) : new Date();
@@ -200,6 +218,14 @@ export default function DashboardPage() {
         setTransactions(txData);
       }
 
+      // Chart data — window 6 bulan dari server. Fallback ke recent list
+      // jika request chart gagal agar chart tidak kosong mendadak.
+      if (chartTxRes.status === 'fulfilled') {
+        setRawTransactionsForChart(chartTxRes.value.transactions || []);
+      } else if (transactionsRes.status === 'fulfilled') {
+        setRawTransactionsForChart(transactionsRes.value.transactions || []);
+      }
+
       // Process budgets
       if (budgetsRes.status === 'fulfilled') {
         const bData = (budgetsRes.value.budgets || []).map((b: any) => ({
@@ -225,15 +251,27 @@ export default function DashboardPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [txAccount]);
+  }, []);
 
   useEffect(() => {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
-  // Global refresh — respond to mutations from other pages
+  // Global refresh — hanya kind yang memengaruhi dashboard agar tidak
+  // refetch sia-sia (mis. 'goal' murni tanpa perubahan saldo diabaikan).
   useEffect(() => {
-    const off = onRefresh(() => fetchDashboardData());
+    const off = onRefresh((kind) => {
+      if (
+        kind === 'all' ||
+        kind === 'wallet' ||
+        kind === 'transaction' ||
+        kind === 'transfer' ||
+        kind === 'budget' ||
+        kind === 'goal_contribution'
+      ) {
+        fetchDashboardData();
+      }
+    });
     return off;
   }, [fetchDashboardData]);
 
@@ -242,13 +280,21 @@ export default function DashboardPage() {
     return wallets.reduce((acc, w) => acc + w.balance, 0);
   }, [wallets]);
 
+  // Ringkasan dihitung dari window chart 6 bulan (raw server) agar konsisten
+  // dengan chart — bukan dari 10 transaksi terbaru untuk list.
   const { totalIncome, totalExpenses, savingsRate, savingsAmount } = useMemo(() => {
-    const inc = transactions.filter((t) => t.type === 'income').reduce((a, t) => a + t.amount, 0);
-    const exp = transactions.filter((t) => t.type === 'expense').reduce((a, t) => a + t.amount, 0);
+    const source: any[] =
+      rawTransactionsForChart.length > 0 ? rawTransactionsForChart : (transactions as any[]);
+    const inc = source
+      .filter((t: any) => String(t.type).toUpperCase() === 'INCOME')
+      .reduce((a: number, t: any) => a + Number((t as any).amount || 0), 0);
+    const exp = source
+      .filter((t: any) => String(t.type).toUpperCase() !== 'INCOME')
+      .reduce((a: number, t: any) => a + Number((t as any).amount || 0), 0);
     const net = inc - exp;
     const rate = inc > 0 ? Math.round((net / inc) * 1000) / 10 : 0;
     return { totalIncome: inc, totalExpenses: exp, savingsRate: rate, savingsAmount: net };
-  }, [transactions]);
+  }, [rawTransactionsForChart, transactions]);
 
   const expensePercent = totalIncome > 0 ? Math.round((totalExpenses / totalIncome) * 100) : 0;
   const incomePercent = 100 - expensePercent;

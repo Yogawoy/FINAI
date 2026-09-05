@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ArrowRight, ArrowDown, Calendar, Wallet, Target, Check, X } from 'lucide-react';
+import { ArrowRight, ArrowDown, Calendar, Wallet, Target, Check, X, AlertCircle } from 'lucide-react';
 import { formatIDR } from '@/lib/format';
 
 interface GoalContributionCardProps {
@@ -14,7 +14,7 @@ interface GoalContributionCardProps {
   onConfirm: () => void;
   onCancel: () => void;
   isConfirming?: boolean;
-  status?: 'pending' | 'success' | 'cancelled';
+  status?: 'pending' | 'success' | 'cancelled' | 'error';
 }
 
 export default function GoalContributionCard({
@@ -33,23 +33,54 @@ export default function GoalContributionCard({
   const pctAfter = targetAmount > 0 ? Math.round(((currentAmount + amount) / targetAmount) * 100) : 0;
   const isCompletedAfter = currentAmount + amount >= targetAmount;
 
+  const pctDisplay = targetAmount > 0 ? Math.min(pctAfter, 100) : null;
   if (status === 'success') {
     return (
       <div className="p-4 rounded-2xl bg-[#EBF7F2] border border-[#D0EFE5] space-y-2 max-w-md">
-        <div className="flex items-center gap-2 text-[#1B7354] text-xs font-bold">
-          <Check size={16} /> Setoran tabungan berhasil dicatat.
+        <div className="flex items-center gap-2 text-[#1B7354] text-xs font-bold uppercase tracking-wide">
+          <Check size={16} /> Tabungan berhasil
         </div>
-        <div className="flex items-center justify-between text-xs pt-1 border-t border-[#D0EFE5]/80">
+        <div className="flex items-center justify-between text-xs pt-2 border-t border-[#D0EFE5]/80">
           <span className="font-semibold text-[#242636]">{goalName}</span>
           <span className="font-black tabular-nums text-[#1B7354]">+ {formatIDR(amount)}</span>
         </div>
+        {targetAmount > 0 && (
+          <div className="text-[11px] text-[#3E6B5E]">
+            Progress: {formatIDR(Math.min(currentAmount + amount, targetAmount))} / {formatIDR(targetAmount)}
+            {pctDisplay !== null ? ` · ${pctDisplay}%` : ''}
+          </div>
+        )}
+        <p className="text-[11px] text-[#1B7354] font-semibold pt-1 border-t border-[#D0EFE5]/80">
+          Kontribusi berhasil disimpan.
+        </p>
       </div>
     );
   }
   if (status === 'cancelled') {
     return (
-      <div className="p-3 rounded-2xl bg-[#FAFBFD] border border-[#E8EAF2] text-xs font-medium text-[#757A95] flex items-center gap-2 max-w-md">
-        <X size={15} /> Tindakan dibatalkan.
+      <div className="p-4 rounded-2xl bg-[#FAFBFD] border border-[#E8EAF2] space-y-1.5 max-w-md">
+        <div className="flex items-center gap-2 text-xs font-bold text-[#242636]">
+          <X size={15} className="text-[#757A95]" />
+          <span className="uppercase tracking-wide">Setoran dibatalkan</span>
+        </div>
+        <p className="text-[11px] text-[#757A95]">
+          {goalName} · {formatIDR(amount)}
+        </p>
+        <p className="text-[11px] text-[#757A95]">Tidak ada perubahan pada saldo.</p>
+      </div>
+    );
+  }
+  if (status === 'error') {
+    return (
+      <div className="p-4 rounded-2xl bg-[#FFF3F3] border border-[#F5C6C6] space-y-1.5 max-w-md">
+        <div className="flex items-center gap-2 text-xs font-bold text-[#922B21]">
+          <AlertCircle size={15} className="text-[#C0392B]" />
+          <span className="uppercase tracking-wide">Kontribusi gagal</span>
+        </div>
+        <p className="text-[11px] text-[#922B21]">
+          {goalName} · {formatIDR(amount)}
+        </p>
+        <p className="text-[11px] text-[#922B21]">Tidak ada perubahan pada saldo.</p>
       </div>
     );
   }
@@ -90,6 +121,7 @@ export default function GoalContributionCard({
         </div>
       </div>
 
+      {targetAmount > 0 && (
       <div className="space-y-2">
         <div className="flex items-center justify-between text-[11px] font-semibold">
           <span className="text-[#757A95]">Progress Goal</span>
@@ -121,6 +153,7 @@ export default function GoalContributionCard({
           </div>
         </div>
       </div>
+      )}
 
       <div className="flex items-center justify-between text-xs pt-2 border-t border-[#E8EAF2]/70">
         <span className="flex items-center gap-1.5 text-[#757A95]">

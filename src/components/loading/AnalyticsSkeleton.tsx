@@ -21,7 +21,7 @@ export default function AnalyticsSkeleton() {
           <Skeleton width={320} height={14} rounded="md" className="opacity-70" />
         </div>
         <div className="flex items-center gap-1.5 p-1 bg-white border border-black/[0.05] rounded-2xl">
-          {Array.from({ length: 4 }).map((_, i) => (
+          {Array.from({ length: 5 }).map((_, i) => (
             <Skeleton key={i} width={65} height={30} rounded="xl" />
           ))}
         </div>

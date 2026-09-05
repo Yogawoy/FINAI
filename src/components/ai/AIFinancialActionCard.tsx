@@ -37,37 +37,91 @@ export default function AIFinancialActionCard({
   const isPending = action.status === 'pending';
   const isSuccess = action.status === 'confirmed' || action.status === 'success';
   const isCancelled = action.status === 'cancelled';
+  const isError = action.status === 'error';
 
-  // 1. Success State
-  if (isSuccess) {
+  // 1. Error State — card tetap tampil, tidak hilang dan tidak mutasi lagi.
+  if (isError) {
     return (
-      <div className="p-4 rounded-2xl bg-[#EBF7F2] border border-[#D0EFE5] space-y-2 max-w-md shadow-2xs">
-        <div className="flex items-center gap-2 text-[#1B7354]">
-          <CircleCheck size={18} strokeWidth={2.5} />
-          <span className="text-xs font-bold">
-            {isGoal
-              ? 'Setoran tabungan berhasil dicatat.'
-              : isIncome
-              ? 'Pemasukan berhasil dicatat.'
-              : 'Transaksi berhasil dicatat.'}
-          </span>
+      <div className="p-4 rounded-2xl bg-[#FFF3F3] border border-[#F5C6C6] space-y-2 max-w-md">
+        <div className="flex items-center gap-2 text-[#C0392B]">
+          <AlertCircle size={18} strokeWidth={2.5} />
+          <span className="text-xs font-bold uppercase tracking-wide">Gagal memproses</span>
         </div>
-        <div className="flex items-center justify-between text-xs pt-1 border-t border-[#D0EFE5]/80">
+        <div className="flex items-center justify-between text-xs pt-2 border-t border-[#F5C6C6]/80">
           <span className="font-semibold text-[#242636]">{action.title}</span>
           <span className={`font-black tabular-nums ${isPositive ? 'text-[#1B7354]' : 'text-[#D94F4F]'}`}>
             {isPositive ? '+' : '-'} {formatIDR(action.amount)}
           </span>
         </div>
+        <p className="text-[11px] text-[#922B21]">{action.errorMessage || 'Terjadi kesalahan saat menyimpan.'}</p>
+        <p className="text-[11px] text-[#922B21]">Tidak ada perubahan pada saldo.</p>
       </div>
     );
   }
 
-  // 2. Cancelled State
-  if (isCancelled) {
+  // 2. Success State — card tetap tampil dengan detail, tidak hilang.
+  if (isSuccess) {
+    const successTitle = isGoal
+      ? 'Setoran tabungan tersimpan'
+      : isTransfer
+      ? 'Transfer berhasil'
+      : isIncome
+      ? 'Pemasukan tersimpan'
+      : 'Transaksi tersimpan';
     return (
-      <div className="p-3 rounded-2xl bg-[#FAFBFD] border border-[#E8EAF2] text-xs font-medium text-[#757A95] flex items-center gap-2 max-w-md">
-        <X size={15} />
-        <span>Tindakan dibatalkan oleh pengguna.</span>
+      <div className="p-4 rounded-2xl bg-[#EBF7F2] border border-[#D0EFE5] space-y-2 max-w-md shadow-2xs">
+        <div className="flex items-center gap-2 text-[#1B7354]">
+          <CircleCheck size={18} strokeWidth={2.5} />
+          <span className="text-xs font-bold uppercase tracking-wide">{successTitle}</span>
+        </div>
+        <div className="flex items-center justify-between text-xs pt-2 border-t border-[#D0EFE5]/80">
+          <span className="font-semibold text-[#242636]">{action.title}</span>
+          <span className={`font-black tabular-nums ${isPositive ? 'text-[#1B7354]' : 'text-[#D94F4F]'}`}>
+            {isPositive ? '+' : '-'} {formatIDR(action.amount)}
+          </span>
+        </div>
+        <div className="text-[11px] text-[#3E6B5E] space-y-0.5">
+          {action.category && <div>{action.category}</div>}
+          <div>
+            {isFlow
+              ? `${action.sourceWallet || ''}${action.destinationWallet ? ` → ${action.destinationWallet}` : ''}`
+              : action.sourceWallet}
+          </div>
+          <div>{action.date}</div>
+        </div>
+        <p className="text-[11px] text-[#1B7354] font-semibold pt-1 border-t border-[#D0EFE5]/80">
+          {isGoal
+            ? 'Kontribusi berhasil disimpan.'
+            : isTransfer
+            ? 'Transfer berhasil.'
+            : 'Transaksi berhasil disimpan.'}
+        </p>
+      </div>
+    );
+  }
+
+  // 2. Cancelled State — tanpa mutasi API, tanpa error.
+  if (isCancelled) {
+    const cancelTitle = isGoal
+      ? 'Setoran dibatalkan'
+      : isTransfer
+      ? 'Transfer dibatalkan'
+      : isIncome
+      ? 'Pemasukan dibatalkan'
+      : 'Transaksi dibatalkan';
+    return (
+      <div className="p-4 rounded-2xl bg-[#FAFBFD] border border-[#E8EAF2] space-y-1.5 max-w-md">
+        <div className="flex items-center gap-2 text-xs font-bold text-[#242636]">
+          <X size={15} className="text-[#757A95]" />
+          <span className="uppercase tracking-wide">{cancelTitle}</span>
+        </div>
+        <div className="flex items-center justify-between text-xs">
+          <span className="font-medium text-[#757A95]">{action.title}</span>
+          <span className="font-bold tabular-nums text-[#757A95]">
+            {isPositive ? '+' : '-'} {formatIDR(action.amount)}
+          </span>
+        </div>
+        <p className="text-[11px] text-[#757A95]">Tidak ada perubahan pada saldo.</p>
       </div>
     );
   }

@@ -11,6 +11,7 @@ import WalletSummaryCard from './cards/WalletCard';
 import SummaryCard from './cards/SummaryCard';
 import TransferActionCard from './cards/TransferActionCard';
 import GoalContributionCard from './cards/GoalContributionCard';
+import FinancialPlanCard from './cards/FinancialPlanCard';
 
 interface AIResponseRendererProps {
   message: AIMessageType;
@@ -18,6 +19,8 @@ interface AIResponseRendererProps {
   onConfirmAction: (actionId: string) => void;
   onCancelAction: (actionId: string) => void;
   onRetry?: () => void;
+  onPlanSaved?: (goalId: string) => void;
+  wallets?: { id: string; name: string }[];
 }
 
 export default function AIResponseRenderer({
@@ -26,6 +29,8 @@ export default function AIResponseRenderer({
   onConfirmAction,
   onCancelAction,
   onRetry,
+  onPlanSaved,
+  wallets = [],
 }: AIResponseRendererProps) {
   // Text as card (no action/insight/cards)
   const isPlainText =
@@ -78,6 +83,8 @@ export default function AIResponseRenderer({
                   ? 'success'
                   : message.action.status === 'cancelled'
                   ? 'cancelled'
+                  : message.action.status === 'error'
+                  ? 'error'
                   : 'pending'
               }
             />
@@ -86,8 +93,8 @@ export default function AIResponseRenderer({
               goalName={message.action.title}
               amount={message.action.amount}
               sourceWalletName={message.action.sourceWallet || 'Sumber'}
-              currentAmount={0}
-              targetAmount={message.action.amount * 4}
+              currentAmount={message.action.goalCurrentAmount ?? 0}
+              targetAmount={message.action.goalTargetAmount ?? 0}
               date={message.action.date}
               onConfirm={() => onConfirmAction(message.action!.id)}
               onCancel={() => onCancelAction(message.action!.id)}
@@ -97,6 +104,8 @@ export default function AIResponseRenderer({
                   ? 'success'
                   : message.action.status === 'cancelled'
                   ? 'cancelled'
+                  : message.action.status === 'error'
+                  ? 'error'
                   : 'pending'
               }
             />
@@ -111,7 +120,17 @@ export default function AIResponseRenderer({
         </>
       )}
 
-      {/* Budget Card */}
+      {/* Read-only financial intelligence cards */}
+      {message.summaryCard && (
+        <SummaryCard
+          period={message.summaryCard.period}
+          income={message.summaryCard.income}
+          expense={message.summaryCard.expense}
+          remaining={message.summaryCard.remaining}
+          budgetPercentage={message.summaryCard.budgetPercentage}
+          activeGoals={message.summaryCard.activeGoals}
+        />
+      )}
       {message.budgetCard && (
         <BudgetCard
           category={message.budgetCard.category}
@@ -151,6 +170,32 @@ export default function AIResponseRenderer({
           remaining={message.summaryCard.remaining}
           budgetPercentage={message.summaryCard.budgetPercentage}
           activeGoals={message.summaryCard.activeGoals}
+        />
+      )}
+
+      {/* Financial Plan Card */}
+      {message.financialPlanCard && (
+        <FinancialPlanCard
+          plan={{
+            targetName: message.financialPlanCard.targetName,
+            targetAmount: message.financialPlanCard.targetAmount,
+            currentAmount: message.financialPlanCard.currentAmount,
+            remainingAmount: message.financialPlanCard.remainingAmount,
+            durationMonths: message.financialPlanCard.durationMonths,
+            requiredMonthlySaving: message.financialPlanCard.requiredMonthlySaving,
+            monthlyIncome: message.financialPlanCard.monthlyIncome,
+            monthlyExpense: message.financialPlanCard.monthlyExpense,
+            monthlyNetCashFlow: message.financialPlanCard.monthlyNetCashFlow,
+            requiredPercentageOfNet: message.financialPlanCard.requiredPercentageOfNet,
+            feasibility: message.financialPlanCard.feasibility,
+            assumptions: message.financialPlanCard.assumptions || [],
+            relatedGoalId: message.financialPlanCard.relatedGoalId,
+          }}
+          wallets={(wallets && wallets.length > 0 ? wallets : message.financialPlanCard?.wallets || [])}
+          onSave={(goalId) => {
+            onPlanSaved?.(goalId);
+            window.dispatchEvent(new CustomEvent('finai:refresh-goals'));
+          }}
         />
       )}
 

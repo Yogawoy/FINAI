@@ -15,6 +15,8 @@ interface AIConversationProps {
   onCancelAction: (actionId: string) => void;
   onSelectAction: (prompt: string) => void;
   onRetry?: () => void;
+  onPlanSaved?: (goalId: string) => void;
+  wallets?: { id: string; name: string }[];
 }
 
 export default function AIConversation({
@@ -25,6 +27,8 @@ export default function AIConversation({
   onCancelAction,
   onSelectAction,
   onRetry,
+  onPlanSaved,
+  wallets = [],
 }: AIConversationProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -58,6 +62,8 @@ export default function AIConversation({
             onConfirmAction={onConfirmAction}
             onCancelAction={onCancelAction}
             onRetry={onRetry}
+            onPlanSaved={onPlanSaved}
+            wallets={wallets}
           />
         );
       })}

@@ -176,8 +176,12 @@ export interface AIFinancialAction {
   sourceWallet?: string;
   destinationWallet?: string;
   date: string;
-  status: 'pending' | 'confirmed' | 'cancelled' | 'success';
+  status: 'pending' | 'confirmed' | 'cancelled' | 'success' | 'error';
   note?: string;
+  // Real goal snapshot untuk progress card (bukan tebakan — diisi dari context).
+  goalCurrentAmount?: number;
+  goalTargetAmount?: number;
+  errorMessage?: string;
 }
 
 export interface AIInsightData {
@@ -236,6 +240,26 @@ export interface AIMessage {
     remaining: number;
     budgetPercentage?: number;
     activeGoals?: number;
+  };
+  spendingBreakdownCard?: {
+    items: { category: string; total: number; percentage?: number }[];
+    period?: string;
+  };
+  financialPlanCard?: {
+    targetName: string;
+    targetAmount: number;
+    currentAmount: number;
+    remainingAmount: number;
+    durationMonths: number;
+    requiredMonthlySaving: number;
+    monthlyIncome: number;
+    monthlyExpense: number;
+    monthlyNetCashFlow: number;
+    requiredPercentageOfNet: number;
+    feasibility: 'realistic' | 'tight' | 'unlikely' | 'insufficient_data';
+    assumptions?: string[];
+    relatedGoalId?: string | null;
+    wallets?: { id: string; name: string }[];
   };
 }
 

@@ -34,7 +34,26 @@ import { onRefresh } from '@/lib/data-refresh';
 import AnalyticsSkeleton from '@/components/loading/AnalyticsSkeleton';
 import PageTransition from '@/components/loading/PageTransition';
 
-const TIMEFRAMES = ['7 Hari', '30 Hari', '6 Bulan', '1 Tahun'];
+// Selaras dengan opsi ChartPeriodSelect varian analytics
+// ('7 Hari' | '30 Hari' | '3 Bulan' | '6 Bulan' | '1 Tahun').
+const TIMEFRAMES = ['7 Hari', '30 Hari', '3 Bulan', '6 Bulan', '1 Tahun'];
+
+function timeframeToDays(timeframe: string): number {
+  switch (timeframe) {
+    case '7 Hari':
+      return 7;
+    case '30 Hari':
+      return 30;
+    case '3 Bulan':
+      return 90;
+    case '6 Bulan':
+      return 180;
+    case '1 Tahun':
+      return 365;
+    default:
+      return 180;
+  }
+}
 
 const CATEGORY_COLORS: Record<string, string> = {
   food: '#7C7CE6',
@@ -75,22 +94,36 @@ interface TransactionRaw {
 
 export default function AnalyticsPage() {
   const [isLoading, setIsLoading] = useState(true);
+  // Background fetch (ganti timeframe / refresh) — halaman tetap tampil,
+  // hanya chart yang menunjukkan state loading inline.
+  const [isFetching, setIsFetching] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<TransactionRaw[]>([]);
 
   const [selectedTimeframe, setSelectedTimeframe] = useState('6 Bulan');
+  const hasLoadedRef = React.useRef(false);
 
   const fetchTransactions = useCallback(async () => {
+    // Skeleton penuh hanya untuk load pertama; setelahnya pakai loading inline.
+    if (hasLoadedRef.current) setIsFetching(true);
     try {
       setErrorMessage(null);
-      const res = await apiClient.get<{ transactions: any[]; total: number }>('/api/transactions?limit=500');
+      // Ambil hanya window yang dibutuhkan — hemat payload untuk 7/30 hari
+      // dan akurat untuk 1 tahun (sebelumnya fixed limit=500 tanpa filter tanggal).
+      const days = timeframeToDays(selectedTimeframe);
+      const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+      const res = await apiClient.get<{ transactions: any[]; total: number }>(
+        `/api/transactions?limit=1000&startDate=${encodeURIComponent(startDate)}`
+      );
       setTransactions(res.transactions || []);
+      hasLoadedRef.current = true;
     } catch (err) {
       setErrorMessage(mapApiErrorMessage(err));
     } finally {
       setIsLoading(false);
+      setIsFetching(false);
     }
-  }, []);
+  }, [selectedTimeframe]);
 
   useEffect(() => {
     fetchTransactions();
@@ -183,11 +216,8 @@ export default function AnalyticsPage() {
   const analytics = useMemo(() => {
     const now = new Date();
 
-    // Filter by timeframe
-    const timeframeDays = selectedTimeframe === '7 Hari' ? 7
-      : selectedTimeframe === '30 Hari' ? 30
-      : selectedTimeframe === '6 Bulan' ? 180
-      : 365;
+    // Filter by timeframe (defensif — server sudah memfilter via startDate)
+    const timeframeDays = timeframeToDays(selectedTimeframe);
 
     const cutoffDate = new Date(now.getTime() - timeframeDays * 24 * 60 * 60 * 1000);
 
@@ -256,7 +286,9 @@ export default function AnalyticsPage() {
     };
   }, [transactions, selectedTimeframe]);
 
-  if (isLoading) {
+  // Skeleton penuh hanya saat load pertama; ganti timeframe/refresh
+  // tidak boleh mem-flash seluruh halaman.
+  if (isLoading && transactions.length === 0 && !errorMessage) {
     return <AnalyticsSkeleton />;
   }
 
@@ -338,7 +370,7 @@ export default function AnalyticsPage() {
         {/* Main Cashflow Trend Area Chart — real data */}
         <IncomeExpenseChart
           data={analyticsChartData}
-          isLoading={isLoading}
+          isLoading={isFetching}
           error={errorMessage}
           variant="analytics"
           title="Keseimbangan Pemasukan vs Pengeluaran"

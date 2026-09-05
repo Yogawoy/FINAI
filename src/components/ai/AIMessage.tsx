@@ -12,6 +12,8 @@ interface AIMessageProps {
   onConfirmAction: (actionId: string) => void;
   onCancelAction: (actionId: string) => void;
   onRetry?: () => void;
+  onPlanSaved?: (goalId: string) => void;
+  wallets?: { id: string; name: string }[];
 }
 
 export default function AIMessage({
@@ -20,6 +22,8 @@ export default function AIMessage({
   onConfirmAction,
   onCancelAction,
   onRetry,
+  onPlanSaved,
+  wallets = [],
 }: AIMessageProps) {
   return (
     <motion.div
@@ -41,6 +45,7 @@ export default function AIMessage({
           onConfirmAction={onConfirmAction}
           onCancelAction={onCancelAction}
           onRetry={onRetry}
+          onPlanSaved={onPlanSaved}
         />
 
         {/* Timestamp */}

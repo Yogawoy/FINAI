@@ -57,7 +57,7 @@ function getProviderConfig(): ProviderConfig {
   throw new GrokConfigurationError();
 }
 
-function formatIDR(numStr: string): string {
+function formatIDR(numStr: string | number | undefined | null): string {
   const n = Number(numStr) || 0;
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n);
 }
@@ -81,7 +81,12 @@ function buildContextBlock(ctx: GrokUserContext): string {
   if (ctx.goals.length > 0) {
     lines.push('Daftar target/goal milik user:');
     ctx.goals.forEach((g) => {
-      lines.push(`- ${g.name} (id: ${g.id}, kategori: ${g.category})`);
+      const target = typeof g.targetAmount === 'string' ? g.targetAmount : g.targetAmount != null ? String(g.targetAmount) : '';
+      const current = typeof g.currentAmount === 'string' ? g.currentAmount : g.currentAmount != null ? String(g.currentAmount) : '';
+      const remaining = typeof g.remainingAmount === 'string' ? g.remainingAmount : g.remainingAmount != null ? String(g.remainingAmount) : '';
+      const pct = typeof g.percentage === 'number' ? g.percentage : 0;
+      const deadline = typeof g.deadline === 'string' ? g.deadline : 'tidak ada';
+      lines.push(`- ${g.name} (id: ${g.id}, kategori: ${g.category}, target: ${formatIDR(target)}, tercapai: ${formatIDR(current)}, sisa: ${formatIDR(remaining)}, ${pct}%, deadline: ${deadline})`);
     });
   } else {
     lines.push('User belum memiliki target/goal.');
@@ -95,8 +100,8 @@ function buildContextBlock(ctx: GrokUserContext): string {
         const limit = formatIDR(b.limitAmount);
         const used = b.usedAmount ? formatIDR(b.usedAmount) : 'Rp0';
         const remain = b.remainingAmount ? formatIDR(b.remainingAmount) : limit;
-        const pct = b.percentage ?? 0;
-        const status = b.status || (pct >= 90 ? 'CRITICAL' : pct >= 70 ? 'WARNING' : 'SAFE');
+        const pct = typeof b.percentage === 'number' ? b.percentage : 0;
+        const status = typeof b.status === 'string' ? b.status : pct >= 90 ? 'CRITICAL' : pct >= 70 ? 'WARNING' : 'SAFE';
         lines.push(`- ${b.category}: batas ${limit}, terpakai ${used}, sisa ${remain}, ${pct}% (${status})`);
       } else {
         lines.push(`- ${b.category}`);
@@ -110,9 +115,64 @@ function buildContextBlock(ctx: GrokUserContext): string {
   if (ctx.recentTransactions.length > 0) {
     lines.push('Transaksi terbaru (5 terakhir):');
     ctx.recentTransactions.forEach((t) => {
-      lines.push(`- ${t.description} | ${t.category} | ${t.type} | Rp${t.amount}`);
+      const amount = typeof t.amount === 'string' ? t.amount : t.amount != null ? String(t.amount) : '';
+      lines.push(`- ${t.description} | ${t.category} | ${t.type} | Rp${amount}`);
     });
   }
+  lines.push('');
+
+  if (ctx.financialSummary) {
+    lines.push('Ringkasan finansial bulan ini:');
+    lines.push(`- Pemasukan: ${formatIDR(Number(ctx.financialSummary.income))}`);
+    lines.push(`- Pengeluaran: ${formatIDR(Number(ctx.financialSummary.expense))}`);
+    lines.push(`- Sisa: ${formatIDR(Number(ctx.financialSummary.remaining))}`);
+    if (typeof ctx.financialSummary.budgetPercentage === 'number') {
+      lines.push(`- Penggunaan budget keseluruhan: ${ctx.financialSummary.budgetPercentage}%`);
+    }
+    lines.push(`- Target aktif: ${ctx.financialSummary.activeGoals}`);
+  }
+  lines.push('');
+
+  if (ctx.categoryTotals?.items?.length) {
+    lines.push(`Breakdown pengeluaran terbesar (${ctx.categoryTotals.period || 'periode terkait'}):`);
+    ctx.categoryTotals.items.slice(0, 5).forEach((item) => {
+      const total = typeof item.total === 'string' ? item.total : item.total != null ? String(item.total) : '';
+      const pct = typeof item.percentage === 'number' ? item.percentage : 0;
+      lines.push(`- ${item.category}: ${formatIDR(Number(total))}${pct ? `, ${pct}%` : ''}`);
+    });
+  }
+  lines.push('');
+
+  if (ctx.trend) {
+    lines.push('Tren pengeluaran:');
+    lines.push(`- Periode ini: ${formatIDR(Number(ctx.trend.currentPeriodExpense))}`);
+    if (ctx.trend.previousPeriodExpense) {
+      lines.push(`- Periode sebelumnya: ${formatIDR(Number(ctx.trend.previousPeriodExpense))}`);
+    }
+    if (typeof ctx.trend.changePercentage === 'number') {
+      lines.push(`- Perubahan: ${ctx.trend.changePercentage > 0 ? '+' : ''}${ctx.trend.changePercentage}%`);
+    }
+  }
+  lines.push('');
+
+  lines.push('');
+  lines.push('Cash flow bulanan aktual:');
+  if (typeof ctx.monthlyIncome === 'string' || typeof ctx.monthlyIncome === 'number') {
+    lines.push(`- Pemasukan bulanan: ${formatIDR(Number(ctx.monthlyIncome || '0'))}`);
+  } else {
+    lines.push('- Pemasukan bulanan: data belum tersedia');
+  }
+  if (typeof ctx.monthlyExpense === 'string' || typeof ctx.monthlyExpense === 'number') {
+    lines.push(`- Pengeluaran bulanan: ${formatIDR(Number(ctx.monthlyExpense || '0'))}`);
+  } else {
+    lines.push('- Pengeluaran bulanan: data belum tersedia');
+  }
+  if (typeof ctx.monthlyNetCashFlow === 'string' || typeof ctx.monthlyNetCashFlow === 'number') {
+    lines.push(`- Surplus bulanan: ${formatIDR(Number(ctx.monthlyNetCashFlow))}`);
+  } else {
+    lines.push('- Surplus bulanan: data belum tersedia');
+  }
+  lines.push('');
 
   return lines.join('\n');
 }
@@ -202,7 +262,6 @@ export async function callGrok(options: CallGrokOptions): Promise<GrokStructured
         messages,
         temperature: 0.3,
         max_tokens: 800,
-        response_format: { type: 'json_object' },
       }),
       signal: controller.signal,
     });

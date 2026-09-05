@@ -133,6 +133,50 @@ export const GrokStructuredResponseSchema = z.discriminatedUnion('type', [
       })
       .optional(),
   }),
+  z.object({
+    type: z.literal('spending_breakdown'),
+    message: z.string().min(1).max(5000),
+    data: z.object({
+      items: z.array(
+        z.object({
+          category: z.string().min(1),
+          total: z.string().regex(/^\d+$/),
+          percentage: z.number().min(0).max(100).optional(),
+        })
+      ),
+      period: z.string().optional(),
+    }),
+  }),
+  z.object({
+    type: z.literal('financial_plan'),
+    message: z.string().min(1).max(5000),
+    data: z.object({
+      targetName: z.string().min(1),
+      targetAmount: z.string().regex(/^\d+$/),
+      currentAmount: z.string().regex(/^\d+$/).default('0'),
+      remainingAmount: z.string().regex(/^\d+$/).default('0'),
+      durationMonths: z.number().int().positive().optional(),
+      requiredMonthlySaving: z.string().regex(/^\d+$/).default('0'),
+      monthlyIncome: z.string().regex(/^\d+$/).default('0'),
+      monthlyExpense: z.string().regex(/^\d+$/).default('0'),
+      monthlyNetCashFlow: z.string().regex(/^\d+$/).default('0'),
+      requiredPercentageOfNet: z.number().min(0).max(100).default(0),
+      feasibility: z.enum(['realistic', 'tight', 'unlikely', 'insufficient_data']).default('insufficient_data'),
+      assumptions: z.array(z.string()).default([]),
+      relatedGoalId: z.string().nullable().optional(),
+    }),
+    payload: z
+      .object({
+        goal: z.string().optional(),
+        duration_months: z.string().regex(/^\d+$/).optional(),
+        monthly_savings_needed: z.string().regex(/^\d+$/).optional(),
+        available_monthly_surplus: z.string().regex(/^\d+$/).optional(),
+        feasibility: z.string().optional(),
+        suggestion: z.string().optional(),
+      })
+      .optional()
+      .default({}),
+  }),
 ]);
 
 export type GrokStructuredResponse = z.infer<typeof GrokStructuredResponseSchema>;
@@ -167,8 +211,113 @@ export interface GrokCompletionResponse {
 
 export interface GrokUserContext {
   wallets: { id: string; name: string; type: string; balance?: string }[];
-  goals: { id: string; name: string; category: string }[];
+  goals: { id: string; name: string; category: string; targetAmount?: string; currentAmount?: string; remainingAmount?: string; percentage?: number; deadline?: string | null }[];
   budgets: { category: string; limitAmount?: string; usedAmount?: string; remainingAmount?: string; percentage?: number; status?: string }[];
   recentTransactions: { description: string; category: string; type: string; amount: string }[];
   currentDate: string;
+  financialSummary?: {
+    period: string;
+    income: string;
+    expense: string;
+    remaining: string;
+    budgetPercentage?: number;
+    activeGoals: number;
+  };
+  categoryTotals?: { items: { category: string; total: string; percentage?: number }[]; period: string };
+  trend?: {
+    currentPeriodExpense: string;
+    previousPeriodExpense?: string;
+    changePercentage?: number;
+  };
+  monthlyIncome?: string;
+  monthlyExpense?: string;
+  monthlyNetCashFlow?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Response normalization — tolerate common LLM shape deviations
+// ---------------------------------------------------------------------------
+
+function toNumber(value: unknown, fallback = 0): number {
+  const n = typeof value === 'string' ? Number(value) : typeof value === 'number' ? value : NaN;
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function normalizeFinancialPlanData(raw: any): any {
+  if (!raw || typeof raw !== 'object') return raw;
+
+  const src = raw.data || raw.payload || raw;
+  if (!src || typeof src !== 'object') return raw;
+
+  const targetName = typeof src.targetName === 'string' ? src.targetName : typeof src.goal === 'string' ? src.goal : '';
+  const targetAmountRaw = src.targetAmount ?? src.target ?? src.amount ?? '0';
+  const currentAmountRaw = src.currentAmount ?? src.current ?? src.savedAmount ?? '0';
+
+  const durationMonthsValue =
+    (typeof src.durationMonths === 'number' ? src.durationMonths : Number(src.durationMonths)) ||
+    (typeof src.duration_months === 'string' ? Number(src.duration_months) : Number(src.duration_months)) ||
+    (typeof src.months === 'string' ? Number(src.months) : Number(src.months)) ||
+    NaN;
+  const safeDuration = Number.isFinite(durationMonthsValue) && durationMonthsValue > 0 ? durationMonthsValue : 0;
+
+  const monthlyIncome = toNumber(src.monthlyIncome ?? src.monthly_income ?? src.income ?? 0);
+  const monthlyExpense = toNumber(src.monthlyExpense ?? src.monthly_expense ?? src.expense ?? 0);
+  const monthlyNetCashFlowRaw = src.monthlyNetCashFlow ?? src.monthly_net_cash_flow ?? src.surplus ?? null;
+  const monthlyNetCashFlow =
+    typeof monthlyNetCashFlowRaw === 'string' ? toNumber(monthlyNetCashFlowRaw) : toNumber(monthlyNetCashFlowRaw);
+  const net = monthlyNetCashFlow > 0 ? monthlyNetCashFlow : Math.max(0, monthlyIncome - monthlyExpense);
+
+  const targetAmountNum = Math.max(0, toNumber(targetAmountRaw));
+  const currentAmountNum = Math.max(0, toNumber(currentAmountRaw));
+  const remainingAmount = Math.max(0, targetAmountNum - currentAmountNum);
+  const requiredMonthlySaving = safeDuration > 0 ? remainingAmount / safeDuration : 0;
+  const requiredPercentageOfNet = net > 0 ? Math.round((requiredMonthlySaving / net) * 1000) / 10 : 0;
+
+  let feasibility: 'realistic' | 'tight' | 'unlikely' | 'insufficient_data' = 'insufficient_data';
+  if (targetAmountNum > 0 && safeDuration > 0 && net > 0) {
+    if (requiredPercentageOfNet <= 60) feasibility = 'realistic';
+    else if (requiredPercentageOfNet <= 90) feasibility = 'tight';
+    else feasibility = 'unlikely';
+  }
+
+  const assumptions = Array.isArray(src.assumptions) ? src.assumptions.filter((x: any): x is string => typeof x === 'string') : [];
+
+  const durationMonths = safeDuration > 0 ? safeDuration : undefined;
+  const requiredMonthlySavingValue = safeDuration > 0 ? requiredMonthlySaving : 0;
+
+  return {
+    type: 'financial_plan',
+    message: typeof raw.message === 'string' ? raw.message : 'Rencana keuangan.',
+    data: {
+      targetName,
+      targetAmount: String(Math.round(targetAmountNum)),
+      currentAmount: String(Math.round(currentAmountNum)),
+      remainingAmount: String(Math.round(remainingAmount)),
+      durationMonths,
+      requiredMonthlySaving: String(Math.round(requiredMonthlySavingValue)),
+      monthlyIncome: String(Math.round(monthlyIncome)),
+      monthlyExpense: String(Math.round(monthlyExpense)),
+      monthlyNetCashFlow: String(Math.round(net)),
+      requiredPercentageOfNet,
+      feasibility,
+      assumptions,
+      relatedGoalId: typeof src.relatedGoalId === 'string' ? src.relatedGoalId : typeof src.related_goal_id === 'string' ? src.related_goal_id : null,
+    },
+    payload: {
+      goal: typeof src.goal === 'string' ? src.goal : targetName || undefined,
+      duration_months: typeof src.duration_months === 'string' ? src.duration_months : durationMonths ? String(durationMonths) : undefined,
+      monthly_savings_needed: typeof src.monthly_savings_needed === 'string' ? src.monthly_savings_needed : durationMonths ? String(Math.round(requiredMonthlySavingValue)) : undefined,
+      available_monthly_surplus: typeof src.available_monthly_surplus === 'string' ? src.available_monthly_surplus : String(Math.round(net)) || undefined,
+      feasibility: typeof src.feasibility === 'string' ? src.feasibility : feasibility,
+      suggestion: typeof src.suggestion === 'string' ? src.suggestion : undefined,
+    },
+  };
+}
+
+export function normalizeGrokResponse(raw: any): any {
+  if (!raw || typeof raw !== 'object') return raw;
+  if (raw.type === 'financial_plan') {
+    return normalizeFinancialPlanData(raw);
+  }
+  return raw;
 }
