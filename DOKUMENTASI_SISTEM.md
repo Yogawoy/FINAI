@@ -45,7 +45,7 @@ src/
   components/
     ai/{AIAssistantPage, AIMessage, AIConversation, AIInput, AIHeader, AIContextBar, AIQuickActions,
         AIFinancialActionCard, AIThinking, AIError, AIEmptyState, AIResponseRenderer,
-        cards/{BudgetCard, GoalCard, WalletCard (WalletSummaryCard), SummaryCard, TransferActionCard, GoalContributionCard}}
+        cards/{BudgetCard, GoalCard, WalletCard (WalletSummaryCard), SummaryCard, TransferActionCard, GoalContributionCard, ClarificationCard}}
     charts/{IncomeExpenseChart, FinancialTooltip, ChartLegend, ChartPeriodSelect}
     wallets/*, transactions/*, budgets/*, goals/*, navigation/*, sidebar/*, settings/*, ui/*, loading/*
   lib/
@@ -168,10 +168,16 @@ API Route (auth via getCurrentUser() → session.userId, Zod safeParse)
 
 **Schema** (`ai.schemas.ts`): `AIChatRequestSchema`, `GrokStructuredResponseSchema` discriminated union `text|financial_action|clarification|error|budget|goal|wallet|summary|insight` — `financial_action {action:create_transaction|transfer|goal_contribution, payload:{transactionType, amount:"10000", walletId, ...}, requiresConfirmation:true}` + read-only cards `budget{category,limit,used,remaining,%,period}`, `goal{name,target,current,remaining,%,deadline}`, `wallet{wallets[], totalBalance}`, `summary{period,income,expense,remaining,budget%,activeGoals}`.
 
+**Clarification Existing Goal:**
+- Saat `detectPlanningIntent()` menemukan `relatedGoal` (goal yang sama atau menyerupai intent user), route bisa memprioritaskan `clarification` daripada langsung `financial_plan`.
+- Response `clarification` bisa membawa `data.relatedGoalId`, `data.newGoalHref`, `data.newGoalLabel`, `data.existingGoalName`.
+- Card `ClarificationCard` menampilkan opsi **“Tambah ke target ini”** dan **“Buat target baru”** jika field tersebut ada.
+- `AIAssistantPage.tsx` harus memetakan `data` dari response Grok ke objek `clarification` di `AIMessageType`.
+
 **UI** (`src/components/ai/`):
 - `AIAssistantPage.tsx` — `fetchContextData` (wallets+goals+budgets+tx+settings), `handleSendMessage` → `POST /api/ai/chat` → map `financial_action` (validate `isValidWalletId` vs `liveWallets`, resolve `walletName→id`, auto `wallets.length===1`, clarification jika unresolved, `wallets.length===0 → belum punya dompet`), `pendingMetaRef` + `confirmingIds` guard, `handleConfirmAction` → `POST /api/transactions|transfers|contributions` + `emitRefresh` + `fetchContextData`, `handleCancelAction`, `aiActionConfirmation` refetch + auto `finai:auto-confirm` 500ms jika toggle OFF.
-- `AIResponseRenderer.tsx` — central switch: `text → Jawaban FinAI card`, `financial_action expense/income → AIFinancialActionCard`, `transfer → TransferActionCard`, `goal_contribution → GoalContributionCard` (progress `25%→30%`), `budget → BudgetCard`, `goal → GoalCard`, `wallet → WalletSummaryCard`, `summary → SummaryCard`, `insight → AIInsightCard`, `error → AIError`.
-- **Cards** (`cards/`): `BudgetCard`, `GoalCard`, `WalletCard`, `SummaryCard`, `TransferActionCard`, `GoalContributionCard` — putih `rounded-2xl border #E8EAF2 shadow [0_6px_24px]`, badge `EDEAFC/#5F5ED4`, progress, grid Terpakai/Sisa, responsive (`ArrowRight` desktop `ArrowDown` mobile).
+- `AIResponseRenderer.tsx` — central switch: `text → Jawaban FinAI card`, `financial_action expense/income → AIFinancialActionCard`, `transfer → TransferActionCard`, `goal_contribution → GoalContributionCard` (progress `25%→30%`), `budget → BudgetCard`, `goal → GoalCard`, `wallet → WalletSummaryCard`, `summary → SummaryCard`, `insight → AIInsightCard`, `error → AIError`, `clarification → ClarificationCard`.
+- **Cards** (`cards/`): `BudgetCard`, `GoalCard`, `WalletCard`, `SummaryCard`, `TransferActionCard`, `GoalContributionCard`, `ClarificationCard` — putih `rounded-2xl border #E8EAF2 shadow [0_6px_24px]`, badge `EDEAFC/#5F5ED4`, progress, grid Terpakai/Sisa, responsive (`ArrowRight` desktop `ArrowDown` mobile).
 - **Safety:** Grok hanya proposal, mutasi hanya `[Confirm]` → existing API, `requiresConfirmation:true`, anti double-click (`confirmingIds` + disabled + spinner), `emitRefresh` sync global.
 
 **Chart:** `IncomeExpenseChart` presentational `data: ChartDataPoint[]` + `isLoading/error` + empty `Belum ada data arus kas` + CTA `/app/transactions` — Dashboard agregasi 6 bulan, Analytics agregasi `7H/30H/3B/6B/12B` dari `GET /api/transactions` real (bukan `SIX_MONTHS_DATA`).
@@ -189,4 +195,3 @@ API Route (auth via getCurrentUser() → session.userId, Zod safeParse)
 ## 14. Alur User Cont. 9 Flow (PASS via inspection)
 
 Landing→Register→Dashboard, Add Wallet, Add Transaction→balance, Transfer→source- destinasi, Goal+Contribution, Budget, Analytics real, AI Assistant, Settings→Logout→Login persists.
-

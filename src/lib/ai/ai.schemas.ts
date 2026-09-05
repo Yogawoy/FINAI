@@ -68,6 +68,15 @@ export const GrokStructuredResponseSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('clarification'),
     message: z.string().min(1).max(2000),
+    data: z
+      .object({
+        relatedGoalId: z.string().optional(),
+        newGoalHref: z.string().optional(),
+        newGoalLabel: z.string().optional(),
+        existingGoalName: z.string().optional(),
+      })
+      .optional()
+      .default({}),
   }),
   z.object({
     type: z.literal('error'),
@@ -314,10 +323,50 @@ function normalizeFinancialPlanData(raw: any): any {
   };
 }
 
+function normalizeFinancialActionPayload(raw: any): any {
+  if (!raw || typeof raw !== 'object') return raw;
+  const payload = raw.payload || raw;
+  if (!payload || typeof payload !== 'object') return raw;
+
+  const action = raw.action || (() => {
+    if (payload.transactionType === 'INCOME' || payload.transactionType === 'EXPENSE') return 'create_transaction';
+    if (payload.goalId || payload.goalName) return 'goal_contribution';
+    if (payload.sourceWalletId || payload.sourceWalletName || payload.destinationWalletId || payload.destinationWalletName) return 'transfer';
+    return 'create_transaction';
+  })();
+
+  const message = typeof raw.message === 'string' && raw.message.trim().length > 0 ? raw.message : 'Silakan konfirmasi detail berikut sebelum disimpan:';
+
+  return {
+    type: 'financial_action',
+    action,
+    message,
+    payload: {
+      transactionType: typeof payload.transactionType === 'string' ? payload.transactionType : undefined,
+      amount: typeof payload.amount === 'string' ? payload.amount : String(payload.amount || '0'),
+      description: typeof payload.description === 'string' ? payload.description : undefined,
+      category: typeof payload.category === 'string' ? payload.category : undefined,
+      walletId: payload.walletId ?? null,
+      walletName: payload.walletName ?? null,
+      sourceWalletId: payload.sourceWalletId ?? null,
+      sourceWalletName: payload.sourceWalletName ?? null,
+      destinationWalletId: payload.destinationWalletId ?? null,
+      destinationWalletName: payload.destinationWalletName ?? null,
+      goalName: payload.goalName ?? null,
+      goalId: payload.goalId ?? null,
+      date: payload.date ?? null,
+    },
+    requiresConfirmation: true,
+  };
+}
+
 export function normalizeGrokResponse(raw: any): any {
   if (!raw || typeof raw !== 'object') return raw;
   if (raw.type === 'financial_plan') {
     return normalizeFinancialPlanData(raw);
+  }
+  if (raw.type === 'financial_action') {
+    return normalizeFinancialActionPayload(raw);
   }
   return raw;
 }

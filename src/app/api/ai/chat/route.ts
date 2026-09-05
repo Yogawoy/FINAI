@@ -43,17 +43,17 @@ function detectPlanningIntent(message: string, context: GrokUserContext): {
   relatedGoal?: PlanningGoalInput | null;
 } | null {
   const lower = message.toLowerCase();
-  
+
   // Check for planning keywords
   const planningKeywords = [
     'beli', 'nabung', 'target', 'ingin', 'mau', 'capai', 'realisasikan',
     'laptop', 'motor', 'mobil', 'kuliah', 'rumah', 'liburan', 'investasi',
     'tabung', 'menabung', 'perencanaan', 'plan', 'rencana'
   ];
-  
+
   const hasPlanningKeyword = planningKeywords.some(keyword => lower.includes(keyword));
   if (!hasPlanningKeyword) return null;
-  
+
   // Extract amount from message
   const amountPatterns = [
     /(\d+)\s*juta/i,
@@ -62,7 +62,7 @@ function detectPlanningIntent(message: string, context: GrokUserContext): {
     /(\d+)\s*000\s*000/i,
     /rp\s*(\d+)/i,
   ];
-  
+
   let targetAmount = 0;
   for (const pattern of amountPatterns) {
     const match = message.match(pattern);
@@ -74,27 +74,30 @@ function detectPlanningIntent(message: string, context: GrokUserContext): {
       }
     }
   }
-  
+
   if (targetAmount <= 0) return null;
-  
+
   // Extract duration from message
+  let durationMonths: number | undefined;
   const monthMatch = message.match(/(\d+)\s*bulan/i);
   const yearMatch = message.match(/(\d+)\s*tahun/i);
-  let durationMonths: number | undefined;
-  
+  const weekMatch = message.match(/(\d+)\s*minggu/i);
+
   if (monthMatch) {
     durationMonths = parseInt(monthMatch[1], 10);
   } else if (yearMatch) {
     durationMonths = parseInt(yearMatch[1], 10) * 12;
+  } else if (weekMatch) {
+    durationMonths = Math.max(1, Math.ceil(parseInt(weekMatch[1], 10) / 4));
   }
-  
+
   // Extract target name from message
   const targetName = message
-    .replace(/[0-9]+\s*(juta|jt|miliar|bulan|tahun|rp)/gi, '')
+    .replace(/[0-9]+\s*(juta|jt|miliar|bulan|tahun|minggu|rp)/gi, '')
     .replace(/mau|ingin|beli|nabung|target|capai|realisasikan|untuk|dengan|dalam|dari|sampai/gi, '')
     .trim()
     .slice(0, 50) || 'Target Keuangan';
-  
+
   // Check if any existing goal matches
   const goals: PlanningGoalInput[] = (context.goals || []).map((g) => ({
     id: g.id,
@@ -104,14 +107,14 @@ function detectPlanningIntent(message: string, context: GrokUserContext): {
     currentAmount: safeNum(g.currentAmount),
     deadline: g.deadline ?? null,
   }));
-  
-  const relatedGoal = goals.find(g => 
-    lower.includes(g.name.toLowerCase()) || 
+
+  const relatedGoal = goals.find(g =>
+    lower.includes(g.name.toLowerCase()) ||
     g.name.toLowerCase().includes(lower.split(' ')[0])
   ) ?? null;
-  
+
   const currentAmount = relatedGoal?.currentAmount ?? 0;
-  
+
   return {
     shouldPlan: true,
     targetName: relatedGoal?.name || targetName || 'Target Keuangan',
@@ -184,42 +187,102 @@ export async function POST(request: NextRequest) {
     const normalized = normalizeGrokResponse(grokResponse);
     let structured: GrokStructuredResponse = normalized;
 
+    // Fallback: if Groq returned goal_contribution but there is no matching goal,
+    // convert it to planning so the user can create the goal first.
+    if (structured.type === 'financial_action' && structured.action === 'goal_contribution' && (structured as any).payload) {
+      const payload = (structured as any).payload;
+      const goalName = typeof payload.goalName === 'string' ? payload.goalName.trim() : '';
+      const matchedGoal = (context.goals || []).find((g) => g.name.toLowerCase() === goalName.toLowerCase() || goalName && g.name.toLowerCase().includes(goalName.toLowerCase()));
+      if (!matchedGoal) {
+        const planningDetected = detectPlanningIntent(message, context);
+        if (planningDetected && planningDetected.shouldPlan) {
+          const relatedGoal = planningDetected.relatedGoal ?? null;
+          const monthlyIncome = safeNum(context.monthlyIncome);
+          const monthlyExpense = safeNum(context.monthlyExpense);
+          const plan = calculateFinancialPlan({
+            targetName: planningDetected.targetName,
+            targetAmount: planningDetected.targetAmount,
+            currentAmount: planningDetected.currentAmount,
+            durationMonths: planningDetected.durationMonths ?? null,
+            deadline: planningDetected.deadline ?? relatedGoal?.deadline ?? null,
+            monthlyIncome,
+            monthlyExpense,
+            relatedGoal,
+          });
+
+          structured = {
+            type: 'financial_plan',
+            message: structured.message || 'Kamu belum punya target ini. Berikut rencananya sebelum saya simpan sebagai target.',
+            data: {
+              targetName: plan.targetName,
+              targetAmount: plan.targetAmount,
+              currentAmount: plan.currentAmount,
+              remainingAmount: plan.remainingAmount,
+              durationMonths: plan.durationMonths,
+              requiredMonthlySaving: plan.requiredMonthlySaving,
+              monthlyIncome: plan.monthlyIncome,
+              monthlyExpense: plan.monthlyExpense,
+              monthlyNetCashFlow: plan.monthlyNetCashFlow,
+              requiredPercentageOfNet: plan.requiredPercentageOfNet,
+              feasibility: plan.feasibility,
+              assumptions: plan.assumptions,
+              relatedGoalId: relatedGoal?.id ?? plan.relatedGoalId ?? null,
+            },
+            payload: {},
+          };
+        }
+      }
+    }
+
     // Fallback deterministic planning if Groq did not return financial_plan
     const planningDetected = detectPlanningIntent(message, context);
     if (structured.type !== 'financial_plan' && planningDetected && planningDetected.shouldPlan) {
-      const monthlyIncome = safeNum(context.monthlyIncome);
-      const monthlyExpense = safeNum(context.monthlyExpense);
-      const plan = calculateFinancialPlan({
-        targetName: planningDetected.targetName,
-        targetAmount: planningDetected.targetAmount,
-        currentAmount: planningDetected.currentAmount,
-        durationMonths: planningDetected.durationMonths ?? null,
-        deadline: planningDetected.deadline ?? planningDetected.relatedGoal?.deadline ?? null,
-        monthlyIncome,
-        monthlyExpense,
-        relatedGoal: planningDetected.relatedGoal ?? undefined,
-      });
+      const relatedGoal = planningDetected.relatedGoal ?? null;
+      if (!planningDetected.durationMonths) {
+        structured = {
+          type: 'clarification',
+          message: `Untuk merencanakan ${planningDetected.targetName || 'target ini'}, berapa lama kamu ingin menabung? Sebutkan dalam bulan atau tahun, misal "dalam 12 bulan" atau "2 tahun".`,
+        };
+      } else if (relatedGoal) {
+        structured = {
+          type: 'clarification',
+          message: `Kamu sudah punya target "${relatedGoal.name}" dengan sisa target Rp ${Number(relatedGoal.targetAmount - relatedGoal.currentAmount).toLocaleString('id-ID')}. Mau tambah setoran ke target itu, atau buat target baru?`,
+        };
+      } else {
+        const monthlyIncome = safeNum(context.monthlyIncome);
+        const monthlyExpense = safeNum(context.monthlyExpense);
+        const plan = calculateFinancialPlan({
+          targetName: planningDetected.targetName,
+          targetAmount: planningDetected.targetAmount,
+          currentAmount: planningDetected.currentAmount,
+          durationMonths: planningDetected.durationMonths,
+          deadline: planningDetected.deadline ?? relatedGoal?.deadline ?? null,
+          monthlyIncome,
+          monthlyExpense,
+          relatedGoal: relatedGoal ?? undefined,
+        });
 
-      structured = {
-        type: 'financial_plan',
-        message: structured.message || 'Berikut rencana tabungan bulanan untuk mencapai target tersebut.',
-        data: {
-          targetName: plan.targetName,
-          targetAmount: plan.targetAmount,
-          currentAmount: plan.currentAmount,
-          remainingAmount: plan.remainingAmount,
-          durationMonths: plan.durationMonths,
-          requiredMonthlySaving: plan.requiredMonthlySaving,
-          monthlyIncome: plan.monthlyIncome,
-          monthlyExpense: plan.monthlyExpense,
-          monthlyNetCashFlow: plan.monthlyNetCashFlow,
-          requiredPercentageOfNet: plan.requiredPercentageOfNet,
-          feasibility: plan.feasibility,
-          assumptions: plan.assumptions,
-          relatedGoalId: planningDetected.relatedGoal?.id ?? plan.relatedGoalId ?? null,
-        },
-        payload: {},
-      };
+        structured = {
+          type: 'financial_plan',
+          message: structured.message || 'Berikut rencana tabungan bulanan untuk mencapai target tersebut.',
+          data: {
+            targetName: plan.targetName,
+            targetAmount: plan.targetAmount,
+            currentAmount: plan.currentAmount,
+            remainingAmount: plan.remainingAmount,
+            durationMonths: plan.durationMonths,
+            requiredMonthlySaving: plan.requiredMonthlySaving,
+            monthlyIncome: plan.monthlyIncome,
+            monthlyExpense: plan.monthlyExpense,
+            monthlyNetCashFlow: plan.monthlyNetCashFlow,
+            requiredPercentageOfNet: plan.requiredPercentageOfNet,
+            feasibility: plan.feasibility,
+            assumptions: plan.assumptions,
+            relatedGoalId: relatedGoal?.id ?? plan.relatedGoalId ?? null,
+          },
+          payload: {},
+        };
+      }
     } else if (structured.type === 'financial_plan' && structured.data && typeof structured.data.targetName === 'string' && typeof structured.data.targetAmount === 'string') {
       const planningGoals: PlanningGoalInput[] = (context.goals || []).map((g) => ({
         id: g.id,
@@ -235,38 +298,60 @@ export async function POST(request: NextRequest) {
       const currentAmount = structured.data.currentAmount ? safeNum(structured.data.currentAmount) : related?.currentAmount ?? 0;
       const monthlyIncome = safeNum(context.monthlyIncome);
       const monthlyExpense = safeNum(context.monthlyExpense);
+      const durationMonths = structured.data.durationMonths ?? null;
 
-      const plan = calculateFinancialPlan({
-        targetName: structured.data.targetName,
-        targetAmount,
-        currentAmount,
-        durationMonths: structured.data.durationMonths ?? null,
-        deadline: (structured.data as any).deadline ?? related?.deadline ?? null,
-        monthlyIncome,
-        monthlyExpense,
-        relatedGoal: related,
-      });
+      const remainingAmount = Math.max(0, targetAmount - currentAmount);
 
-      structured = {
-        type: 'financial_plan',
-        message: structured.message,
-        data: {
-          targetName: plan.targetName,
-          targetAmount: plan.targetAmount,
-          currentAmount: plan.currentAmount,
-          remainingAmount: plan.remainingAmount,
-          durationMonths: plan.durationMonths,
-          requiredMonthlySaving: plan.requiredMonthlySaving,
-          monthlyIncome: plan.monthlyIncome,
-          monthlyExpense: plan.monthlyExpense,
-          monthlyNetCashFlow: plan.monthlyNetCashFlow,
-          requiredPercentageOfNet: plan.requiredPercentageOfNet,
-          feasibility: plan.feasibility,
-          assumptions: plan.assumptions,
-          relatedGoalId: related?.id ?? plan.relatedGoalId ?? null,
-        },
-        payload: {},
-      };
+      if (related) {
+        const sisaText = Number(remainingAmount).toLocaleString('id-ID');
+        structured = {
+          type: 'clarification',
+          message: `Kamu sudah punya target "${related.name}" dengan sisa Rp ${sisaText}. Mau lanjut setoran ke target itu, atau buat target baru?`,
+          data: {
+            relatedGoalId: related.id,
+            newGoalHref: '/app/goals/new',
+            newGoalLabel: 'Buat target baru',
+            existingGoalName: related.name,
+          },
+        };
+      } else if (!durationMonths) {
+        structured = {
+          type: 'clarification',
+          message: `Berapa lama kamu ingin menabung untuk ${structured.data.targetName}? Sebutkan durasi dalam bulan atau tahun.`,
+        };
+      } else {
+        const plan = calculateFinancialPlan({
+          targetName: structured.data.targetName,
+          targetAmount,
+          currentAmount,
+          durationMonths,
+          deadline: (structured.data as any).deadline ?? related?.deadline ?? null,
+          monthlyIncome,
+          monthlyExpense,
+          relatedGoal: related,
+        });
+
+        structured = {
+          type: 'financial_plan',
+          message: structured.message,
+          data: {
+            targetName: plan.targetName,
+            targetAmount: plan.targetAmount,
+            currentAmount: plan.currentAmount,
+            remainingAmount: plan.remainingAmount,
+            durationMonths: plan.durationMonths,
+            requiredMonthlySaving: plan.requiredMonthlySaving,
+            monthlyIncome: plan.monthlyIncome,
+            monthlyExpense: plan.monthlyExpense,
+            monthlyNetCashFlow: plan.monthlyNetCashFlow,
+            requiredPercentageOfNet: plan.requiredPercentageOfNet,
+            feasibility: plan.feasibility,
+            assumptions: plan.assumptions,
+            relatedGoalId: related?.id ?? plan.relatedGoalId ?? null,
+          },
+          payload: {},
+        };
+      }
     }
 
     const activeProvider = getActiveProvider();

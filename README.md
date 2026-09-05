@@ -12,15 +12,15 @@
 
 ## ✨ Fitur Utama
 
-| Modul | Deskripsi | Status |
-|-------|-----------|--------|
-| **Dompet** | Bank / E-Wallet / Tunai, saldo atomik, transfer antar dompet | ✅ |
-| **Transaksi** | INCOME/EXPENSE, kategori, wallet, atomic balance, filter & pagination | ✅ |
-| **Anggaran** | Per kategori per bulan, progress, status SAFE/WARNING/CRITICAL | ✅ |
-| **Target Impian** | Goal + kontribusi atomik, progress, deadline, auto-deposit | ✅ |
-| **Analisis** | Tren arus kas (real data), kategori donut, ritme mingguan | ✅ |
-| **Asisten FinAI** | Groq `openai/gpt-oss-20b` + structured cards + konfirmasi aman | ✅ |
-| **Dashboard** | Ringkasan saldo, rasio tabungan, transaksi terakhir, chart 6 bulan real | ✅ |
+|| Modul | Deskripsi | Status |
+||-------|-----------|--------|
+|| **Dompet** | Bank / E-Wallet / Tunai, saldo atomik, transfer antar dompet | ✅ |
+|| **Transaksi** | INCOME/EXPENSE, kategori, wallet, atomic balance, filter & pagination | ✅ |
+|| **Anggaran** | Per kategori per bulan, progress, status SAFE/WARNING/CRITICAL | ✅ |
+|| **Target Impian** | Goal + kontribusi atomik, progress, deadline, auto-deposit | ✅ |
+|| **Analisis** | Tren arus kas (real data), kategori donut, ritme mingguan | ✅ |
+|| **Asisten FinAI** | Groq `openai/gpt-oss-20b` + structured cards + konfirmasi aman | ✅ |
+|| **Dashboard** | Ringkasan saldo, rasio tabungan, transaksi terakhir, chart 6 bulan real | ✅ |
 
 **AI Assistant cards:** `Transaction`, `Transfer`, `Goal Contribution`, `Budget`, `Goal`, `Wallet`, `Summary`, `Insight` — semua **card putih premium** (`#7C7CE6`, `#E4E2FB`, `#242636`) dengan Lucide icons, tanpa emoji.
 
@@ -71,7 +71,7 @@ AI Input → POST /api/ai/chat {message, history:10}
 ```bash
 cp .env.example .env.local
 # isi:
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/finai?schema=public"
+DATABASE_URL="postgresql://postgres:***@localhost:5432/finai?schema=public"
 AUTH_SECRET="min-32-char-random-string-untuk-production"
 GROQ_API_KEY="gsk_xxx"   # dari https://console.groq.com/keys (model openai/gpt-oss-20b)
 # optional fallback:
@@ -102,24 +102,24 @@ npx tsx tests/ai.test.ts  # 27 AI tests
 
 ## 🔌 API Endpoints
 
-| Method | Path | Auth | Deskripsi |
-|--------|------|------|-----------|
-| POST | `/api/auth/register` | No | `name, email, password` → set cookie |
-| POST | `/api/auth/login` | No | `email, password, rememberMe` |
-| POST | `/api/auth/logout` | No | hapus session + cookie |
-| GET | `/api/auth/me` | Yes | current user |
-| GET/POST | `/api/wallets` | Yes | list / create `{name, type, balance, institution, accountLast4}` |
-| GET/PATCH/DELETE | `/api/wallets/[id]` | Yes | detail/update (tanpa balance)/delete (409 jika terpakai) |
-| POST | `/api/transfers` | Yes | transfer `{fromWalletId, toWalletId, amount}` atomik |
-| GET/POST | `/api/transactions` | Yes | `?walletId&type&category&limit&offset` / create `{walletId, type, amount, category, description}` |
-| GET/PATCH/DELETE | `/api/transactions/[id]` | Yes | atomic reverse & reapply balance |
-| GET/POST | `/api/budgets` | Yes | `?month&year` / `{category, limitAmount, month, year}` |
-| PATCH/DELETE | `/api/budgets/[id]` | Yes | update `limitAmount` |
-| GET/POST | `/api/goals` | Yes | list / `{name, category, targetAmount, deadline, frequency, autoDeposit}` |
-| PATCH/DELETE | `/api/goals/[id]` | Yes | update / delete |
-| POST | `/api/goals/[id]/contributions` | Yes | `{sourceWalletId, amount}` decrement wallet + increment goal |
-| GET/PATCH | `/api/settings` | Yes | `language, currency, aiActionConfirmation, ...` |
-| POST | `/api/ai/chat` | Yes | `{message, history[10]}` → Groq structured `{type, data, message}` |
+|| Method | Path | Auth | Deskripsi |
+||--------|------|------|-----------|
+|| POST | `/api/auth/register` | No | `name, email, password` → set cookie |
+|| POST | `/api/auth/login` | No | `email, password, rememberMe` |
+|| POST | `/api/auth/logout` | No | hapus session + cookie |
+|| GET | `/api/auth/me` | Yes | current user |
+|| GET/POST | `/api/wallets` | Yes | list / create `{name, type, balance, institution, accountLast4}` |
+|| GET/PATCH/DELETE | `/api/wallets/[id]` | Yes | detail/update (tanpa balance)/delete (409 jika terpakai) |
+|| POST | `/api/transfers` | Yes | transfer `{fromWalletId, toWalletId, amount}` atomik |
+|| GET/POST | `/api/transactions` | Yes | `?walletId&type&category&limit&offset` / create `{walletId, type, amount, category, description}` |
+|| GET/PATCH/DELETE | `/api/transactions/[id]` | Yes | atomic reverse & reapply balance |
+|| GET/POST | `/api/budgets` | Yes | `?month&year` / `{category, limitAmount, month, year}` |
+|| PATCH/DELETE | `/api/budgets/[id]` | Yes | update `limitAmount` |
+|| GET/POST | `/api/goals` | Yes | list / `{name, category, targetAmount, deadline, frequency, autoDeposit}` |
+|| PATCH/DELETE | `/api/goals/[id]` | Yes | update / delete |
+|| POST | `/api/goals/[id]/contributions` | Yes | `{sourceWalletId, amount}` decrement wallet + increment goal |
+|| GET/PATCH | `/api/settings` | Yes | `language, currency, aiActionConfirmation, ...` |
+|| POST | `/api/ai/chat` | Yes | `{message, history[10]}` → Groq structured `{type, data, message}` |
 
 Semua `amount`/`balance` diserialisasi `Decimal → string "12500000.00"`.
 
@@ -155,6 +155,15 @@ Semua `amount`/`balance` diserialisasi `Decimal → string "12500000.00"`.
 - **Renderer** `AIResponseRenderer.tsx` — switch `type: financial_action|budget|goal|wallet|summary|insight|text|clarification|error`
 
 **Safety:** Grok hanya `proposal` (`requiresConfirmation:true`), mutasi hanya `[Confirm]` → `apiClient.post` existing financial API, `confirmingIds` anti double-click, `emitRefresh`. Toggle `Settings → Konfirmasi Sebelum Eksekusi Aksi` (`aiActionConfirmation` default `true`): ON = wajib Confirm, OFF = auto-record 500ms.
+
+**Clarification Existing Goal:** jika user mengetik pesan perencanaan (mis. “mau nabung kuliah”) dan `detectPlanningIntent()` menemukan `relatedGoal` yang sudah ada, `/api/ai/chat` bisa mengembalikan:
+- `type: clarification`
+- `message`: pertanyaan klarifikasi
+- `data.relatedGoalId`, `data.newGoalHref`, `data.newGoalLabel`, `data.existingGoalName`
+
+Card `ClarificationCard` akan menampilkan opsi **“Tambah ke target ini”** dan **“Buat target baru”** jika field tersebut ada. `AIAssistantPage.tsx` harus memetakan `data` dari response Grok ke objek `clarification` di `AIMessageType` (saat ini hanya `message` yang dipetakan — perlu penyesuaian jika ingin opsi tombol muncul).
+
+**Clarification dari `financial_plan` dari Grok:** jika response Grok berupa `financial_plan` namun sistem mendeteksi `relatedGoal` yang cocok, route kini dapat memprioritaskan `clarification` agar user ditanyakan apakah akan menambahkan setoran ke target yang sudah ada atau membuat target baru.
 
 **Chart:** `IncomeExpenseChart` presentational `data: ChartDataPoint[]` + `isLoading/error` + empty `Belum ada data arus kas` + CTA `/app/transactions` — Dashboard agregasi 6 bulan, Analytics agregasi per `7 Hari/30 Hari/3/6/12 Bulan` dari `GET /api/transactions` real (bukan `SIX_MONTHS_DATA`).
 

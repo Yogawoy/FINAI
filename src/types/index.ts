@@ -245,6 +245,13 @@ export interface AIMessage {
     items: { category: string; total: number; percentage?: number }[];
     period?: string;
   };
+  clarification?: {
+    message: string;
+    relatedGoalId?: string;
+    newGoalHref?: string;
+    newGoalLabel?: string;
+    existingGoalName?: string;
+  };
   financialPlanCard?: {
     targetName: string;
     targetAmount: number;

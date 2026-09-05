@@ -12,6 +12,7 @@ import SummaryCard from './cards/SummaryCard';
 import TransferActionCard from './cards/TransferActionCard';
 import GoalContributionCard from './cards/GoalContributionCard';
 import FinancialPlanCard from './cards/FinancialPlanCard';
+import ClarificationCard from './cards/ClarificationCard';
 
 interface AIResponseRendererProps {
   message: AIMessageType;
@@ -41,7 +42,8 @@ export default function AIResponseRenderer({
     !message.goalCard &&
     !message.walletCard &&
     !message.summaryCard &&
-    !message.error;
+    !message.error &&
+    !message.clarification;
 
   return (
     <>
@@ -64,6 +66,19 @@ export default function AIResponseRenderer({
         <div className="p-3 rounded-2xl bg-white border border-[#E8EAF2]/70 shadow-2xs max-w-md">
           <p className="text-xs leading-relaxed text-[#242636] whitespace-pre-line">{message.content}</p>
         </div>
+      )}
+
+      {/* Clarification Card */}
+      {(message as any).clarification && (
+        <ClarificationCard
+          message={(message as any).clarification.message || message.content}
+          relatedGoalId={(message as any).clarification.relatedGoalId}
+          newGoalHref={(message as any).clarification.newGoalHref}
+          newGoalLabel={(message as any).clarification.newGoalLabel}
+          existingGoalName={(message as any).clarification.existingGoalName}
+          goalContributionHref={(message as any).clarification.goalContributionHref}
+          freeReplyHint={(message as any).clarification.freeReplyHint}
+        />
       )}
 
       {/* Financial Action Cards — mutation, need confirmation */}

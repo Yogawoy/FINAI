@@ -266,7 +266,16 @@ export default function AIAssistantPage() {
 
         const grok = data.response;
 
-        if (grok.type === 'financial_action' && grok.action && grok.payload) {
+        // Safeguard: prevent raw JSON from being shown as a text message
+        if (
+          grok.type === 'text' &&
+          typeof grok.message === 'string' &&
+          grok.message.trim().startsWith('{')
+        ) {
+          grok.message = 'Saya butuh detail yang lebih lengkap. Coba sebut nominal, kategori, dan dompet yang digunakan.';
+        }
+
+        if (grok.type === 'financial_action' && grok.payload) {
           const payload = grok.payload;
           const amountNum = Number(payload.amount) || 0;
           const dateLabel = formatDateLabel(payload.date);
@@ -313,12 +322,12 @@ export default function AIAssistantPage() {
           }
 
           // If wallet still unresolved and only one wallet exists, auto-resolve
-          if (!resolvedWalletId && !resolvedSourceId && wList.length === 1 && (grok.action === 'create_transaction')) {
+          if (!resolvedWalletId && !resolvedSourceId && wList.length === 1 && (!grok.action || grok.action === 'create_transaction')) {
             resolvedWalletId = wList[0].id;
           }
 
           // Wallet validation failed or no wallets at all → helpful clarification
-          if (grok.action === 'create_transaction' && !resolvedWalletId) {
+          if ((!grok.action || grok.action === 'create_transaction') && !resolvedWalletId) {
             if (wList.length === 0) {
               const clarMsg: AIMessageType = {
                 id: `ai-${Date.now()}`,
@@ -372,7 +381,7 @@ export default function AIAssistantPage() {
 
           // Save meta for confirmation execution
           pendingMetaRef.current.set(actionId, {
-            actionType: grok.action,
+            actionType: grok.action || 'create_transaction',
             groqPayload: payload,
             walletIdResolved: resolvedWalletId || undefined,
             sourceWalletIdResolved: resolvedSourceId || undefined,
@@ -387,7 +396,7 @@ export default function AIAssistantPage() {
           let title = payload.description || 'Transaksi';
           let categoryLabel = payload.category ? CATEGORY_LABELS[payload.category] || payload.category : undefined;
 
-          if (grok.action === 'create_transaction') {
+          if ((!grok.action || grok.action === 'create_transaction')) {
             actionType = payload.transactionType === 'INCOME' ? 'income' : 'expense';
             if (!payload.description) title = actionType === 'income' ? 'Pemasukan' : 'Pengeluaran';
           } else if (grok.action === 'goal_contribution') {
@@ -432,13 +441,12 @@ export default function AIAssistantPage() {
           };
 
           // Special handling for transfer: override to show both wallets
-          if (grok.action === 'transfer' && resolvedSourceId && resolvedDestId) {
+          if ((grok.action === 'transfer' || (!grok.action && resolvedSourceId && resolvedDestId)) && resolvedSourceId && resolvedDestId) {
             const wListForDisplay2 = liveWallets.length > 0 ? liveWallets : wallets;
             const srcName = wListForDisplay2.find((w) => w.id === resolvedSourceId)?.name || payload.sourceWalletName || 'Sumber';
             const dstName = wListForDisplay2.find((w) => w.id === resolvedDestId)?.name || payload.destinationWalletName || 'Tujuan';
             aiMsg.action!.sourceWallet = srcName;
             aiMsg.action!.destinationWallet = dstName;
-            // Keep as goal_contribution visual (arrow)
           }
 
           setMessages((prev) => [...prev, aiMsg]);
@@ -454,12 +462,26 @@ export default function AIAssistantPage() {
           return;
         }
 
+        if (grok.type === 'financial_action' && !grok.payload) {
+          const msg: AIMessageType = {
+            id: `ai-${Date.now()}`,
+            sender: 'assistant',
+            content: grok.message || 'Saya perlu detail transaksi yang lebih lengkap. Sebutkan nominal, kategori, dan dompet yang digunakan.',
+            timestamp: timeStr,
+          };
+          setMessages((prev) => [...prev, msg]);
+          return;
+        }
+
         if (grok.type === 'clarification') {
           const msg: AIMessageType = {
             id: `ai-${Date.now()}`,
             sender: 'assistant',
             content: grok.message || 'Bisa jelaskan lebih detail?',
             timestamp: timeStr,
+            clarification: {
+              message: grok.message || 'Bisa jelaskan lebih detail?',
+            },
           };
           setMessages((prev) => [...prev, msg]);
           return;

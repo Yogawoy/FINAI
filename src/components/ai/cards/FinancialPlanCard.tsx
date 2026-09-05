@@ -189,86 +189,88 @@ export default function FinancialPlanCard({ plan, wallets, onSave, onCancel, onW
         </div>
       )}
 
-      <div className="pt-3 border-t border-[#E8EAF2]/70 space-y-3">
-        {!planComplete && (
+      {planComplete && (
+        <div className="pt-3 border-t border-[#E8EAF2]/70 space-y-3">
+          {wallets.length === 0 ? (
+            <div className="text-[11px] text-[#757A95] space-y-2">
+              <p>Kamu belum punya dompet. Buat dompet dulu sebelum menyimpan target.</p>
+              <button
+                type="button"
+                onClick={handleOpenWallets}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl bg-[#E4E2FB] text-[#7C7CE6] hover:bg-[#D9D6F7] transition-colors"
+              >
+                <Wallet size={14} />
+                Buka Halaman Dompet
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <div className="text-[11px] text-[#757A95]">Pilih dompet untuk target ini:</div>
+              <div className="flex flex-wrap gap-2">
+                {wallets.map((wallet) => {
+                  const isSelected = selectedWalletId === wallet.id;
+                  return (
+                    <button
+                      key={wallet.id}
+                      type="button"
+                      onClick={() => handleWalletSelect(wallet.id)}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl border transition-colors ${
+                        isSelected
+                          ? 'bg-[#EDEAFC] border-[#7C7CE6] text-[#5F5ED4]'
+                          : 'bg-white border-[#E8EAF2] text-[#242636] hover:border-[#7C7CE6]/40'
+                      }`}
+                    >
+                      <Wallet size={14} />
+                      {wallet.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {error && <div className="text-[11px] text-red-500">{error}</div>}
+          {saved && <div className="text-[11px] text-[#1B7354]">Target berhasil disimpan.</div>}
+
+          {!saved && (
+            <div className="flex items-center justify-between gap-3">
+              <div className="text-[11px] text-[#757A95]">
+                {!selectedWalletId && wallets.length > 0
+                  ? 'Pilih dompet untuk menyimpan target.'
+                  : 'Simpan untuk membuat target impian.'}
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  disabled={saving}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl bg-[#E4E2FB] text-[#7C7CE6] hover:bg-[#D9D6F7] disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                >
+                  <X size={14} />
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={!canSave || saving || saved}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl bg-gradient-to-r from-[#7C7CE6] to-[#8C8BE8] text-white shadow-sm hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                >
+                  <Save size={14} />
+                  {saving ? 'Menyimpan...' : 'Simpan'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {!planComplete && (
+        <div className="pt-3 border-t border-[#E8EAF2]/70">
           <div className="text-[11px] text-[#757A95]">
             Data plan belum cukup. Isi informasi yang dibutuhkan terlebih dahulu.
           </div>
-        )}
-
-        {wallets.length === 0 ? (
-          <div className="text-[11px] text-[#757A95] space-y-2">
-            <p>Kamu belum punya dompet. Buat dompet dulu sebelum menyimpan target.</p>
-            <button
-              type="button"
-              onClick={handleOpenWallets}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl bg-[#E4E2FB] text-[#7C7CE6] hover:bg-[#D9D6F7] transition-colors"
-            >
-              <Wallet size={14} />
-              Buka Halaman Dompet
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            <div className="text-[11px] text-[#757A95]">Pilih dompet untuk target ini:</div>
-            <div className="flex flex-wrap gap-2">
-              {wallets.map((wallet) => {
-                const isSelected = selectedWalletId === wallet.id;
-                return (
-                  <button
-                    key={wallet.id}
-                    type="button"
-                    onClick={() => handleWalletSelect(wallet.id)}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl border transition-colors ${
-                      isSelected
-                        ? 'bg-[#EDEAFC] border-[#7C7CE6] text-[#5F5ED4]'
-                        : 'bg-white border-[#E8EAF2] text-[#242636] hover:border-[#7C7CE6]/40'
-                    }`}
-                  >
-                    <Wallet size={14} />
-                    {wallet.name}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {error && <div className="text-[11px] text-red-500">{error}</div>}
-        {saved && <div className="text-[11px] text-[#1B7354]">Target berhasil disimpan.</div>}
-
-        {!saved && (
-          <div className="flex items-center justify-between gap-3">
-            <div className="text-[11px] text-[#757A95]">
-              {!planComplete
-                ? 'Lengkapi data plan terlebih dahulu.'
-                : !selectedWalletId && wallets.length > 0
-                ? 'Pilih dompet untuk menyimpan target.'
-                : 'Simpan untuk membuat target impian.'}
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleCancel}
-                disabled={saving}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl bg-[#E4E2FB] text-[#7C7CE6] hover:bg-[#D9D6F7] disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-              >
-                <X size={14} />
-                Batal
-              </button>
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={!canSave || saving || saved}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl bg-gradient-to-r from-[#7C7CE6] to-[#8C8BE8] text-white shadow-sm hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
-              >
-                <Save size={14} />
-                {saving ? 'Menyimpan...' : 'Simpan'}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
