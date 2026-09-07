@@ -13,6 +13,7 @@ import TransferActionCard from './cards/TransferActionCard';
 import GoalContributionCard from './cards/GoalContributionCard';
 import FinancialPlanCard from './cards/FinancialPlanCard';
 import ClarificationCard from './cards/ClarificationCard';
+import SpendingBreakdownCard from './cards/SpendingBreakdownCard';
 
 interface AIResponseRendererProps {
   message: AIMessageType;
@@ -24,6 +25,40 @@ interface AIResponseRendererProps {
   wallets?: { id: string; name: string }[];
 }
 
+function parseBreakdownFromText(text?: string) {
+  if (!text) return null;
+  // Match lines like "- Bills: Rp 750.000 (94,3%)" or "* Food: Rp 35.000"
+  const bulletRegex = /[-*•]\s*([A-Za-z\s&/]+):\s*Rp\s*([\d\.,]+)(?:\s*\(([\d\.,]+)%\))?/gi;
+  const items: { category: string; total: number; percentage?: number }[] = [];
+  let match;
+
+  while ((match = bulletRegex.exec(text)) !== null) {
+    const category = match[1].trim();
+    const rawTotal = match[2].replace(/\./g, '').replace(/,/g, '');
+    const total = parseFloat(rawTotal) || 0;
+    const rawPct = match[3] ? match[3].replace(',', '.') : undefined;
+    const percentage = rawPct ? parseFloat(rawPct) : undefined;
+    if (category && total > 0) {
+      items.push({ category, total, percentage });
+    }
+  }
+
+  if (items.length === 0) return null;
+
+  // Extract total spending: e.g. "Pengeluaran bulan ini sebesar Rp 795.000"
+  const totalMatch = text.match(/(?:pengeluaran|total|sebesar)\s*(?:bulan\s*ini)?\s*(?:sebesar)?\s*Rp\s*([\d\.,]+)/i);
+  const totalAmount = totalMatch ? parseFloat(totalMatch[1].replace(/\./g, '').replace(/,/g, '')) : undefined;
+
+  // Extract note at the bottom
+  const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
+  const nonBulletLines = lines.filter(
+    (l) => !l.startsWith('-') && !l.startsWith('*') && !l.startsWith('•') && !l.toLowerCase().includes('berikut rincian')
+  );
+  const note = nonBulletLines.length > 1 ? nonBulletLines[nonBulletLines.length - 1] : undefined;
+
+  return { items, totalAmount, note };
+}
+
 export default function AIResponseRenderer({
   message,
   isConfirming = false,
@@ -33,6 +68,8 @@ export default function AIResponseRenderer({
   onPlanSaved,
   wallets = [],
 }: AIResponseRendererProps) {
+  const parsedBreakdown = !message.spendingBreakdownCard && message.content ? parseBreakdownFromText(message.content) : null;
+
   // Text as card (no action/insight/cards)
   const isPlainText =
     message.content &&
@@ -42,12 +79,24 @@ export default function AIResponseRenderer({
     !message.goalCard &&
     !message.walletCard &&
     !message.summaryCard &&
+    !message.spendingBreakdownCard &&
+    !parsedBreakdown &&
     !message.financialPlanCard &&
     !message.error &&
     !(message as any).clarification;
 
   return (
     <>
+      {/* Spending Breakdown Card (structured or auto-parsed from text) */}
+      {(message.spendingBreakdownCard || parsedBreakdown) && (
+        <SpendingBreakdownCard
+          items={message.spendingBreakdownCard?.items || parsedBreakdown!.items}
+          period={message.spendingBreakdownCard?.period || 'Bulan Ini'}
+          totalAmount={parsedBreakdown?.totalAmount}
+          note={parsedBreakdown?.note}
+        />
+      )}
+
       {/* Plain text as card */}
       {isPlainText && (
         <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#E8EAF2] shadow-[0_6px_24px_rgba(36,38,54,0.04)] space-y-3 max-w-md">
