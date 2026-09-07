@@ -42,8 +42,9 @@ export default function AIResponseRenderer({
     !message.goalCard &&
     !message.walletCard &&
     !message.summaryCard &&
+    !message.financialPlanCard &&
     !message.error &&
-    !message.clarification;
+    !(message as any).clarification;
 
   return (
     <>
@@ -58,13 +59,6 @@ export default function AIResponseRenderer({
           <p className="text-xs sm:text-sm leading-relaxed text-[#242636] whitespace-pre-line">
             {message.content}
           </p>
-        </div>
-      )}
-
-      {/* Caption above action/insight cards */}
-      {message.content && (message.action || message.insight || message.budgetCard || message.goalCard || message.walletCard || message.summaryCard) && !isPlainText && !message.error && (
-        <div className="p-3 rounded-2xl bg-white border border-[#E8EAF2]/70 shadow-2xs max-w-md">
-          <p className="text-xs leading-relaxed text-[#242636] whitespace-pre-line">{message.content}</p>
         </div>
       )}
 
@@ -174,17 +168,6 @@ export default function AIResponseRenderer({
         <WalletSummaryCard wallets={message.walletCard.wallets} totalBalance={message.walletCard.totalBalance} />
       )}
 
-      {/* Summary Card */}
-      {message.summaryCard && (
-        <SummaryCard
-          period={message.summaryCard.period}
-          income={message.summaryCard.income}
-          expense={message.summaryCard.expense}
-          remaining={message.summaryCard.remaining}
-          budgetPercentage={message.summaryCard.budgetPercentage}
-          activeGoals={message.summaryCard.activeGoals}
-        />
-      )}
 
       {/* Financial Plan Card */}
       {message.financialPlanCard && (

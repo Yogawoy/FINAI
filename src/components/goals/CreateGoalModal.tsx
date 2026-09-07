@@ -87,9 +87,17 @@ export default function CreateGoalModal({
 
   const isSameWallet = sourceWalletId === destinationWalletId;
 
+  const formatDisplayNumber = (val: string | number) => {
+    const digits = val.toString().replace(/\D/g, '');
+    if (!digits) return '';
+    const num = parseInt(digits, 10);
+    if (isNaN(num)) return '';
+    return new Intl.NumberFormat('id-ID').format(num);
+  };
+
   // Number parses
-  const targetAmount = parseFloat(targetAmountRaw) || 0;
-  const currentAmount = parseFloat(currentAmountRaw) || 0;
+  const targetAmount = parseFloat(targetAmountRaw.replace(/\D/g, '')) || 0;
+  const currentAmount = parseFloat(currentAmountRaw.replace(/\D/g, '')) || 0;
   const remaining = Math.max(targetAmount - currentAmount, 0);
 
   // Auto calculate required saving — respects frekuensi bulanan/mingguan + tampil dual
@@ -288,13 +296,12 @@ export default function CreateGoalModal({
                     Rp
                   </span>
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="numeric"
                     required
-                    min="100000"
-                    step="50000"
-                    placeholder="12000000"
-                    value={targetAmountRaw}
-                    onChange={(e) => setTargetAmountRaw(e.target.value)}
+                    placeholder="12.000.000"
+                    value={formatDisplayNumber(targetAmountRaw)}
+                    onChange={(e) => setTargetAmountRaw(e.target.value.replace(/\D/g, ''))}
                     className="w-full pl-9 pr-3 py-2 bg-[#F8F9FD] border border-black/[0.06] rounded-2xl text-xs sm:text-sm font-extrabold text-[#242636] focus:outline-none focus:border-[#7C7CE6] focus:bg-white transition-all tabular-nums"
                   />
                 </div>
@@ -309,12 +316,11 @@ export default function CreateGoalModal({
                     Rp
                   </span>
                   <input
-                    type="number"
-                    min="0"
-                    step="50000"
+                    type="text"
+                    inputMode="numeric"
                     placeholder="0"
-                    value={currentAmountRaw}
-                    onChange={(e) => setCurrentAmountRaw(e.target.value)}
+                    value={currentAmountRaw === '0' ? '0' : formatDisplayNumber(currentAmountRaw)}
+                    onChange={(e) => setCurrentAmountRaw(e.target.value.replace(/\D/g, ''))}
                     className="w-full pl-9 pr-3 py-2 bg-[#F8F9FD] border border-black/[0.06] rounded-2xl text-xs sm:text-sm font-extrabold text-[#242636] focus:outline-none focus:border-[#7C7CE6] focus:bg-white transition-all tabular-nums"
                   />
                 </div>
@@ -456,11 +462,11 @@ export default function CreateGoalModal({
                   : `Perlu menabung ${formatIDR(calculation.monthlyReq)}/bulan selama ${calculation.months} bulan. Setara ${formatIDR(calculation.weeklyReq)}/minggu.`}
               </p>
               <div className="grid grid-cols-2 gap-2 pt-1 text-center">
-                <div className={`p-2 rounded-xl border ${frequency === 'weekly' ? 'bg-[#EDEAFC] border-[#7C7CE6] text-[#5F5ED4] font-bold' : 'bg-[#F8F9FD] border-black/[0.05] text-[#757A95]'}`}>
+                <div className={`p-2 rounded-xl border ${frequency === 'monthly' ? 'bg-[#EDEAFC] border-[#7C7CE6] text-[#5F5ED4] font-bold' : 'bg-[#F8F9FD] border-black/[0.05] text-[#757A95]'}`}>
                   <span className="text-[10px] uppercase block">Per Bulan</span>
                   <span className="text-xs font-extrabold">{formatIDR(calculation.monthlyReq)}</span>
                 </div>
-                <div className={`p-2 rounded-xl border ${frequency === 'weekly' ? 'bg-[#F8F9FD] border-black/[0.05] text-[#757A95]' : 'bg-[#EDEAFC] border-[#7C7CE6] text-[#5F5ED4] font-bold'}`}>
+                <div className={`p-2 rounded-xl border ${frequency === 'weekly' ? 'bg-[#EDEAFC] border-[#7C7CE6] text-[#5F5ED4] font-bold' : 'bg-[#F8F9FD] border-black/[0.05] text-[#757A95]'}`}>
                   <span className="text-[10px] uppercase block">Per Minggu</span>
                   <span className="text-xs font-extrabold">{formatIDR(calculation.weeklyReq)}</span>
                 </div>

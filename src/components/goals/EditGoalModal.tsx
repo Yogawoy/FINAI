@@ -74,7 +74,15 @@ export default function EditGoalModal({
     }
   }, [goal]);
 
-  const targetAmount = parseFloat(targetAmountRaw) || 0;
+  const formatDisplayNumber = (val: string | number) => {
+    const digits = val.toString().replace(/\D/g, '');
+    if (!digits) return '';
+    const num = parseInt(digits, 10);
+    if (isNaN(num)) return '';
+    return new Intl.NumberFormat('id-ID').format(num);
+  };
+
+  const targetAmount = parseFloat(targetAmountRaw.replace(/\D/g, '')) || 0;
   const currentAmount = goal ? goal.currentAmount : 0;
   const remaining = Math.max(targetAmount - currentAmount, 0);
 
@@ -278,12 +286,11 @@ export default function EditGoalModal({
                 Rp
               </span>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 required
-                min="100000"
-                step="50000"
-                value={targetAmountRaw}
-                onChange={(e) => setTargetAmountRaw(e.target.value)}
+                value={formatDisplayNumber(targetAmountRaw)}
+                onChange={(e) => setTargetAmountRaw(e.target.value.replace(/\D/g, ''))}
                 className="w-full pl-9 pr-3 py-2 bg-[#F8F9FD] border border-black/[0.06] rounded-2xl text-xs sm:text-sm font-extrabold text-[#242636] focus:outline-none focus:border-[#7C7CE6] focus:bg-white transition-all tabular-nums"
               />
             </div>
