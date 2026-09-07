@@ -38,7 +38,7 @@ export default function AIMessage({
       </div>
 
       {/* Message Content Area — centralized renderer for all card types */}
-      <div className="max-w-[90%] sm:max-w-[75%] space-y-3">
+      <div className="w-full max-w-[95%] sm:max-w-[460px] space-y-3">
         <AIResponseRenderer
           message={message}
           isConfirming={isConfirming}

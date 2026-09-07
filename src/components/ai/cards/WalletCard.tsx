@@ -38,7 +38,7 @@ export default function WalletSummaryCard({ wallets, totalBalance }: WalletCardP
   if (wallets.length === 1) {
     const w = wallets[0];
     return (
-      <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#E8EAF2] shadow-[0_6px_24px_rgba(36,38,54,0.04)] space-y-4 max-w-md">
+      <div className="w-full sm:w-[420px] max-w-md p-5 rounded-2xl bg-white border border-[#E8EAF2] shadow-[0_6px_24px_rgba(36,38,54,0.04)] space-y-4">
         <div className="flex items-center justify-between">
           <span className="px-2.5 py-0.5 rounded-full bg-[#EDEAFC] text-[#5F5ED4] text-[10px] font-bold uppercase tracking-wider">
             Dompet

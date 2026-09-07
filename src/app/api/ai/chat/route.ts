@@ -349,6 +349,64 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Resolve and enrich budget queries with real user data from context
+    const queryLower = message.toLowerCase();
+    const isBudgetQuery =
+      structured.type === 'budget' ||
+      /ang+ar+an|budget/i.test(message) ||
+      (/aman/i.test(message) && (queryLower.includes('belanja') || queryLower.includes('makan') || queryLower.includes('transport') || queryLower.includes('tagihan')));
+
+    if (isBudgetQuery && context.budgets && context.budgets.length > 0 && structured.type !== 'financial_action') {
+      const userBudgets = context.budgets;
+      const matched =
+        userBudgets.find((b) => {
+          const cat = b.category.toLowerCase();
+          if (queryLower.includes(cat)) return true;
+          if ((cat === 'shopping' || cat === 'belanja') && (queryLower.includes('belanja') || queryLower.includes('shop') || queryLower.includes('beli'))) return true;
+          if ((cat === 'food' || cat === 'makanan') && (queryLower.includes('makan') || queryLower.includes('food') || queryLower.includes('kuliner') || queryLower.includes('jajan'))) return true;
+          if ((cat === 'transport' || cat === 'transportasi') && (queryLower.includes('transport') || queryLower.includes('bensin') || queryLower.includes('ongkos') || queryLower.includes('kendaraan'))) return true;
+          if ((cat === 'bills' || cat === 'tagihan') && (queryLower.includes('tagihan') || queryLower.includes('listrik') || queryLower.includes('air') || queryLower.includes('bill'))) return true;
+          if ((cat === 'entertainment' || cat === 'hiburan') && (queryLower.includes('hiburan') || queryLower.includes('nonton') || queryLower.includes('game'))) return true;
+          return false;
+        }) ||
+        userBudgets.find((b) => structured.type === 'budget' && (structured.data as any)?.category && b.category.toLowerCase() === (structured.data as any).category.toLowerCase()) ||
+        userBudgets[0];
+
+      if (matched) {
+        const categoryLabel =
+          matched.category === 'shopping'
+            ? 'Belanja'
+            : matched.category === 'food'
+            ? 'Makanan'
+            : matched.category === 'transport'
+            ? 'Transportasi'
+            : matched.category === 'bills'
+            ? 'Tagihan'
+            : matched.category === 'entertainment'
+            ? 'Hiburan'
+            : matched.category;
+
+        const limit = safeNum(matched.limitAmount);
+        const used = safeNum(matched.usedAmount);
+        const remaining = safeNum(matched.remainingAmount || Math.max(0, limit - used));
+        const pct = typeof matched.percentage === 'number' ? matched.percentage : limit > 0 ? Math.round((used / limit) * 100) : 0;
+
+        structured = {
+          type: 'budget',
+          message: `Pos anggaran ${categoryLabel} saat ini ${pct >= 90 ? 'sudah melebihi/kritis' : pct >= 75 ? 'mendekati batas' : 'aman'} (${pct}% terpakai).`,
+          data: {
+            category: categoryLabel,
+            limitAmount: limit.toString(),
+            usedAmount: used.toString(),
+            remainingAmount: remaining.toString(),
+            percentage: pct,
+            status: pct >= 90 ? 'critical' : pct >= 75 ? 'warning' : 'safe',
+            period: context.financialSummary?.period || 'Bulan Ini',
+          },
+        };
+      }
+    }
+
     const activeProvider = getActiveProvider();
     const activeModel = activeProvider === 'groq' ? FINAI_GROK_MODEL : activeProvider === 'xai' ? FINAI_XAI_MODEL : 'unknown';
     return apiSuccess({
