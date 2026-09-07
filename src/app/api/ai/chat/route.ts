@@ -12,7 +12,16 @@ import { buildFinancialContext, calculateFinancialPlan, type PlanningGoalInput }
 // ---------------------------------------------------------------------------
 
 function safeNum(value: unknown): number {
-  const num = typeof value === 'string' ? Number(value) : typeof value === 'number' ? value : NaN;
+  let num: number;
+  if (typeof value === 'number') {
+    num = value;
+  } else if (typeof value === 'string') {
+    num = Number(value);
+  } else if (value !== null && value !== undefined && typeof value === 'object') {
+    num = Number(value);
+  } else {
+    num = NaN;
+  }
   return Number.isFinite(num) ? num : 0;
 }
 

@@ -4,13 +4,32 @@ import { BudgetService } from '@/lib/services/budget.service';
 import type { GrokUserContext } from './ai.schemas';
 
 function toMinorUnits(value: unknown): string {
-  const num = typeof value === 'string' ? Number(value) : typeof value === 'number' ? value : NaN;
+  let num: number;
+  if (typeof value === 'number') {
+    num = value;
+  } else if (typeof value === 'string') {
+    num = Number(value);
+  } else if (value !== null && value !== undefined && typeof value === 'object') {
+    // Handles Prisma.Decimal and other objects with numeric valueOf/toNumber
+    num = Number(value);
+  } else {
+    num = NaN;
+  }
   if (!Number.isFinite(num) || num < 0) return '0';
   return Math.round(num).toString();
 }
 
 function safeNum(value: unknown): number {
-  const num = typeof value === 'string' ? Number(value) : typeof value === 'number' ? value : NaN;
+  let num: number;
+  if (typeof value === 'number') {
+    num = value;
+  } else if (typeof value === 'string') {
+    num = Number(value);
+  } else if (value !== null && value !== undefined && typeof value === 'object') {
+    num = Number(value);
+  } else {
+    num = NaN;
+  }
   return Number.isFinite(num) ? num : 0;
 }
 
