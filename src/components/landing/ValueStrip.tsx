@@ -39,9 +39,9 @@ export default function ValueStrip() {
   return (
     <section className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
       <motion.div
-        initial={{ opacity: 0, y: 24 }}
+        initial={{ opacity: 0, y: 14 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: '-60px' }}
+        viewport={{ once: true }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
         className="rounded-[24px] bg-white border border-[#E8EAF2] p-6 sm:p-8 shadow-[0_10px_35px_rgba(36,38,54,0.03)] space-y-6"
       >

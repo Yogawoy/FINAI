@@ -57,8 +57,19 @@ export default function CreateGoalModal({
   }, [isOpen]);
 
   // Dual Wallets: Source & Destination
-  const [sourceWalletId, setSourceWalletId] = useState('w-1'); // Default BCA
-  const [destinationWalletId, setDestinationWalletId] = useState('w-5'); // Default Tabungan Kuliah
+  const [sourceWalletId, setSourceWalletId] = useState('');
+  const [destinationWalletId, setDestinationWalletId] = useState('');
+
+  React.useEffect(() => {
+    if (wallets.length > 0) {
+      if (!sourceWalletId || !wallets.some((w) => w.id === sourceWalletId)) {
+        setSourceWalletId(wallets[0].id);
+      }
+      if (!destinationWalletId || !wallets.some((w) => w.id === destinationWalletId)) {
+        setDestinationWalletId(wallets.length > 1 ? wallets[1].id : wallets[0].id);
+      }
+    }
+  }, [wallets, isOpen, sourceWalletId, destinationWalletId]);
 
   const [colorTheme, setColorTheme] = useState<GoalColorTheme>('periwinkle');
   const [notes, setNotes] = useState('');

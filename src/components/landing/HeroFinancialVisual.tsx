@@ -7,20 +7,20 @@ import { formatIDR } from '@/lib/format';
 
 export default function HeroFinancialVisual() {
   return (
-    <div className="relative w-full max-w-[540px] mx-auto select-none">
+    <div className="relative w-full max-w-lg mx-auto select-none">
       {/* Decorative ambient background glows behind composition */}
-      <div className="absolute -top-10 -right-10 w-72 h-72 rounded-full bg-[#E4E2FB]/70 blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-10 -left-10 w-80 h-80 rounded-full bg-[#D6E4FA]/60 blur-3xl pointer-events-none" />
+      <div className="absolute -top-10 -right-10 w-64 h-64 rounded-full bg-[#E4E2FB]/60 blur-2xl pointer-events-none" />
+      <div className="absolute -bottom-10 -left-10 w-72 h-72 rounded-full bg-[#D6E4FA]/50 blur-2xl pointer-events-none" />
 
       {/* Composition Container */}
-      <div className="relative z-10 space-y-4">
+      <div className="relative z-10 space-y-5">
         {/* =================================================================== */}
         {/* 1. WALLET CARD: Rp24.560.000 with subtle floating animation         */}
         {/* =================================================================== */}
         <motion.div
           animate={{ y: [-4, 4, -4] }}
           transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
-          className="relative w-full rounded-[26px] p-6 sm:p-7 bg-gradient-to-br from-[#8E9AF7] via-[#7C7CE6] to-[#5F5ED4] text-white shadow-[0_20px_45px_-10px_rgba(124,124,230,0.38)] border border-white/40 overflow-hidden"
+          className="relative w-full rounded-2xl p-5 sm:p-6 bg-gradient-to-br from-[#8E9AF7] via-[#7C7CE6] to-[#5F5ED4] text-white shadow-[0_18px_40px_-12px_rgba(124,124,230,0.35)] border border-white/40 overflow-hidden"
         >
           {/* Subtle wave overlays inside card */}
           <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-white/20 blur-xl pointer-events-none" />
@@ -42,17 +42,17 @@ export default function HeroFinancialVisual() {
           </div>
 
           {/* Balance middle */}
-          <div className="relative z-10 my-4 sm:my-5">
+          <div className="relative z-10 my-5 sm:my-6">
             <span className="text-[11px] font-semibold text-white/80 block uppercase tracking-wider">
               Total Saldo Tersedia
             </span>
-            <div className="text-2xl sm:text-3xl font-black text-white tracking-tight tabular-nums mt-0.5">
+            <div className="text-[26px] sm:text-[32px] font-black text-white tracking-tight tabular-nums mt-1">
               Rp24.560.000
             </div>
           </div>
 
           {/* Bottom row */}
-          <div className="relative z-10 pt-2 border-t border-white/20 flex items-center justify-between text-xs text-white/90 font-mono">
+          <div className="relative z-10 pt-3 border-t border-white/20 flex items-center justify-between text-xs text-white/90 font-mono">
             <span>••••  ••••  ••••  4821</span>
             <span className="text-[10px] font-sans font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/20">
               Active Tier
@@ -63,7 +63,7 @@ export default function HeroFinancialVisual() {
         {/* =================================================================== */}
         {/* 2. LOWER ROW: 2 COMPACT WORKSPACE CARDS (CHART & GOAL)              */}
         {/* =================================================================== */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           {/* Card A: Spending Mini Chart */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}

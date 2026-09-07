@@ -8,17 +8,12 @@ import HeroFinancialVisual from './HeroFinancialVisual';
 
 export default function HeroSection() {
   return (
-    <section className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-12 sm:pt-16 lg:pt-20 pb-16 lg:pb-24 overflow-hidden">
+    <section className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-14 sm:pt-20 lg:pt-24 pb-20 lg:pb-28 overflow-hidden">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
         {/* =================================================================== */}
         {/* LEFT COLUMN: EDITORIAL VALUE PROP & HEADLINE (6 COLS)               */}
         {/* =================================================================== */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="lg:col-span-6 space-y-6 text-center lg:text-left"
-        >
+        <div className="lg:col-span-6 space-y-7 text-center lg:text-left">
           {/* Subtle Top Pill Badge */}
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E4E2FB]/70 border border-[#D6D4F7] text-xs font-bold text-[#7C7CE6] shadow-2xs">
             <Sparkles size={13} className="text-[#7C7CE6]" />
@@ -68,13 +63,15 @@ export default function HeroSection() {
               Data Tersimpan Aman
             </span>
           </div>
-        </motion.div>
+        </div>
 
         {/* =================================================================== */}
         {/* RIGHT COLUMN: HERO FINANCIAL VISUAL (6 COLS)                        */}
         {/* =================================================================== */}
         <div className="lg:col-span-6 flex items-center justify-center">
-          <HeroFinancialVisual />
+          <div className="w-full max-w-xl">
+            <HeroFinancialVisual />
+          </div>
         </div>
       </div>
     </section>

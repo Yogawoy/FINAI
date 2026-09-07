@@ -214,6 +214,86 @@ function safeParseStructuredResponse(raw: string): GrokStructuredResponse | null
     }
   }
 
+  // Fallback: tolerate financial_action missing top-level action/payload wrapper
+  const fallbackStart = trimmed.indexOf('{');
+  const fallbackEnd = trimmed.lastIndexOf('}');
+  if (fallbackStart !== -1 && fallbackEnd !== -1 && fallbackEnd > fallbackStart) {
+    try {
+      const parsed = JSON.parse(trimmed.slice(fallbackStart, fallbackEnd + 1));
+      if (parsed && typeof parsed === 'object' && parsed.type === 'financial_action' && parsed.payload) {
+        const inferredAction =
+          parsed.payload.transactionType === 'INCOME' || parsed.payload.transactionType === 'EXPENSE'
+            ? 'create_transaction'
+            : parsed.payload.goalId || parsed.payload.goalName
+            ? 'goal_contribution'
+            : parsed.payload.sourceWalletId || parsed.payload.sourceWalletName ||
+              parsed.payload.destinationWalletId || parsed.payload.destinationWalletName
+            ? 'transfer'
+            : 'create_transaction';
+
+        return {
+          type: 'financial_action',
+          action: inferredAction,
+          message: typeof parsed.message === 'string' ? parsed.message : 'Silakan konfirmasi detail berikut sebelum disimpan:',
+          payload: {
+            transactionType: typeof parsed.payload.transactionType === 'string' ? parsed.payload.transactionType : undefined,
+            amount: typeof parsed.payload.amount === 'string' ? parsed.payload.amount : String(parsed.payload.amount || '0'),
+            description: typeof parsed.payload.description === 'string' ? parsed.payload.description : undefined,
+            category: typeof parsed.payload.category === 'string' ? parsed.payload.category : undefined,
+            walletId: parsed.payload.walletId ?? null,
+            walletName: parsed.payload.walletName ?? null,
+            sourceWalletId: parsed.payload.sourceWalletId ?? null,
+            sourceWalletName: parsed.payload.sourceWalletName ?? null,
+            destinationWalletId: parsed.payload.destinationWalletId ?? null,
+            destinationWalletName: parsed.payload.destinationWalletName ?? null,
+            goalName: parsed.payload.goalName ?? null,
+            goalId: parsed.payload.goalId ?? null,
+            date: parsed.payload.date ?? null,
+          },
+          requiresConfirmation: true,
+        };
+      }
+    } catch {
+      // fall through
+    }
+  }
+
+  // Fallback: tolerate financial_plan with number fields instead of strings
+  const planStart = trimmed.indexOf('{');
+  const planEnd = trimmed.lastIndexOf('}');
+  if (planStart !== -1 && planEnd !== -1 && planEnd > planStart) {
+    try {
+      const parsed = JSON.parse(trimmed.slice(planStart, planEnd + 1));
+      if (parsed && typeof parsed === 'object' && parsed.type === 'financial_plan' && parsed.data && typeof parsed.data === 'object') {
+        const d = parsed.data;
+        if (typeof d.targetName === 'string') {
+          return {
+            type: 'financial_plan',
+            message: typeof parsed.message === 'string' ? parsed.message : 'Berikut rencana keuangan.',
+            payload: {},
+            data: {
+              targetName: d.targetName,
+              targetAmount: typeof d.targetAmount === 'number' ? String(d.targetAmount) : d.targetAmount,
+              currentAmount: typeof d.currentAmount === 'number' ? String(d.currentAmount) : (d.currentAmount || '0'),
+              remainingAmount: typeof d.remainingAmount === 'number' ? String(d.remainingAmount) : (d.remainingAmount || '0'),
+              durationMonths: typeof d.durationMonths === 'number' ? d.durationMonths : 0,
+              requiredMonthlySaving: typeof d.requiredMonthlySaving === 'number' ? String(d.requiredMonthlySaving) : (d.requiredMonthlySaving || '0'),
+              monthlyIncome: typeof d.monthlyIncome === 'number' ? String(d.monthlyIncome) : (d.monthlyIncome || '0'),
+              monthlyExpense: typeof d.monthlyExpense === 'number' ? String(d.monthlyExpense) : (d.monthlyExpense || '0'),
+              monthlyNetCashFlow: typeof d.monthlyNetCashFlow === 'number' ? String(d.monthlyNetCashFlow) : (d.monthlyNetCashFlow || '0'),
+              requiredPercentageOfNet: typeof d.requiredPercentageOfNet === 'number' ? d.requiredPercentageOfNet : 0,
+              feasibility: typeof d.feasibility === 'string' ? d.feasibility : 'insufficient_data',
+              assumptions: Array.isArray(d.assumptions) ? d.assumptions.filter((x: any) => typeof x === 'string') : [],
+              relatedGoalId: typeof d.relatedGoalId === 'string' ? d.relatedGoalId : null,
+            },
+          };
+        }
+      }
+    } catch {
+      // fall through
+    }
+  }
+
   return null;
 }
 
@@ -307,7 +387,16 @@ export async function callGrok(options: CallGrokOptions): Promise<GrokStructured
     return structured;
   }
 
-  // Fallback: treat raw content as plain text response
+  // Fallback: treat raw content as plain text response,
+  // but never leak raw JSON fragments to the user.
+  const looksLikeJson = /^\s*\{/.test(rawContent.trim());
+  if (looksLikeJson) {
+    return {
+      type: 'text',
+      message: 'Saya butuh detail yang lebih lengkap. Coba sebut nominal, kategori, dan dompet yang digunakan.',
+    };
+  }
+
   return {
     type: 'text',
     message: rawContent.slice(0, 2000),

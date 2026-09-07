@@ -76,8 +76,6 @@ export default function AIResponseRenderer({
           newGoalHref={(message as any).clarification.newGoalHref}
           newGoalLabel={(message as any).clarification.newGoalLabel}
           existingGoalName={(message as any).clarification.existingGoalName}
-          goalContributionHref={(message as any).clarification.goalContributionHref}
-          freeReplyHint={(message as any).clarification.freeReplyHint}
         />
       )}
 

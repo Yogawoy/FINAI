@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Plus } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import TransactionToast from '@/components/transactions/TransactionToast';
@@ -63,7 +64,8 @@ function mapBackendGoalToUI(g: any): GoalItem {
   };
 }
 
-export default function GoalsPage() {
+function GoalsContent() {
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(true);
   const [goals, setGoals] = useState<GoalItem[]>([]);
   const [wallets, setWallets] = useState<Wallet[]>([]);
@@ -152,6 +154,13 @@ export default function GoalsPage() {
     fetchGoals();
     fetchWallets();
   }, [fetchGoals, fetchWallets]);
+
+  useEffect(() => {
+    const isNew = searchParams.get('new') === 'true' || searchParams.get('create') === 'true';
+    if (isNew) {
+      setIsCreateModalOpen(true);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const off = onRefresh((kind) => {
@@ -466,3 +475,12 @@ export default function GoalsPage() {
     </PageTransition>
   );
 }
+
+export default function GoalsPage() {
+  return (
+    <Suspense fallback={<GoalsSkeleton />}>
+      <GoalsContent />
+    </Suspense>
+  );
+}
+

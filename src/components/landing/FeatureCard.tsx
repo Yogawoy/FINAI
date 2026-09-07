@@ -25,7 +25,7 @@ export default function FeatureCard({
     <motion.div
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-50px' }}
+      viewport={{ once: true, margin: '-80px' }}
       transition={{ duration: 0.45, delay: index * 0.08, ease: 'easeOut' }}
       whileHover={{ y: -4 }}
       className="p-6 rounded-[20px] bg-white border border-[#E8EAF2] shadow-[0_4px_20px_rgba(36,38,54,0.03)] hover:shadow-[0_14px_34px_rgba(36,38,54,0.07)] transition-all space-y-3.5 select-none"

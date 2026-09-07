@@ -277,7 +277,7 @@ export function calculateFinancialPlan(args: {
       monthlyNetCashFlow: toMinorUnits(monthlyNetCashFlow),
       requiredPercentageOfNet: 0,
       feasibility: 'insufficient_data',
-      assumptions: ['Durasi target belum diberikan.'],
+      assumptions: ['Durasi target belum diberikan. Tentukan mau nabung per minggu atau per bulan.'],
       relatedGoalId: args.relatedGoal?.id ?? null,
     };
   }

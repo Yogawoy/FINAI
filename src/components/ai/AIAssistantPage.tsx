@@ -474,6 +474,7 @@ export default function AIAssistantPage() {
         }
 
         if (grok.type === 'clarification') {
+          const clarificationData = (grok as any).data || {};
           const msg: AIMessageType = {
             id: `ai-${Date.now()}`,
             sender: 'assistant',
@@ -481,6 +482,10 @@ export default function AIAssistantPage() {
             timestamp: timeStr,
             clarification: {
               message: grok.message || 'Bisa jelaskan lebih detail?',
+              relatedGoalId: typeof clarificationData.relatedGoalId === 'string' ? clarificationData.relatedGoalId : undefined,
+              newGoalHref: typeof clarificationData.newGoalHref === 'string' ? clarificationData.newGoalHref : undefined,
+              newGoalLabel: typeof clarificationData.newGoalLabel === 'string' ? clarificationData.newGoalLabel : undefined,
+              existingGoalName: typeof clarificationData.existingGoalName === 'string' ? clarificationData.existingGoalName : undefined,
             },
           };
           setMessages((prev) => [...prev, msg]);
