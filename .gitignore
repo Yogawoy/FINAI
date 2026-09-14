@@ -43,3 +43,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# android & capacitor
+/android/.gradle
+/android/build
+/android/app/build
+/android/local.properties
+*.apk
+FinAI.apk

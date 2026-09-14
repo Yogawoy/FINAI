@@ -1,0 +1,17 @@
+import type { CapacitorConfig } from '@capacitor/cli';
+
+const config: CapacitorConfig = {
+  appId: 'com.finai.app',
+  appName: 'FinAI',
+  webDir: 'public',
+  server: {
+    // Menghubungkan APK langsung ke server Next.js di laptop
+    url: 'http://192.168.1.42:3000',
+    cleartext: true,
+  },
+  android: {
+    allowMixedContent: true,
+  },
+};
+
+export default config;

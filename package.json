@@ -13,6 +13,8 @@
     "prisma:studio": "prisma studio"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
     "@prisma/client": "^6.4.1",
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
@@ -28,6 +30,7 @@
     "zod": "^4.5.4"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.2",
     "@tailwindcss/postcss": "^4",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
