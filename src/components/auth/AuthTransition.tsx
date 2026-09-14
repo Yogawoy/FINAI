@@ -55,6 +55,9 @@ export default function AuthTransition({
             animate={{
               left: isLogin ? '0%' : '50%',
             }}
+            style={{
+              left: isLogin ? '0%' : '50%',
+            }}
             transition={{
               duration: 0.6,
               ease: [0.65, 0, 0.35, 1], // Custom smooth easeInOut
@@ -68,6 +71,9 @@ export default function AuthTransition({
           <motion.div
             initial={false}
             animate={{
+              left: isLogin ? '50%' : '0%',
+            }}
+            style={{
               left: isLogin ? '50%' : '0%',
             }}
             transition={{
