@@ -272,3 +272,23 @@ export interface AIMessage {
 
 export type AICoreState = 'idle' | 'thinking' | 'responding';
 
+export interface UserSettings {
+  id: string;
+  userId: string;
+  language: string;
+  currency: string;
+  numberFormat: string;
+  defaultWalletId: string | null;
+  defaultCategory: string | null;
+  budgetReminder: boolean;
+  goalReminder: boolean;
+  financialSummary: boolean;
+  aiPersonalization: boolean;
+  aiActionConfirmation: boolean;
+  animations: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SerializedSettings extends UserSettings {}
+

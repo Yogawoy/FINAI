@@ -95,15 +95,15 @@ export default function EditProfileModal({
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
+              readOnly
+              disabled
               placeholder="user@example.com"
-              className="w-full h-11 pl-10 pr-4 rounded-xl bg-white border border-[#E8EAF2] text-xs font-semibold text-[#242636] placeholder-[#A0A4B8] focus:outline-none focus:border-[#7C7CE6] focus:ring-2 focus:ring-[#7C7CE6]/20 transition-all"
+              className="w-full h-11 pl-10 pr-4 rounded-xl bg-[#FAFBFD] border border-[#E8EAF2] text-xs font-semibold text-[#757A95] cursor-not-allowed opacity-80"
             />
             <Mail size={15} className="absolute left-3.5 top-3 text-[#A0A4B8]" />
           </div>
           <p className="text-[11px] text-[#A0A4B8] pl-1">
-            Email terhubung dengan verifikasi keamanan akun Anda.
+            Email terhubung dengan verifikasi keamanan akun (tidak dapat diubah langsung).
           </p>
         </div>
 

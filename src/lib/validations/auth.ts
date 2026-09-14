@@ -17,3 +17,9 @@ export const LoginSchema = z.object({
 
 export type RegisterInput = z.infer<typeof RegisterSchema>;
 export type LoginInput = z.infer<typeof LoginSchema>;
+
+export const UpdateProfileSchema = z.object({
+  name: z.string().trim().min(2, 'Nama minimal 2 karakter').max(100, 'Nama terlalu panjang'),
+});
+
+export type UpdateProfileInput = z.infer<typeof UpdateProfileSchema>;

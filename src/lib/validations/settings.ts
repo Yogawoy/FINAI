@@ -1,11 +1,19 @@
 import { z } from 'zod';
 
 export const UpdateSettingsSchema = z.object({
-  language: z.string().max(10).optional(),
-  currency: z.string().max(10).optional(),
-  numberFormat: z.string().max(10).optional(),
-  defaultWalletId: z.string().uuid().optional().nullable(),
-  defaultCategory: z.string().max(50).optional().nullable(),
+  language: z.string().min(2).max(10).optional(),
+  currency: z.string().min(2).max(10).optional(),
+  numberFormat: z.string().min(2).max(10).optional(),
+  defaultWalletId: z
+    .union([z.string().uuid(), z.literal(''), z.null()])
+    .transform((val) => (val === '' ? null : val))
+    .optional()
+    .nullable(),
+  defaultCategory: z
+    .union([z.string().max(50), z.literal(''), z.null()])
+    .transform((val) => (val === '' ? null : val))
+    .optional()
+    .nullable(),
   budgetReminder: z.boolean().optional(),
   goalReminder: z.boolean().optional(),
   financialSummary: z.boolean().optional(),

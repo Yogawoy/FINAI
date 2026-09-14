@@ -13,6 +13,8 @@ export type FinaiRefreshKind =
   | 'goal'
   | 'goal_contribution'
   | 'budget'
+  | 'settings'
+  | 'profile'
   | 'all';
 
 export function emitRefresh(kind: FinaiRefreshKind = 'all'): void {

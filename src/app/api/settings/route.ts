@@ -1,7 +1,8 @@
 import { NextRequest } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
-import { SettingsService } from '@/lib/services/settings.service';
+import { SettingsService, SettingsWalletNotFoundError } from '@/lib/services/settings.service';
 import { UpdateSettingsSchema } from '@/lib/validations/settings';
+import { serializeSettings } from '@/lib/serializers/settings';
 import { apiSuccess, apiError } from '@/lib/api-response';
 
 export async function GET() {
@@ -12,7 +13,7 @@ export async function GET() {
     }
 
     const settings = await SettingsService.getUserSettings(session.userId);
-    return apiSuccess({ settings });
+    return apiSuccess({ settings: serializeSettings(settings) });
   } catch (error) {
     console.error('Get Settings API Error:', error);
     return apiError('INTERNAL_ERROR', 'Gagal memuat pengaturan pengguna', 500);
@@ -43,8 +44,11 @@ export async function PATCH(request: NextRequest) {
       result.data
     );
 
-    return apiSuccess({ settings: updated });
+    return apiSuccess({ settings: serializeSettings(updated) });
   } catch (error) {
+    if (error instanceof SettingsWalletNotFoundError) {
+      return apiError('NOT_FOUND', error.message, 404);
+    }
     console.error('Update Settings Error:', error);
     return apiError('INTERNAL_ERROR', 'Gagal memperbarui pengaturan', 500);
   }

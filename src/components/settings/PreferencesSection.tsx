@@ -25,6 +25,7 @@ interface PreferencesSectionProps {
   onNumberFormatChange: (val: string) => void;
   defaultWallet: string;
   onDefaultWalletChange: (val: string) => void;
+  walletOptions?: SelectOption[];
   defaultCategory: string;
   onDefaultCategoryChange: (val: string) => void;
   paydayDate: string;
@@ -49,13 +50,6 @@ const CURRENCY_OPTIONS: SelectOption[] = [
 const NUMBER_FORMAT_OPTIONS: SelectOption[] = [
   { value: 'id', label: 'Indonesia (10.000,00)', sublabel: 'Titik ribuan, koma desimal' },
   { value: 'en', label: 'Internasional (10,000.00)', sublabel: 'Koma ribuan, titik desimal' },
-];
-
-const WALLET_OPTIONS: SelectOption[] = [
-  { value: 'w-1', label: 'BCA •••• 4821', sublabel: 'Rekening Utama' },
-  { value: 'w-2', label: 'Mandiri •••• 8823', sublabel: 'Rekening Tabungan' },
-  { value: 'w-3', label: 'GoPay E-Wallet', sublabel: 'Dompet Digital' },
-  { value: 'w-4', label: 'Tunai / Cash', sublabel: 'Uang Fisik' },
 ];
 
 const CATEGORY_OPTIONS: SelectOption[] = [
@@ -90,6 +84,7 @@ export default function PreferencesSection({
   onNumberFormatChange,
   defaultWallet,
   onDefaultWalletChange,
+  walletOptions = [],
   defaultCategory,
   onDefaultCategoryChange,
   paydayDate,
@@ -148,7 +143,11 @@ export default function PreferencesSection({
               <CustomSelect
                 value={defaultWallet}
                 onChange={onDefaultWalletChange}
-                options={WALLET_OPTIONS}
+                options={
+                  walletOptions.length > 0
+                    ? walletOptions
+                    : [{ value: '', label: 'Belum Ada Dompet', sublabel: 'Buat dompet di menu Dompet Kas' }]
+                }
               />
             </div>
           }
