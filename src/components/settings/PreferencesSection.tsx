@@ -7,14 +7,12 @@ import {
   Hash,
   Wallet,
   Tag,
-  Sliders,
   CalendarCheck,
   Percent,
 } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
 import CustomSelect, { SelectOption } from '@/components/ui/CustomSelect';
 import SettingRow from './SettingRow';
-import SettingToggle from './SettingToggle';
 
 interface PreferencesSectionProps {
   language: string;
@@ -32,8 +30,6 @@ interface PreferencesSectionProps {
   onPaydayDateChange: (val: string) => void;
   savingsRateTarget: string;
   onSavingsRateTargetChange: (val: string) => void;
-  enableAnimations: boolean;
-  onAnimationsChange: (val: boolean) => void;
 }
 
 const LANGUAGE_OPTIONS: SelectOption[] = [
@@ -91,8 +87,6 @@ export default function PreferencesSection({
   onPaydayDateChange,
   savingsRateTarget,
   onSavingsRateTargetChange,
-  enableAnimations,
-  onAnimationsChange,
 }: PreferencesSectionProps) {
   return (
     <div className="space-y-2.5">
@@ -214,20 +208,6 @@ export default function PreferencesSection({
                 options={LANGUAGE_OPTIONS}
               />
             </div>
-          }
-        />
-
-        {/* 8. Animasi Antarmuka */}
-        <SettingRow
-          icon={<Sliders size={16} />}
-          title="Animasi Antarmuka"
-          description="Gunakan animasi halus dan transisi interaktif pada antarmuka"
-          action={
-            <SettingToggle
-              checked={enableAnimations}
-              onChange={onAnimationsChange}
-              aria-label="Toggle Animasi Antarmuka"
-            />
           }
         />
       </GlassCard>

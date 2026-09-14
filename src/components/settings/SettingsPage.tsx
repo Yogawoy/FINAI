@@ -343,10 +343,6 @@ export default function SettingsPage() {
         onSavingsRateTargetChange={(val) =>
           updateSetting('savingsRateTarget', val, `Target rasio tabungan diatur ke ${val} pendapatan.`)
         }
-        enableAnimations={settings.animations}
-        onAnimationsChange={(val) =>
-          updateSetting('animations', val, val ? 'Animasi antarmuka diaktifkan.' : 'Animasi antarmuka dinonaktifkan.')
-        }
       />
 
       {/* 4. Notification Section */}
