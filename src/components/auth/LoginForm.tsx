@@ -93,14 +93,14 @@ export default function LoginForm({
   };
 
   return (
-    <div className={`w-full flex flex-col justify-center px-6 sm:px-10 lg:px-12 py-8 max-w-md mx-auto ${className}`}>
+    <div className={`w-full flex flex-col justify-center px-1 sm:px-6 py-2 max-w-md mx-auto ${className}`}>
       {/* Header */}
-      <div className="space-y-1.5 mb-6">
-        <h1 className="text-2xl sm:text-[28px] font-extrabold text-[#242636] tracking-tight">
-          Selamat datang kembali!
-        </h1>
-        <p className="text-xs sm:text-sm text-[#757A95]">
-          Masuk untuk melanjutkan perjalanan finansialmu.
+      <div className="space-y-1 mb-5">
+        <h2 className="text-xl sm:text-2xl font-extrabold text-[#242636] tracking-tight">
+          Masuk ke Akun
+        </h2>
+        <p className="text-xs text-[#757A95]">
+          Akses ringkasan keuangan dan fitur cerdas FinAI Anda.
         </p>
       </div>
 

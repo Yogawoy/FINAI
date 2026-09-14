@@ -117,14 +117,14 @@ export default function RegisterForm({
   };
 
   return (
-    <div className={`w-full flex flex-col justify-center px-6 sm:px-10 lg:px-12 py-5 sm:py-6 max-w-lg mx-auto ${className}`}>
+    <div className={`w-full flex flex-col justify-center px-1 sm:px-6 py-1 max-w-lg mx-auto ${className}`}>
       {/* Header */}
-      <div className="space-y-1.5 mb-5">
-        <h1 className="text-2xl sm:text-[28px] font-extrabold text-[#242636] tracking-tight">
-          Buat akun baru
-        </h1>
-        <p className="text-xs sm:text-sm text-[#757A95]">
-          Daftar dan kelola keuanganmu dengan lebih mudah.
+      <div className="space-y-1 mb-4">
+        <h2 className="text-xl sm:text-2xl font-extrabold text-[#242636] tracking-tight">
+          Daftar Akun Baru
+        </h2>
+        <p className="text-xs text-[#757A95]">
+          Mulai langkah cerdas mengelola keuangan pribadi Anda.
         </p>
       </div>
 

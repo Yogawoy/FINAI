@@ -9,7 +9,7 @@ interface AuthLayoutProps {
 
 export default function AuthLayout({ initialMode = 'login' }: AuthLayoutProps) {
   return (
-    <main className="min-h-screen bg-[#F6F7FB] text-[#242636] relative flex items-center justify-center overflow-x-hidden selection:bg-[#E4E2FB] selection:text-[#7C7CE6] py-6 sm:py-10">
+    <main className="min-h-screen bg-[#F6F7FB] text-[#242636] relative flex items-center justify-center overflow-x-hidden selection:bg-[#E4E2FB] selection:text-[#7C7CE6] py-3 sm:py-10 px-2 sm:px-4">
       {/* Background Multi-Layer Soft Lavender & Periwinkle Ambience */}
       <div className="fixed -top-28 left-1/4 w-[500px] h-[500px] rounded-full bg-[#E4E2FB]/50 blur-[120px] pointer-events-none -z-10" />
       <div className="fixed -bottom-28 right-1/4 w-[550px] h-[550px] rounded-full bg-[#D6E4FA]/45 blur-[130px] pointer-events-none -z-10" />

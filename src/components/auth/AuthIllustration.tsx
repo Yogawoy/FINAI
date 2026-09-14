@@ -1,8 +1,15 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Sparkles,
+  TrendingUp,
+  ShieldCheck,
+  Wallet,
+  ArrowUpRight,
+  PieChart,
+} from 'lucide-react';
 import AuthBrand from './AuthBrand';
 
 interface AuthIllustrationProps {
@@ -18,140 +25,127 @@ export default function AuthIllustration({
 
   return (
     <div
-      className={`relative w-full h-full flex flex-col justify-between overflow-hidden bg-gradient-to-b from-[#F2F3FD] via-[#ECEAFD] to-[#DFE3FA] select-none ${className}`}
+      className={`relative w-full h-full flex flex-col justify-between overflow-hidden bg-gradient-to-br from-[#F4F5FD] via-[#ECEAFD] to-[#E2E6FA] select-none p-8 sm:p-10 lg:p-12 ${className}`}
     >
-      {/* Decorative ambient glow circles */}
-      <div className="absolute -top-16 -left-16 w-72 h-72 rounded-full bg-[#E4E2FB]/70 blur-3xl pointer-events-none" />
-      <div className="absolute top-1/3 -right-16 w-80 h-80 rounded-full bg-[#D6E4FA]/60 blur-3xl pointer-events-none" />
+      {/* Soft Ambient Ethereal Glows */}
+      <div className="absolute -top-20 -left-20 w-80 h-80 rounded-full bg-[#E4E2FB]/80 blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 -right-20 w-96 h-96 rounded-full bg-[#D6E4FA]/70 blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-20 left-1/3 w-80 h-80 rounded-full bg-[#D0EFE5]/50 blur-3xl pointer-events-none" />
 
-      {/* ========================================================================= */}
-      {/* 1. TOP SECTION: BRAND & HEADLINE COPY                                     */}
-      {/* ========================================================================= */}
-      <div className="relative z-20 p-8 sm:p-10 lg:p-12 space-y-6">
-        {/* Brand */}
+      {/* 1. Header Section: Brand & Dynamic Copy */}
+      <div className="relative z-20 space-y-6">
         <AuthBrand />
 
-        {/* Dynamic Headline & Subtitle with smooth crossfade */}
-        <div className="pt-2">
-          <AnimatePresence mode="wait">
-            {isLogin ? (
-              <motion.div
-                key="login-heading"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: 0.35, ease: 'easeOut' }}
-                className="space-y-3"
-              >
-                <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-extrabold text-[#242636] tracking-tight leading-[1.18]">
-                  Kelola keuangan <br />
-                  <span className="text-[#7C7CE6]">lebih cerdas</span> <br />
-                  bersama FinAI
-                </h2>
-                <p className="text-xs sm:text-sm text-[#757A95] leading-relaxed max-w-sm font-normal">
-                  Catat, analisis, dan rencanakan keuanganmu dengan bantuan AI yang memahami kebutuhanmu.
-                </p>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="register-heading"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: 0.35, ease: 'easeOut' }}
-                className="space-y-3"
-              >
-                <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-extrabold text-[#242636] tracking-tight leading-[1.18]">
-                  Mulai perjalanan <br />
-                  <span className="text-[#7C7CE6]">finansial yang</span> <br />
-                  lebih baik
-                </h2>
-                <p className="text-xs sm:text-sm text-[#757A95] leading-relaxed max-w-sm font-normal">
-                  Catat, analisis, dan rencanakan keuanganmu dengan bantuan AI yang memahami kebutuhanmu.
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+        <AnimatePresence mode="wait">
+          {isLogin ? (
+            <motion.div
+              key="login-heading"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-2.5 max-w-sm"
+            >
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#242636] tracking-tight leading-snug">
+                Kelola Keuangan <br />
+                <span className="text-[#7C7CE6]">Lebih Tenang</span> & Terarah
+              </h2>
+              <p className="text-xs sm:text-sm text-[#757A95] leading-relaxed">
+                Pantau arus kas, pos anggaran, dan impian finansialmu dalam satu ekosistem cerdas.
+              </p>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="register-heading"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-2.5 max-w-sm"
+            >
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#242636] tracking-tight leading-snug">
+                Mulai Rencana <br />
+                <span className="text-[#7C7CE6]">Finansial Baru</span> Bersama FinAI
+              </h2>
+              <p className="text-xs sm:text-sm text-[#757A95] leading-relaxed">
+                Bergabunglah untuk mendapatkan ringkasan otomatis, insight cerdas, dan kontrol penuh atas asetmu.
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* ========================================================================= */}
-      {/* 2. FLYING BIRDS IN PASTEL SKY (SUBTLE FLOATING ANIMATION)                  */}
-      {/* ========================================================================= */}
-      <div className="absolute top-[40%] right-[18%] z-20 pointer-events-none opacity-75">
+      {/* 2. Middle Section: Calm Floating Fintech Preview Cards */}
+      <div className="relative z-20 my-auto py-6 space-y-3.5 max-w-sm w-full">
+        {/* Card 1: Balance Snapshot */}
         <motion.div
-          animate={{ x: [0, 6, 0], y: [0, -3, 0] }}
-          transition={{ repeat: Infinity, duration: 8, ease: 'easeInOut' }}
-          className="flex items-center gap-2.5"
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="bg-white/85 backdrop-blur-md rounded-2xl p-4 border border-white/90 shadow-[0_10px_30px_rgba(36,38,54,0.06)]"
         >
-          {/* Bird 1 */}
-          <svg width="20" height="11" viewBox="0 0 18 10" fill="none" className="text-[#3D3E64]">
-            <path
-              d="M1 7C4.5 2 7 2 9 6C11 2 13.5 2 17 7"
-              stroke="currentColor"
-              strokeWidth="1.9"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          {/* Bird 2 */}
-          <svg width="14" height="8" viewBox="0 0 18 10" fill="none" className="text-[#52547E] -mt-2">
-            <path
-              d="M1 7C4.5 2 7 2 9 6C11 2 13.5 2 17 7"
-              stroke="currentColor"
-              strokeWidth="1.7"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-xl bg-[#E4E2FB] text-[#7C7CE6] flex items-center justify-center">
+                <Wallet size={14} />
+              </div>
+              <span className="text-xs font-semibold text-[#757A95]">Total Saldo Kas</span>
+            </div>
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#1B7354] bg-[#D0EFE5]/50 px-2 py-0.5 rounded-full">
+              <TrendingUp size={11} /> +12.8%
+            </span>
+          </div>
+          <div className="text-xl font-extrabold text-[#242636] tracking-tight">
+            Rp 24.850.000
+          </div>
+        </motion.div>
+
+        {/* Card 2: AI Financial Insight */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="bg-white/85 backdrop-blur-md rounded-2xl p-4 border border-white/90 shadow-[0_10px_30px_rgba(36,38,54,0.06)] flex items-start gap-3"
+        >
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#7C7CE6] to-[#A3A2F0] text-white flex items-center justify-center shrink-0 shadow-xs">
+            <Sparkles size={16} />
+          </div>
+          <div className="space-y-1 min-w-0">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-[#242636]">Insight FinAI</span>
+              <span className="text-[10px] text-[#757A95] font-medium">Hari ini</span>
+            </div>
+            <p className="text-[11px] text-[#757A95] leading-relaxed">
+              Arus kas bulan ini sangat sehat! Alokasi anggaran bulanan berada di bawah batas 70%.
+            </p>
+          </div>
+        </motion.div>
+
+        {/* Card 3: Smart Budget Capsule */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="bg-white/85 backdrop-blur-md rounded-2xl p-3.5 border border-white/90 shadow-[0_10px_30px_rgba(36,38,54,0.06)] flex items-center justify-between"
+        >
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-xl bg-[#D0EFE5] text-[#1B7354] flex items-center justify-center">
+              <PieChart size={14} />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-[#242636]">Anggaran Kebutuhan</div>
+              <div className="text-[10px] text-[#757A95]">Rp 3.200.000 / Rp 5.000.000</div>
+            </div>
+          </div>
+          <div className="text-xs font-extrabold text-[#7C7CE6]">64%</div>
         </motion.div>
       </div>
 
-      {/* ========================================================================= */}
-      {/* 3. BOTTOM ILLUSTRATION: MISTY MOUNTAINS & DEER HILL                       */}
-      {/* ========================================================================= */}
-      <div className="relative w-full h-[52%] sm:h-[55%] mt-auto z-10">
-        <Image
-          src="/images/auth-landscape.jpg"
-          alt="FinAI Serene Landscape"
-          fill
-          priority
-          sizes="(max-width: 1024px) 100vw, 50vw"
-          className="object-cover object-bottom"
-        />
-
-        {/* Top subtle vertical gradient to blend landscape sky seamlessly into panel background */}
-        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#ECEAFD] via-[#ECEAFD]/80 to-transparent pointer-events-none" />
+      {/* 3. Footer Trust Badge */}
+      <div className="relative z-20 flex items-center gap-2 text-xs font-medium text-[#757A95] pt-2">
+        <ShieldCheck size={16} className="text-[#1B7354]" />
+        <span>Enkripsi Standar Perbankan • Privasi Terlindungi</span>
       </div>
-
-      {/* ========================================================================= */}
-      {/* 4. ORGANIC S-CURVE BORDER DIVIDER (MATCHES SCREENSHOT REFERENCE)          */}
-      {/* ========================================================================= */}
-      {/* When in Login mode, the white wave sits on the right edge of the illustration */}
-      {isLogin && (
-        <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-14 sm:w-16 z-25 pointer-events-none">
-          <svg
-            className="h-full w-full fill-white"
-            viewBox="0 0 100 800"
-            preserveAspectRatio="none"
-          >
-            <path d="M100,0 L35,0 C75,170 5,330 65,490 C100,610 30,710 70,800 L100,800 Z" />
-          </svg>
-        </div>
-      )}
-
-      {/* When in Register mode, the white wave sits on the left edge of the illustration */}
-      {!isLogin && (
-        <div className="hidden lg:block absolute left-0 top-0 bottom-0 w-14 sm:w-16 z-25 pointer-events-none scale-x-[-1]">
-          <svg
-            className="h-full w-full fill-white"
-            viewBox="0 0 100 800"
-            preserveAspectRatio="none"
-          >
-            <path d="M100,0 L35,0 C75,170 5,330 65,490 C100,610 30,710 70,800 L100,800 Z" />
-          </svg>
-        </div>
-      )}
     </div>
   );
 }
