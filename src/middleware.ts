@@ -52,11 +52,26 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/app', request.url));
   }
 
+  // 4. Handle Root Route ('/'):
+  // - If user is already logged in, go straight to /app
+  // - If user is opening from Android APK / WebView, skip marketing landing page and go to /login
+  if (pathname === '/') {
+    if (isAuthenticated) {
+      return NextResponse.redirect(new URL('/app', request.url));
+    }
+    const userAgent = request.headers.get('user-agent') || '';
+    const isMobileApp = /wv|Android.*Version\/[0-9.]+|Capacitor/i.test(userAgent);
+    if (isMobileApp) {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
   matcher: [
+    '/',
     '/app/:path*',
     '/api/wallets/:path*',
     '/api/transactions/:path*',
