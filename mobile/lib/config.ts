@@ -8,31 +8,54 @@ import { Platform } from 'react-native';
  * Only public client-safe endpoints and runtime configuration.
  */
 
-// Host IP of dev machine when testing on physical device on the same local Wi-Fi
-const DEV_LAN_IP = '192.168.100.12:3000';
+import Constants from 'expo-constants';
 
-function resolveDefaultApiBaseUrl(): string {
+// Environment configurations
+export type Environment = 'development_emulator' | 'development_device' | 'staging' | 'production';
+
+// Configurable host for physical device testing over local Wi-Fi
+export const DEV_PHYSICAL_DEVICE_HOST = '192.168.100.12:3000';
+
+// Configurable production URL
+export const PRODUCTION_API_URL = 'https://finai-app.vercel.app';
+
+export function resolveApiBaseUrl(targetEnv?: Environment): string {
+  if (targetEnv === 'production') {
+    return PRODUCTION_API_URL;
+  }
+  if (targetEnv === 'development_emulator') {
+    return 'http://10.0.2.2:3000';
+  }
+  if (targetEnv === 'development_device') {
+    return `http://${DEV_PHYSICAL_DEVICE_HOST}`;
+  }
+
+  // Automatic resolution in dev
   if (__DEV__) {
-    // If running in development
+    // 1. If running in Android Emulator
+    // Detect if hostUri is available from Expo dev server
+    const hostUri = Constants.expoConfig?.hostUri;
+    if (hostUri) {
+      const hostIp = hostUri.split(':')[0];
+      return `http://${hostIp}:3000`;
+    }
+
     if (Platform.OS === 'android') {
-      // For physical Android phone, use laptop Wi-Fi IP
-      // For Android emulator, use 10.0.2.2:3000
-      return `http://${DEV_LAN_IP}`;
+      // Standard Android Emulator loopback
+      return 'http://10.0.2.2:3000';
     }
-    if (Platform.OS === 'ios') {
-      return 'http://localhost:3000';
-    }
+
     return 'http://localhost:3000';
   }
 
-  // Production Vercel / Cloud URL
-  return 'https://finai-app.vercel.app';
+  return PRODUCTION_API_URL;
 }
+
 
 export const config = {
   appName: 'FinAI',
   version: '1.0.0',
-  apiBaseUrl: resolveDefaultApiBaseUrl(),
+  apiBaseUrl: resolveApiBaseUrl(),
   endpoints: {
     auth: {
       login: '/api/auth/login',
