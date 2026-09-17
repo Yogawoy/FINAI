@@ -5,7 +5,7 @@ import {
   comparePassword,
   createSession,
   deleteSession,
-  getSessionTokenFromCookie,
+  getSessionTokenFromRequest,
   getCurrentUser as getCurrentUserFromSession,
   SafeUser,
 } from '@/lib/auth';
@@ -21,7 +21,15 @@ export interface AuthResult<T> {
   };
 }
 
-export async function registerUser(input: RegisterInput): Promise<AuthResult<{ user: SafeUser }>> {
+export interface AuthUserResponseData {
+  user: SafeUser;
+  token?: string;
+}
+
+export async function registerUser(
+  input: RegisterInput,
+  options?: { isMobile?: boolean }
+): Promise<AuthResult<AuthUserResponseData>> {
   const normalizedEmail = input.email.toLowerCase().trim();
 
   // Check if email already registered
@@ -77,21 +85,32 @@ export async function registerUser(input: RegisterInput): Promise<AuthResult<{ u
   });
 
   // Create session and set cookie
-  await createSession(user.id, true);
+  const rawToken = await createSession(user.id, true);
 
   const safeUser: SafeUser = {
     ...user,
     userId: user.id,
   };
 
+  const responseData: AuthUserResponseData = {
+    user: safeUser,
+  };
+
+  if (options?.isMobile) {
+    responseData.token = rawToken;
+  }
+
   return {
     success: true,
     statusCode: 201,
-    data: { user: safeUser },
+    data: responseData,
   };
 }
 
-export async function loginUser(input: LoginInput): Promise<AuthResult<{ user: SafeUser }>> {
+export async function loginUser(
+  input: LoginInput,
+  options?: { isMobile?: boolean }
+): Promise<AuthResult<AuthUserResponseData>> {
   const normalizedEmail = input.email.toLowerCase().trim();
 
   const user = await prisma.user.findUnique({
@@ -122,7 +141,7 @@ export async function loginUser(input: LoginInput): Promise<AuthResult<{ user: S
   }
 
   // Create session with rememberMe support
-  await createSession(user.id, input.rememberMe ?? true);
+  const rawToken = await createSession(user.id, input.rememberMe ?? true);
 
   const safeUser: SafeUser = {
     id: user.id,
@@ -133,15 +152,23 @@ export async function loginUser(input: LoginInput): Promise<AuthResult<{ user: S
     createdAt: user.createdAt,
   };
 
+  const responseData: AuthUserResponseData = {
+    user: safeUser,
+  };
+
+  if (options?.isMobile) {
+    responseData.token = rawToken;
+  }
+
   return {
     success: true,
     statusCode: 200,
-    data: { user: safeUser },
+    data: responseData,
   };
 }
 
-export async function logoutUser(): Promise<AuthResult<{ message: string }>> {
-  const token = await getSessionTokenFromCookie();
+export async function logoutUser(tokenOverride?: string | null): Promise<AuthResult<{ message: string }>> {
+  const token = tokenOverride || await getSessionTokenFromRequest();
   await deleteSession(token);
 
   return {

@@ -17,7 +17,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const response = await loginUser(result.data);
+    const isMobile = request.headers.get('x-client-type')?.toLowerCase() === 'mobile';
+    const response = await loginUser(result.data, { isMobile });
 
     if (!response.success && response.error) {
       return apiError(

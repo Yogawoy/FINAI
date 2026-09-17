@@ -39,3 +39,35 @@ export interface ApiErrorResponse {
 }
 
 export type ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse;
+
+import type { Wallet, Transaction, Budget, Goal } from './common';
+
+export interface WalletsResponseData {
+  wallets: Wallet[];
+}
+
+export interface TransactionsResponseData {
+  total: number;
+  limit: number;
+  offset: number;
+  transactions: Transaction[];
+}
+
+export interface BudgetsResponseData {
+  budgets: Budget[];
+}
+
+export interface GoalsResponseData {
+  goals: Goal[];
+}
+
+export interface SingleTransactionResponseData {
+  transaction: Transaction;
+  wallet?: Wallet;
+}
+
+export interface SingleWalletResponseData {
+  wallet: Wallet;
+}
+
+

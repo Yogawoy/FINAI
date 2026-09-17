@@ -16,6 +16,7 @@ import Text from '../../components/ui/Text';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import useAuth from '../../hooks/useAuth';
+import { mapErrorMessage } from '../../lib/api-client';
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -50,11 +51,7 @@ export default function RegisterScreen() {
         setErrorMessage('Gagal mendaftar. Email mungkin sudah terdaftar.');
       }
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setErrorMessage(err.message);
-      } else {
-        setErrorMessage('Terjadi kendala saat mendaftarkan akun.');
-      }
+      setErrorMessage(mapErrorMessage(err));
     }
   };
 

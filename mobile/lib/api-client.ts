@@ -1,6 +1,6 @@
 import { config } from './config';
-import { getSessionToken } from './storage';
-import type { ApiErrorDetail, ApiErrorResponse, ApiSuccessResponse, ErrorCode } from '../types/api';
+import { getSessionToken, clearSession } from './storage';
+import type { ApiErrorResponse, ApiSuccessResponse, ErrorCode } from '../types/api';
 
 export class ApiClientError extends Error {
   status: number;
@@ -16,19 +16,38 @@ export class ApiClientError extends Error {
   }
 }
 
+export type UnauthorizedHandler = () => void | Promise<void>;
+let unauthorizedHandler: UnauthorizedHandler | null = null;
+
+export function setUnauthorizedHandler(handler: UnauthorizedHandler | null): void {
+  unauthorizedHandler = handler;
+}
+
 export function mapErrorMessage(error: unknown): string {
   if (error instanceof ApiClientError) {
     if (error.status === 401 || error.code === 'UNAUTHORIZED') {
       return 'Sesi Anda telah berakhir. Silakan masuk kembali.';
     }
-    if (error.code === 'INSUFFICIENT_BALANCE') {
-      return 'Saldo dompet tidak mencukupi untuk transaksi ini.';
+    if (error.status === 403 || error.code === 'FORBIDDEN') {
+      return 'Anda tidak memiliki hak akses untuk layanan ini.';
     }
-    if (error.code === 'VALIDATION_ERROR') {
+    if (error.status === 404 || error.code === 'NOT_FOUND') {
+      return 'Data atau layanan yang diminta tidak ditemukan.';
+    }
+    if (error.status === 409 || error.code === 'CONFLICT' || error.code === 'EMAIL_ALREADY_EXISTS') {
+      return error.message || 'Data sudah terdaftar atau terjadi konflik data.';
+    }
+    if (error.status === 422) {
+      return error.message || 'Data yang dikirim tidak dapat diproses oleh server.';
+    }
+    if (error.status === 400 || error.code === 'VALIDATION_ERROR') {
       return error.message || 'Data yang dimasukkan tidak valid.';
     }
-    if (error.code === 'NETWORK_ERROR') {
-      return 'Tidak dapat terhubung ke server FinAI. Periksa koneksi internet Anda.';
+    if (error.status === 408 || error.code === 'NETWORK_ERROR') {
+      return error.message || 'Permintaan melebihi batas waktu (timeout).';
+    }
+    if (error.status === 500 || error.code === 'INTERNAL_ERROR') {
+      return 'Terjadi kesalahan sistem pada server FinAI. Silakan coba sesaat lagi.';
     }
     return error.message || 'Terjadi kesalahan pada server FinAI.';
   }
@@ -37,7 +56,7 @@ export function mapErrorMessage(error: unknown): string {
     return error.message;
   }
 
-  return 'Terjadi kesalahan tidak terduga.';
+  return 'Terjadi kendala yang tidak terduga.';
 }
 
 interface RequestOptions {
@@ -57,7 +76,10 @@ async function request<T>(
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    ...(sessionToken ? { Authorization: `Bearer ${sessionToken}` } : {}),
+    'x-client-type': 'mobile',
+    ...(sessionToken && sessionToken.trim().length > 0
+      ? { Authorization: `Bearer ${sessionToken.trim()}` }
+      : {}),
     ...(options.headers || {}),
   };
 
@@ -87,9 +109,35 @@ async function request<T>(
 
     if (!response.ok) {
       const errorPayload = json && !json.success ? (json as ApiErrorResponse).error : undefined;
-      const code: ErrorCode = errorPayload?.code || (response.status === 401 ? 'UNAUTHORIZED' : 'INTERNAL_ERROR');
+      const code: ErrorCode =
+        errorPayload?.code ||
+        (response.status === 401
+          ? 'UNAUTHORIZED'
+          : response.status === 403
+          ? 'FORBIDDEN'
+          : response.status === 404
+          ? 'NOT_FOUND'
+          : response.status === 409
+          ? 'CONFLICT'
+          : response.status === 400
+          ? 'VALIDATION_ERROR'
+          : 'INTERNAL_ERROR');
+
       const message = errorPayload?.message || response.statusText || 'Terjadi kesalahan pada server';
       const details = errorPayload?.details;
+
+      // Handle 401 Unauthorized securely
+      if (response.status === 401) {
+        try {
+          await clearSession();
+        } catch {}
+
+        if (unauthorizedHandler) {
+          try {
+            unauthorizedHandler();
+          } catch {}
+        }
+      }
 
       throw new ApiClientError(response.status, code, message, details);
     }
@@ -113,7 +161,7 @@ async function request<T>(
     throw new ApiClientError(
       0,
       'NETWORK_ERROR',
-      'Gagal terhubung ke server FinAI. Pastikan server backend sedang aktif.'
+      'Gagal terhubung ke server FinAI. Pastikan server backend sedang aktif dan koneksi internet stabil.'
     );
   }
 }
@@ -126,3 +174,4 @@ export const apiClient = {
 };
 
 export default apiClient;
+

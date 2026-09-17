@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { apiClient } from '../lib/api-client';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { apiClient, setUnauthorizedHandler } from '../lib/api-client';
 import { getSessionToken, setSessionToken, clearSession } from '../lib/storage';
 import { config } from '../lib/config';
 import type { SafeUser, LoginPayload, RegisterPayload } from '../types/auth';
@@ -14,7 +14,9 @@ export interface UseAuthReturn {
   logout: () => Promise<void>;
 }
 
-export function useAuth(): UseAuthReturn {
+const AuthContext = createContext<UseAuthReturn | null>(null);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<SafeUser | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -28,7 +30,7 @@ export function useAuth(): UseAuthReturn {
         return;
       }
 
-      // Query /api/auth/me
+      // Query /api/auth/me with Bearer token
       const data = await apiClient.get<{ user: SafeUser }>(config.endpoints.auth.me);
       if (data?.user) {
         setUser(data.user);
@@ -37,7 +39,7 @@ export function useAuth(): UseAuthReturn {
         setUser(null);
       }
     } catch {
-      // In Step 1 foundation, if offline or not logged in, clear session
+      await clearSession();
       setUser(null);
     } finally {
       setIsLoading(false);
@@ -45,6 +47,11 @@ export function useAuth(): UseAuthReturn {
   }, []);
 
   useEffect(() => {
+    // Register 401 callback to immediately clear auth state across components
+    setUnauthorizedHandler(() => {
+      setUser(null);
+    });
+
     checkSession();
   }, [checkSession]);
 
@@ -55,11 +62,13 @@ export function useAuth(): UseAuthReturn {
         config.endpoints.auth.login,
         payload
       );
+
+      if (data?.token) {
+        await setSessionToken(data.token);
+      }
+
       if (data?.user) {
         setUser(data.user);
-        if (data.token) {
-          await setSessionToken(data.token);
-        }
         return true;
       }
       return false;
@@ -75,11 +84,13 @@ export function useAuth(): UseAuthReturn {
         config.endpoints.auth.register,
         payload
       );
+
+      if (data?.token) {
+        await setSessionToken(data.token);
+      }
+
       if (data?.user) {
         setUser(data.user);
-        if (data.token) {
-          await setSessionToken(data.token);
-        }
         return true;
       }
       return false;
@@ -92,14 +103,14 @@ export function useAuth(): UseAuthReturn {
     try {
       await apiClient.post(config.endpoints.auth.logout);
     } catch {
-      // Ignore logout network errors
+      // Offline / network failure: local session is still cleaned safely
     } finally {
       await clearSession();
       setUser(null);
     }
   };
 
-  return {
+  const value: UseAuthReturn = {
     user,
     isAuthenticated: Boolean(user),
     isLoading,
@@ -108,6 +119,17 @@ export function useAuth(): UseAuthReturn {
     register,
     logout,
   };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export function useAuth(): UseAuthReturn {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 }
 
 export default useAuth;
+

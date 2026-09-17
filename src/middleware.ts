@@ -19,7 +19,11 @@ const PROTECTED_API_PREFIXES = [
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const sessionToken = request.cookies.get(AUTH_COOKIE_NAME)?.value;
+  const authHeader = request.headers.get('authorization');
+  const bearerToken = authHeader?.startsWith('Bearer ')
+    ? authHeader.slice(7).trim()
+    : null;
+  const sessionToken = (bearerToken && bearerToken.length > 0 ? bearerToken : null) || request.cookies.get(AUTH_COOKIE_NAME)?.value;
   const isAuthenticated = Boolean(sessionToken);
 
   // 1. Check Protected API Routes

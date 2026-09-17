@@ -1,4 +1,4 @@
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import crypto from 'crypto';
 import { prisma } from '@/lib/db';
 
@@ -64,10 +64,29 @@ export async function getSessionTokenFromCookie(): Promise<string | null> {
   }
 }
 
-export async function validateSessionToken(rawToken: string): Promise<SafeUser | null> {
-  if (!rawToken) return null;
+export async function getSessionTokenFromRequest(): Promise<string | null> {
+  // 1. Check Authorization: Bearer <token> header first (Mobile Client)
+  try {
+    const headerStore = await headers();
+    const authHeader = headerStore.get('authorization');
+    if (authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.slice(7).trim();
+      if (token.length > 0) {
+        return token;
+      }
+    }
+  } catch {
+    // Outside Next.js request context
+  }
 
-  const tokenHash = hashToken(rawToken);
+  // 2. Fallback to HTTP-only cookie (Web Client)
+  return getSessionTokenFromCookie();
+}
+
+export async function validateSessionToken(rawToken: string): Promise<SafeUser | null> {
+  if (!rawToken || typeof rawToken !== 'string' || !rawToken.trim()) return null;
+
+  const tokenHash = hashToken(rawToken.trim());
 
   const session = await prisma.session.findUnique({
     where: { tokenHash },
@@ -91,7 +110,7 @@ export async function validateSessionToken(rawToken: string): Promise<SafeUser |
   // Check if session has expired
   if (session.expiresAt < new Date()) {
     // Delete expired session from DB
-    await prisma.session.delete({ where: { id: session.id } }).catch(() => {});
+    await prisma.session.deleteMany({ where: { id: session.id } }).catch(() => {});
     return null;
   }
 
@@ -102,15 +121,15 @@ export async function validateSessionToken(rawToken: string): Promise<SafeUser |
 }
 
 export async function getCurrentUser(): Promise<SafeUser | null> {
-  const token = await getSessionTokenFromCookie();
+  const token = await getSessionTokenFromRequest();
   if (!token) return null;
   return validateSessionToken(token);
 }
 
 export async function deleteSession(rawToken: string | null): Promise<void> {
-  if (rawToken) {
-    const tokenHash = hashToken(rawToken);
-    await prisma.session.delete({ where: { tokenHash } }).catch(() => {});
+  if (rawToken && rawToken.trim()) {
+    const tokenHash = hashToken(rawToken.trim());
+    await prisma.session.deleteMany({ where: { tokenHash } }).catch(() => {});
   }
 
   try {
@@ -118,3 +137,4 @@ export async function deleteSession(rawToken: string | null): Promise<void> {
     cookieStore.delete(AUTH_COOKIE_NAME);
   } catch {}
 }
+

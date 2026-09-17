@@ -1,9 +1,19 @@
-import React from 'react';
-import { Tabs } from 'expo-router';
+import React, { useEffect } from 'react';
+import { Tabs, useRouter } from 'expo-router';
 import { LayoutDashboard, ArrowLeftRight, Sparkles, Menu } from 'lucide-react-native';
 import { colors, typography, shadows, spacing } from '../../constants/theme';
+import useAuth from '../../hooks/useAuth';
 
 export default function TabsLayout() {
+  const { isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.replace('/(auth)/login');
+    }
+  }, [isLoading, isAuthenticated, router]);
+
   return (
     <Tabs
       screenOptions={{

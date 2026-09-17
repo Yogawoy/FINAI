@@ -108,6 +108,11 @@ export default function MoreScreen() {
               <TouchableOpacity
                 key={item.id}
                 activeOpacity={0.7}
+                onPress={() => {
+                  if (item.id === 'wallets') {
+                    router.push('/wallets');
+                  }
+                }}
                 style={styles.menuItem}
               >
                 <View style={[styles.itemIconBadge, { backgroundColor: item.badgeColor }]}>

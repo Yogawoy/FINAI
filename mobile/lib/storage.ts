@@ -1,13 +1,16 @@
+import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
+
 /**
- * FinAI Mobile Secure Storage Abstraction
+ * FinAI Mobile Secure Storage Implementation
  * 
- * SECURITY MANDATE:
+ * Uses hardware-backed Android Keystore / iOS Keychain via expo-secure-store.
+ * 
+ * SECURITY MANDATES:
  * 1. Strictly NEVER store user passwords, database credentials, or server secrets.
  * 2. Strictly DO NOT use plaintext persistent storage (e.g. unencrypted AsyncStorage)
  *    for authentication tokens or sensitive credentials.
- * 3. Step 1 provides the contract/interface abstraction. Hardware-backed SecureStore
- *    (e.g., expo-secure-store via Android Keystore / iOS Keychain) is documented as
- *    an explicit dependency GAP to be integrated in Step 2.
+ * 3. Token is kept safely encrypted on-device and cleared on logout or 401.
  */
 
 export interface SecureStorageAdapter {
@@ -17,37 +20,49 @@ export interface SecureStorageAdapter {
   clear(): Promise<void>;
 }
 
-
-// In-memory fallback adapter for initial foundation
-class MemoryStorageAdapter implements SecureStorageAdapter {
-  private store = new Map<string, string>();
-
-  async getItem(key: string): Promise<string | null> {
-    return this.store.get(key) ?? null;
-  }
-
-  async setItem(key: string, value: string): Promise<void> {
-    this.store.set(key, value);
-  }
-
-  async removeItem(key: string): Promise<void> {
-    this.store.delete(key);
-  }
-
-  async clear(): Promise<void> {
-    this.store.clear();
-  }
-}
-
-// Storage keys
 export const STORAGE_KEYS = {
   SESSION_TOKEN: 'finai_mobile_session_token',
   USER_INFO: 'finai_mobile_user_info',
   DEVICE_SETTINGS: 'finai_mobile_device_settings',
 } as const;
 
-// Default storage instance
-export const storage: SecureStorageAdapter = new MemoryStorageAdapter();
+class ExpoSecureStoreAdapter implements SecureStorageAdapter {
+  async getItem(key: string): Promise<string | null> {
+    try {
+      if (Platform.OS === 'web') {
+        return null;
+      }
+      return await SecureStore.getItemAsync(key);
+    } catch {
+      return null;
+    }
+  }
+
+  async setItem(key: string, value: string): Promise<void> {
+    try {
+      if (Platform.OS === 'web') return;
+      await SecureStore.setItemAsync(key, value, {
+        keychainAccessible: SecureStore.AFTER_FIRST_UNLOCK,
+      });
+    } catch (err) {
+      console.warn('Gagal menyimpan token ke SecureStore:', err);
+    }
+  }
+
+  async removeItem(key: string): Promise<void> {
+    try {
+      if (Platform.OS === 'web') return;
+      await SecureStore.deleteItemAsync(key);
+    } catch {}
+  }
+
+  async clear(): Promise<void> {
+    await this.removeItem(STORAGE_KEYS.SESSION_TOKEN);
+    await this.removeItem(STORAGE_KEYS.USER_INFO);
+  }
+}
+
+export const storage: SecureStorageAdapter = new ExpoSecureStoreAdapter();
 
 export async function getSessionToken(): Promise<string | null> {
   return storage.getItem(STORAGE_KEYS.SESSION_TOKEN);
@@ -57,9 +72,18 @@ export async function setSessionToken(token: string): Promise<void> {
   await storage.setItem(STORAGE_KEYS.SESSION_TOKEN, token);
 }
 
-export async function clearSession(): Promise<void> {
+export async function removeSessionToken(): Promise<void> {
   await storage.removeItem(STORAGE_KEYS.SESSION_TOKEN);
-  await storage.removeItem(STORAGE_KEYS.USER_INFO);
 }
 
+export async function clearSession(): Promise<void> {
+  await storage.clear();
+}
+
+// Named aliases for clean API consumption
+export const getToken = getSessionToken;
+export const saveToken = setSessionToken;
+export const removeToken = removeSessionToken;
+
 export default storage;
+

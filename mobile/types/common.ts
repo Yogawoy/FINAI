@@ -1,86 +1,133 @@
 /**
- * FinAI Mobile Common Entity Types (Shared with backend domain)
+ * FinAI Mobile Common Entity Types (Directly reflecting backend models & serializers)
+ * 
+ * STRICT RULES:
+ * - Reflects actual database and serializer contracts from src/lib/serializers/
+ * - Money values from backend are Decimal strings (e.g. "12500000.00")
+ * - Strictly NO `any`
  */
 
-export type TransactionCategory =
-  | 'food'
-  | 'transport'
-  | 'entertainment'
-  | 'bills'
-  | 'shopping'
-  | 'health'
-  | 'education'
-  | 'salary'
-  | 'freelance'
-  | 'investment'
-  | 'other';
+export type WalletType = 'BANK' | 'E_WALLET' | 'CASH';
 
-export type TransactionType = 'income' | 'expense';
+export type TransactionType = 'INCOME' | 'EXPENSE';
 
-export type WalletType =
-  | 'bank'
-  | 'ewallet'
-  | 'cash'
-  | 'savings'
-  | 'investment'
-  | 'other';
+export type BudgetHealthStatus = 'SAFE' | 'WARNING' | 'CRITICAL';
 
-export type WalletColorTheme =
-  | 'periwinkle'
-  | 'blue'
-  | 'mint'
-  | 'peach'
-  | 'neutral'
-  | 'lavender'
-  | 'iceblue';
+export type GoalFrequency = 'WEEKLY' | 'MONTHLY';
 
 export interface Wallet {
   id: string;
+  userId: string;
   name: string;
   type: WalletType;
-  balance: number;
-  currency: string;
-  colorTheme: WalletColorTheme;
-  accountIdentifier?: string;
-  holderName?: string;
-  isDefault?: boolean;
+  institution: string | null;
+  accountLast4: string | null;
+  balance: string;
+  color: string | null;
+  icon: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TransactionWalletSummary {
+  id: string;
+  name: string;
+  type: WalletType;
+  institution: string | null;
 }
 
 export interface Transaction {
   id: string;
-  title: string;
-  category: TransactionCategory;
+  userId: string;
+  walletId: string;
   type: TransactionType;
-  amount: number;
-  date: string;
-  time?: string;
-  walletId?: string;
-  walletName?: string;
-  note?: string;
+  amount: string;
+  category: string;
+  description: string;
+  transactionDate: string;
+  createdAt: string;
+  updatedAt: string;
+  wallet?: TransactionWalletSummary;
 }
 
-export interface BudgetCategory {
+export interface Budget {
   id: string;
-  name: string;
-  category: TransactionCategory;
-  spent: number;
-  limit: number;
-  status: 'safe' | 'warning' | 'exceeded';
+  userId: string;
+  category: string;
+  limitAmount: string;
+  month: number;
+  year: number;
+  createdAt: string;
+  updatedAt: string;
+  usedAmount?: string;
+  remainingAmount?: string;
+  percentage?: number;
+  status?: BudgetHealthStatus;
 }
 
 export interface Goal {
   id: string;
+  userId: string;
   name: string;
-  targetAmount: number;
-  currentAmount: number;
-  deadline?: string | null;
-  status: 'on_track' | 'needs_attention' | 'behind' | 'completed';
+  category: string;
+  targetAmount: string;
+  currentAmount: string;
+  deadline: string;
+  sourceWalletId: string | null;
+  destinationWalletId: string | null;
+  frequency: GoalFrequency | string;
+  autoDeposit?: boolean;
+  nextDueDate?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  remainingAmount?: string;
+  progressPercentage?: number;
+  remainingMonths?: number;
+  recommendedMonthlySaving?: string;
 }
 
-export interface FinancialSummary {
+export interface FinancialDashboardSummary {
   totalBalance: number;
   monthlyIncome: number;
   monthlyExpense: number;
-  netCashFlow: number;
-  savingsRate: number;
+  activeBudgetsCount: number;
+  activeGoalsCount: number;
 }
+
+export interface CreateTransactionInput {
+  walletId: string;
+  type: TransactionType;
+  amount: number;
+  category: string;
+  description: string;
+  transactionDate?: string;
+}
+
+export interface UpdateTransactionInput {
+  walletId?: string;
+  type?: TransactionType;
+  amount?: number;
+  category?: string;
+  description?: string;
+  transactionDate?: string;
+}
+
+export interface CreateWalletInput {
+  name: string;
+  type?: WalletType;
+  institution?: string | null;
+  accountLast4?: string | null;
+  balance?: number;
+  color?: string | null;
+  icon?: string | null;
+}
+
+export interface UpdateWalletInput {
+  name?: string;
+  type?: WalletType;
+  institution?: string | null;
+  accountLast4?: string | null;
+  color?: string | null;
+  icon?: string | null;
+}
+
