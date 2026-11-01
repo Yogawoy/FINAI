@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+﻿import { NextRequest } from 'next/server';
 import { getCurrentUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { apiSuccess, apiError } from '@/lib/api-response';
@@ -8,8 +8,10 @@ import { FINAI_GROK_MODEL, FINAI_XAI_MODEL } from '@/lib/ai/ai.prompts';
 import { buildFinancialContext, calculateFinancialPlan, type PlanningGoalInput } from '@/lib/ai/financial-calculations';
 
 // ---------------------------------------------------------------------------
-// POST /api/ai/chat — Grok-powered FinAI Assistant
+// POST /api/ai/chat â€” Grok-powered FinAI Assistant
 // ---------------------------------------------------------------------------
+
+export const maxDuration = 60;
 
 function safeNum(value: unknown): number {
   let num: number;
