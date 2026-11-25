@@ -4,6 +4,8 @@ import {
   hashPassword,
   comparePassword,
   createSession,
+  createSessionTokenData,
+  setSessionCookie,
   deleteSession,
   getSessionTokenFromRequest,
   getCurrentUser as getCurrentUserFromSession,
@@ -32,9 +34,10 @@ export async function registerUser(
 ): Promise<AuthResult<AuthUserResponseData>> {
   const normalizedEmail = input.email.toLowerCase().trim();
 
-  // Check if email already registered
+  // Check if email already registered (lightweight select)
   const existingUser = await prisma.user.findUnique({
     where: { email: normalizedEmail },
+    select: { id: true },
   });
 
   if (existingUser) {
@@ -48,44 +51,46 @@ export async function registerUser(
     };
   }
 
-  // Hash password
+  // Hash password with optimized rounds (10)
   const passwordHash = await hashPassword(input.password);
+  const { rawToken, tokenHash, expiresAt } = createSessionTokenData(true);
 
-  // Execute atomic transaction: Create User & UserSettings
-  const user = await prisma.$transaction(async (tx) => {
-    const newUser = await tx.user.create({
-      data: {
-        name: input.name.trim(),
-        email: normalizedEmail,
-        passwordHash,
-        settings: {
-          create: {
-            language: 'id-ID',
-            currency: 'IDR',
-            numberFormat: 'id-ID',
-            budgetReminder: true,
-            goalReminder: true,
-            financialSummary: true,
-            aiPersonalization: true,
-            aiActionConfirmation: true,
-            animations: true,
-          },
+  // Single atomic roundtrip: Create User + Settings + Initial Session together!
+  const user = await prisma.user.create({
+    data: {
+      name: input.name.trim(),
+      email: normalizedEmail,
+      passwordHash,
+      settings: {
+        create: {
+          language: 'id-ID',
+          currency: 'IDR',
+          numberFormat: 'id-ID',
+          budgetReminder: true,
+          goalReminder: true,
+          financialSummary: true,
+          aiPersonalization: true,
+          aiActionConfirmation: true,
+          animations: true,
         },
       },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        avatarUrl: true,
-        createdAt: true,
+      sessions: {
+        create: {
+          tokenHash,
+          expiresAt,
+        },
       },
-    });
-
-    return newUser;
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      avatarUrl: true,
+      createdAt: true,
+    },
   });
 
-  // Create session and set cookie
-  const rawToken = await createSession(user.id, true);
+  await setSessionCookie(rawToken, expiresAt);
 
   const safeUser: SafeUser = {
     ...user,
@@ -115,6 +120,14 @@ export async function loginUser(
 
   const user = await prisma.user.findUnique({
     where: { email: normalizedEmail },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      passwordHash: true,
+      avatarUrl: true,
+      createdAt: true,
+    },
   });
 
   if (!user) {

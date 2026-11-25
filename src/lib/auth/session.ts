@@ -21,24 +21,15 @@ export interface SafeUser {
   createdAt: Date;
 }
 
-export async function createSession(userId: string, rememberMe: boolean = true): Promise<string> {
+export function createSessionTokenData(rememberMe: boolean = true) {
   const rawToken = generateSessionToken();
   const tokenHash = hashToken(rawToken);
-
-  // 30 days if rememberMe is true, else 7 days
   const durationDays = rememberMe ? 30 : 7;
   const expiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000);
+  return { rawToken, tokenHash, expiresAt };
+}
 
-  // Store in database
-  await prisma.session.create({
-    data: {
-      userId,
-      tokenHash,
-      expiresAt,
-    },
-  });
-
-  // Set HTTP-only cookie if inside Next.js request store
+export async function setSessionCookie(rawToken: string, expiresAt: Date) {
   try {
     const cookieStore = await cookies();
     cookieStore.set(AUTH_COOKIE_NAME, rawToken, {
@@ -51,6 +42,21 @@ export async function createSession(userId: string, rememberMe: boolean = true):
   } catch {
     // Outside Next.js request context (e.g. CLI unit testing environment)
   }
+}
+
+export async function createSession(userId: string, rememberMe: boolean = true): Promise<string> {
+  const { rawToken, tokenHash, expiresAt } = createSessionTokenData(rememberMe);
+
+  // Store in database
+  await prisma.session.create({
+    data: {
+      userId,
+      tokenHash,
+      expiresAt,
+    },
+  });
+
+  await setSessionCookie(rawToken, expiresAt);
 
   return rawToken;
 }

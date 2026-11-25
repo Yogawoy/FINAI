@@ -8,6 +8,7 @@ interface AuthContextType {
   user: SafeUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  setUser: React.Dispatch<React.SetStateAction<SafeUser | null>>;
   refreshUser: () => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -58,6 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         isLoading,
         isAuthenticated: Boolean(user),
+        setUser,
         refreshUser,
         logout,
       }}

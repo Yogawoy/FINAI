@@ -53,7 +53,7 @@ interface LoginFormCardProps {
 export default function LoginFormCard({ lang, onLangChange }: LoginFormCardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { refreshUser } = useAuth();
+  const { setUser } = useAuth();
   const t = COPY[lang];
 
   const [email, setEmail] = useState('');
@@ -98,7 +98,9 @@ export default function LoginFormCard({ lang, onLangChange }: LoginFormCardProps
         return;
       }
 
-      await refreshUser();
+      if (data?.data?.user) {
+        setUser(data.data.user);
+      }
 
       const rawRedirect = searchParams.get('redirect') || '/app';
       const safeRedirect =

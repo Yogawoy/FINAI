@@ -67,7 +67,7 @@ interface RegisterFormCardProps {
 export default function RegisterFormCard({ lang, onLangChange }: RegisterFormCardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { refreshUser } = useAuth();
+  const { setUser } = useAuth();
   const t = COPY[lang];
 
   const [name, setName] = useState('');
@@ -125,7 +125,9 @@ export default function RegisterFormCard({ lang, onLangChange }: RegisterFormCar
         return;
       }
 
-      await refreshUser();
+      if (data?.data?.user) {
+        setUser(data.data.user);
+      }
 
       const rawRedirect = searchParams.get('redirect') || '/app';
       const safeRedirect =
