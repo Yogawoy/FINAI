@@ -8,6 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 import { apiClient } from '@/lib/api-client';
 import { emitRefresh } from '@/lib/data-refresh';
 import { formatIDR } from '@/lib/format';
+import { normalizeTransactionCategory } from '@/lib/categories';
 import { SerializedSettings } from '@/types';
 import { SelectOption } from '@/components/ui/CustomSelect';
 
@@ -48,7 +49,7 @@ const DEFAULT_SETTINGS: SettingsData = {
   currency: 'IDR',
   numberFormat: 'id',
   defaultWalletId: null,
-  defaultCategory: 'Belanja',
+  defaultCategory: 'shopping',
   paydayDate: '25',
   savingsRateTarget: '30%',
   budgetReminder: true,
@@ -128,7 +129,7 @@ export default function SettingsPage() {
             currency: s.currency || 'IDR',
             numberFormat: s.numberFormat === 'en-US' ? 'en' : 'id',
             defaultWalletId: s.defaultWalletId || null,
-            defaultCategory: s.defaultCategory || 'Belanja',
+            defaultCategory: normalizeTransactionCategory(s.defaultCategory || 'shopping'),
             budgetReminder: s.budgetReminder ?? true,
             goalReminder: s.goalReminder ?? true,
             financialSummary: s.financialSummary ?? true,
@@ -308,7 +309,6 @@ export default function SettingsPage() {
         <SettingsHeader />
         {isSaving && (
           <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-2 text-xs font-semibold text-[#7C7CE6] bg-[#EDEAFC] px-3 py-1.5 rounded-xl animate-pulse">
-            <span className="w-2 h-2 rounded-full bg-[#7C7CE6]" />
             <span>Menyimpan...</span>
           </div>
         )}
@@ -335,7 +335,7 @@ export default function SettingsPage() {
           updateSetting('defaultWalletId', val || null, 'Dompet kas default berhasil diperbarui.')
         }
         walletOptions={walletOptions}
-        defaultCategory={settings.defaultCategory || 'Belanja'}
+        defaultCategory={settings.defaultCategory || 'shopping'}
         onDefaultCategoryChange={(val) => updateSetting('defaultCategory', val, 'Kategori default berhasil diperbarui.')}
         paydayDate={settings.paydayDate}
         onPaydayDateChange={(val) => updateSetting('paydayDate', val, `Siklus gajian diatur setiap tanggal ${val} bulanan.`)}

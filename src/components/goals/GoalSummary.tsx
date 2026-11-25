@@ -34,12 +34,9 @@ export default function GoalSummary({
               Total Target
             </span>
           </div>
-          <div className="text-xl sm:text-2xl lg:text-3xl font-black text-[#242636] tracking-tight tabular-nums">
+          <div className="text-xl sm:text-2xl font-black text-[#242636] tracking-tight tabular-nums">
             {formatIDR(totalTarget)}
           </div>
-          <span className="text-[11px] text-[#757A95] font-medium block">
-            Akumulasi seluruh impian
-          </span>
         </div>
 
         {/* Metric 2: Terkumpul */}
@@ -50,12 +47,9 @@ export default function GoalSummary({
               Terkumpul
             </span>
           </div>
-          <div className="text-xl sm:text-2xl lg:text-3xl font-black text-[#1B7354] tracking-tight tabular-nums">
+          <div className="text-xl sm:text-2xl font-black text-[#1B7354] tracking-tight tabular-nums">
             {formatIDR(totalSaved)}
           </div>
-          <span className="text-[11px] text-[#1B7354] font-semibold block">
-            Dana riil telah disisihkan
-          </span>
         </div>
 
         {/* Metric 3: Progress Rata-rata */}
@@ -66,7 +60,7 @@ export default function GoalSummary({
               Progress
             </span>
           </div>
-          <div className="text-xl sm:text-2xl lg:text-3xl font-black text-[#5F5ED4] tracking-tight tabular-nums">
+          <div className="text-xl sm:text-2xl font-black text-[#5F5ED4] tracking-tight tabular-nums">
             {progressPercent}%
           </div>
           {/* Visual Mini Progress Bar */}
@@ -86,12 +80,14 @@ export default function GoalSummary({
               Target Aktif
             </span>
           </div>
-          <div className="text-xl sm:text-2xl lg:text-3xl font-black text-[#242636] tracking-tight tabular-nums">
+          <div className="text-xl sm:text-2xl font-black text-[#242636] tracking-tight tabular-nums">
             {activeCount}
+            {completedCount > 0 && (
+              <span className="text-xs font-semibold text-[#1B7354] ml-2">
+                ({completedCount} tercapai)
+              </span>
+            )}
           </div>
-          <span className="text-[11px] text-[#757A95] font-medium block">
-            {completedCount > 0 ? `${completedCount} target telah tercapai` : 'Sedang dalam proses menabung'}
-          </span>
         </div>
       </div>
     </div>

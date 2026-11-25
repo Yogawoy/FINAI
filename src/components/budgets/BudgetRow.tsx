@@ -2,67 +2,19 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Utensils,
-  Car,
-  Film,
-  ShoppingBag,
-  Zap,
-  Heart,
-  BookOpen,
-  Sparkles,
-  Pencil,
-  MoreVertical,
-  Trash2,
-  Eye,
-  Copy,
-} from 'lucide-react';
+import { Pencil, MoreVertical, Trash2, Eye, Copy } from 'lucide-react';
 import { BudgetCategory, TransactionCategory } from '@/types';
+import { getTransactionCategoryTheme } from '@/lib/categories';
+import { renderTransactionCategoryIcon } from '@/components/categories/CategoryIcon';
 import { formatIDR } from '@/lib/format';
 import BudgetProgress from './BudgetProgress';
 import BudgetHealth, { computeBudgetHealth } from './BudgetHealth';
 
-export const getCategoryIconComponent = (category: TransactionCategory | string, size = 18) => {
-  switch (category) {
-    case 'food':
-      return <Utensils size={size} />;
-    case 'transport':
-      return <Car size={size} />;
-    case 'entertainment':
-      return <Film size={size} />;
-    case 'shopping':
-      return <ShoppingBag size={size} />;
-    case 'bills':
-      return <Zap size={size} />;
-    case 'health':
-      return <Heart size={size} />;
-    case 'education':
-      return <BookOpen size={size} />;
-    default:
-      return <Sparkles size={size} />;
-  }
-};
+export const getCategoryIconComponent = (category: TransactionCategory | string, size = 18) =>
+  renderTransactionCategoryIcon(category, size);
 
-export const getCategoryColorTheme = (category: TransactionCategory | string) => {
-  switch (category) {
-    case 'food':
-      return { bg: 'bg-[#EDEAFC]', text: 'text-[#5F5ED4]', border: 'border-[#E4E2FB]' };
-    case 'transport':
-      return { bg: 'bg-[#D6E4FA]/60', text: 'text-[#3B6DB0]', border: 'border-[#BED6F9]' };
-    case 'entertainment':
-      return { bg: 'bg-[#FEF3C7]', text: 'text-[#B45309]', border: 'border-[#FDE68A]' };
-    case 'shopping':
-      return { bg: 'bg-[#D0EFE5]', text: 'text-[#1B7354]', border: 'border-[#A7E3D0]' };
-    case 'bills':
-      return { bg: 'bg-[#FCE2E0]', text: 'text-[#B83A38]', border: 'border-[#FAD0CD]' };
-    case 'health':
-      return { bg: 'bg-[#FCE7F3]', text: 'text-[#BE185D]', border: 'border-[#FBCFE8]' };
-    case 'education':
-      return { bg: 'bg-[#E0E7FF]', text: 'text-[#4338CA]', border: 'border-[#C7D2FE]' };
-    default:
-      return { bg: 'bg-[#F4F3F9]', text: 'text-[#7C7CE6]', border: 'border-[#E4E2FB]' };
-  }
-};
+export const getCategoryColorTheme = (category: TransactionCategory | string) =>
+  getTransactionCategoryTheme(category).badge;
 
 interface BudgetRowProps {
   budget: BudgetCategory;
@@ -87,9 +39,6 @@ export default function BudgetRow({
   const healthStatus = computeBudgetHealth(percentage);
   const colorTheme = getCategoryColorTheme(budget.category);
 
-  const periodLabel =
-    budget.period === 'weekly' ? 'Bulanan' : budget.period === 'custom' ? 'Kustom' : 'Bulanan';
-
   return (
     <div
       onClick={() => onSelect(budget)}
@@ -108,10 +57,11 @@ export default function BudgetRow({
             <h4 className="text-sm sm:text-base font-bold text-[#242636] group-hover:text-[#5F5ED4] transition-colors truncate">
               {budget.name}
             </h4>
-            <p className="text-xs text-[#757A95] truncate font-medium mt-0.5">
-              <span>{periodLabel}</span>
-              {budget.dailyVelocity ? ` • ${budget.dailyVelocity}` : ''}
-            </p>
+            {budget.dailyVelocity && (
+              <p className="text-xs text-[#757A95] truncate font-medium mt-0.5">
+                {budget.dailyVelocity}
+              </p>
+            )}
           </div>
         </div>
 
@@ -253,15 +203,17 @@ export default function BudgetRow({
         {/* Remaining Headroom info */}
         <div className="flex items-center justify-between text-xs text-[#757A95]">
           <span className={isOver ? 'text-[#B83A38] font-bold' : 'text-[#757A95] font-medium'}>
-            {isOver ? 'Melebihi anggaran: ' : 'Sisa aman: '}
+            {isOver ? 'Melebihi anggaran: ' : 'Sisa: '}
             <strong className={isOver ? 'text-[#B83A38]' : 'text-[#242636]'}>
               {formatIDR(Math.abs(remaining))}
             </strong>
           </span>
 
-          <span className="text-[11px] font-semibold text-[#7C7CE6]">
-            {isOver ? 'Melebihi Limit' : `${Math.max(0, 100 - percentage)}% ruang aman tersisa`}
-          </span>
+          {isOver && (
+            <span className="text-[11px] font-semibold text-[#B83A38]">
+              Melebihi Limit
+            </span>
+          )}
         </div>
       </div>
     </div>

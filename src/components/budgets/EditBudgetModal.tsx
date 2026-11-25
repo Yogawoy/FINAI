@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Sparkles, Check } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import { BudgetCategory, TransactionCategory, BudgetPeriod } from '@/types';
+import { normalizeTransactionCategory } from '@/lib/categories';
 import BudgetCategorySelector, { BUDGET_CATEGORIES } from './BudgetCategorySelector';
 import BudgetAmountInput from './BudgetAmountInput';
 import BudgetPeriodSelector from './BudgetPeriodSelector';
@@ -37,7 +38,7 @@ export default function EditBudgetModal({
 
   useEffect(() => {
     if (budget) {
-      setCategory(budget.category);
+      setCategory(normalizeTransactionCategory(budget.category));
       setAmount(budget.limit);
       setPeriod(budget.period || 'monthly');
       setStartDate(budget.startDate || '2026-08-31');

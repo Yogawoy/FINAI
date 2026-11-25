@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db';
 import { Prisma } from '@prisma/client';
 import { BudgetService } from '@/lib/services/budget.service';
+import { normalizeCategoryKey } from '@/lib/categories';
 import type { GrokUserContext } from './ai.schemas';
 
 function toMinorUnits(value: unknown): string {
@@ -149,7 +150,7 @@ export async function buildFinancialContext(userId: string): Promise<GrokUserCon
   const categoryMap = new Map<string, number>();
   for (const t of txRows) {
     if (String(t.type).toUpperCase() === 'EXPENSE') {
-      const key = t.category || 'other';
+      const key = normalizeCategoryKey(t.category);
       categoryMap.set(key, (categoryMap.get(key) || 0) + Number(t.amount));
     }
   }

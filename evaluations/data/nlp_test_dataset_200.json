@@ -1,0 +1,2862 @@
+[
+  {
+    "id": "NLP-001",
+    "sentence": "Makan siang ayam geprek 15 ribu pake gopay",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "15000",
+    "expected_category": "Makanan & Minuman",
+    "expected_wallet": "GoPay",
+    "expected_goal": null,
+    "variation_tags": [
+      "standard_slang",
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-002",
+    "sentence": "Beli kopi americano 25k via BCA",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "25000",
+    "expected_category": "Makanan & Minuman",
+    "expected_wallet": "BCA",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev",
+      "code_mixing"
+    ]
+  },
+  {
+    "id": "NLP-003",
+    "sentence": "bayar parkir motor 2rb tunai",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "2000",
+    "expected_category": "Transportasi",
+    "expected_wallet": "Tunai",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-004",
+    "sentence": "Beli bensin pertalite 50.000 di mandiri",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "50000",
+    "expected_category": "Transportasi",
+    "expected_wallet": "Mandiri",
+    "expected_goal": null,
+    "variation_tags": [
+      "standard_format"
+    ]
+  },
+  {
+    "id": "NLP-005",
+    "sentence": "Gaji bulanan masuk 6.5jt ke rekening BCA",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "INCOME",
+    "expected_amount": "6500000",
+    "expected_category": "Gaji",
+    "expected_wallet": "BCA",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev",
+      "income"
+    ]
+  },
+  {
+    "id": "NLP-006",
+    "sentence": "dpt bonus projek freelance 1.2jt di ovo",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "INCOME",
+    "expected_amount": "1200000",
+    "expected_category": "Bonus",
+    "expected_wallet": "OVO",
+    "expected_goal": null,
+    "variation_tags": [
+      "typo",
+      "nominal_abbrev",
+      "income"
+    ]
+  },
+  {
+    "id": "NLP-007",
+    "sentence": "Lunch meeting bareng client 150k pake kartu debit BCA",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "150000",
+    "expected_category": "Makanan & Minuman",
+    "expected_wallet": "BCA",
+    "expected_goal": null,
+    "variation_tags": [
+      "code_mixing",
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-008",
+    "sentence": "split bill dinner semalem 85k via shopeepay",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "85000",
+    "expected_category": "Makanan & Minuman",
+    "expected_wallet": "ShopeePay",
+    "expected_goal": null,
+    "variation_tags": [
+      "code_mixing",
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-009",
+    "sentence": "byr tagihan wifi indihome 385rb lwt bca",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "385000",
+    "expected_category": "Tagihan",
+    "expected_wallet": "BCA",
+    "expected_goal": null,
+    "variation_tags": [
+      "typo",
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-010",
+    "sentence": "beli obat flu dan vitamin di apotek 75 ribu cash",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "75000",
+    "expected_category": "Kesehatan",
+    "expected_wallet": "Tunai",
+    "expected_goal": null,
+    "variation_tags": [
+      "standard_slang"
+    ]
+  },
+  {
+    "id": "NLP-011",
+    "sentence": "blanja bulanan di superindo abis 450k pake mandiri",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "450000",
+    "expected_category": "Belanja",
+    "expected_wallet": "Mandiri",
+    "expected_goal": null,
+    "variation_tags": [
+      "typo",
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-012",
+    "sentence": "topup token listrik pln 100rb dari gopay",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "100000",
+    "expected_category": "Tagihan",
+    "expected_wallet": "GoPay",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-013",
+    "sentence": "nonton bioskop xxi 2 tiket 110k bayar pake ovo",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "110000",
+    "expected_category": "Hiburan",
+    "expected_wallet": "OVO",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-014",
+    "sentence": "dikasih uang saku sama ortu 500rb tunai",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "INCOME",
+    "expected_amount": "500000",
+    "expected_category": "Pemasukan Lain",
+    "expected_wallet": "Tunai",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev",
+      "income"
+    ]
+  },
+  {
+    "id": "NLP-015",
+    "sentence": "beli baju kaos di uniqlo 199 ribu debit bca",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "199000",
+    "expected_category": "Belanja",
+    "expected_wallet": "BCA",
+    "expected_goal": null,
+    "variation_tags": [
+      "standard_slang"
+    ]
+  },
+  {
+    "id": "NLP-016",
+    "sentence": "ongkos gojek ke stasiun 18k gopay",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "18000",
+    "expected_category": "Transportasi",
+    "expected_wallet": "GoPay",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-017",
+    "sentence": "isi saldo etoll mandiri 100 ribu",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "100000",
+    "expected_category": "Transportasi",
+    "expected_wallet": "Mandiri",
+    "expected_goal": null,
+    "variation_tags": [
+      "standard_slang"
+    ]
+  },
+  {
+    "id": "NLP-018",
+    "sentence": "dapet cashback marketplace 25rb masuk shopeepay",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "INCOME",
+    "expected_amount": "25000",
+    "expected_category": "Bonus",
+    "expected_wallet": "ShopeePay",
+    "expected_goal": null,
+    "variation_tags": [
+      "typo",
+      "nominal_abbrev",
+      "income"
+    ]
+  },
+  {
+    "id": "NLP-019",
+    "sentence": "makan bakso solo 20k bayar cash",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "20000",
+    "expected_category": "Makanan & Minuman",
+    "expected_wallet": "Tunai",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev",
+      "code_mixing"
+    ]
+  },
+  {
+    "id": "NLP-020",
+    "sentence": "byr uang kosan bulanan 1.5jt via transfer bca",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "1500000",
+    "expected_category": "Tempat Tinggal",
+    "expected_wallet": "BCA",
+    "expected_goal": null,
+    "variation_tags": [
+      "typo",
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-021",
+    "sentence": "beli paket data telkomsel 75k dari gopay",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "75000",
+    "expected_category": "Tagihan",
+    "expected_wallet": "GoPay",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-022",
+    "sentence": "laundry kiloan 35 ribu pake tunai",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "35000",
+    "expected_category": "Kebutuhan Harian",
+    "expected_wallet": "Tunai",
+    "expected_goal": null,
+    "variation_tags": [
+      "standard_slang"
+    ]
+  },
+  {
+    "id": "NLP-023",
+    "sentence": "langganan netflix 186k potong kartu bca",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "186000",
+    "expected_category": "Hiburan",
+    "expected_wallet": "BCA",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-024",
+    "sentence": "service motor ganti oli 120rb bayar mandiri",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "120000",
+    "expected_category": "Transportasi",
+    "expected_wallet": "Mandiri",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-025",
+    "sentence": "jual barang bekas laku 150rb masuk ovo",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "INCOME",
+    "expected_amount": "150000",
+    "expected_category": "Pemasukan Lain",
+    "expected_wallet": "OVO",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev",
+      "income"
+    ]
+  },
+  {
+    "id": "NLP-026",
+    "sentence": "ngopi di starbucks 58k pake gopay",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "58000",
+    "expected_category": "Makanan & Minuman",
+    "expected_wallet": "GoPay",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-027",
+    "sentence": "beli buku catatan dan pulpen 42rb cash",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "42000",
+    "expected_category": "Pendidikan",
+    "expected_wallet": "Tunai",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev",
+      "code_mixing"
+    ]
+  },
+  {
+    "id": "NLP-028",
+    "sentence": "bayar iuran gym bulanan 350.000 bca",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "350000",
+    "expected_category": "Kesehatan",
+    "expected_wallet": "BCA",
+    "expected_goal": null,
+    "variation_tags": [
+      "standard_format"
+    ]
+  },
+  {
+    "id": "NLP-029",
+    "sentence": "dapet honor tutor mengajar 400k via dana",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "INCOME",
+    "expected_amount": "400000",
+    "expected_category": "Gaji",
+    "expected_wallet": "Dana",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev",
+      "income"
+    ]
+  },
+  {
+    "id": "NLP-030",
+    "sentence": "beli skincare sunscreen 115k shopeepay",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "115000",
+    "expected_category": "Kebutuhan Harian",
+    "expected_wallet": "ShopeePay",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-031",
+    "sentence": "sarapan bubur ayam 12 ribu uang tunai",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "12000",
+    "expected_category": "Makanan & Minuman",
+    "expected_wallet": "Tunai",
+    "expected_goal": null,
+    "variation_tags": [
+      "standard_slang"
+    ]
+  },
+  {
+    "id": "NLP-032",
+    "sentence": "potong rambut di barbershop 45rb cash",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "45000",
+    "expected_category": "Kebutuhan Harian",
+    "expected_wallet": "Tunai",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev",
+      "code_mixing"
+    ]
+  },
+  {
+    "id": "NLP-033",
+    "sentence": "byr tagihan pdam air 65k transfer bca",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "65000",
+    "expected_category": "Tagihan",
+    "expected_wallet": "BCA",
+    "expected_goal": null,
+    "variation_tags": [
+      "typo",
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-034",
+    "sentence": "pesen gofood martabak manis 60k lewat gopay",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "60000",
+    "expected_category": "Makanan & Minuman",
+    "expected_wallet": "GoPay",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-035",
+    "sentence": "dapet dividen reksadana 75.000 masuk rekening bca",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "INCOME",
+    "expected_amount": "75000",
+    "expected_category": "Investasi",
+    "expected_wallet": "BCA",
+    "expected_goal": null,
+    "variation_tags": [
+      "income"
+    ]
+  },
+  {
+    "id": "NLP-036",
+    "sentence": "beli casing hp baru 35k di shopee bayar pake shopeepay",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "35000",
+    "expected_category": "Belanja",
+    "expected_wallet": "ShopeePay",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-037",
+    "sentence": "isi bensin motor vario 30rb cash",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "30000",
+    "expected_category": "Transportasi",
+    "expected_wallet": "Tunai",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev",
+      "code_mixing"
+    ]
+  },
+  {
+    "id": "NLP-038",
+    "sentence": "bayar iuran kebersihan rt 25 ribu tunai",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "25000",
+    "expected_category": "Tagihan",
+    "expected_wallet": "Tunai",
+    "expected_goal": null,
+    "variation_tags": [
+      "standard_slang"
+    ]
+  },
+  {
+    "id": "NLP-039",
+    "sentence": "makan malam seafood 210k debit mandiri",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "210000",
+    "expected_category": "Makanan & Minuman",
+    "expected_wallet": "Mandiri",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-040",
+    "sentence": "terima transferan utang temen 200rb ke bca",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "INCOME",
+    "expected_amount": "200000",
+    "expected_category": "Pemasukan Lain",
+    "expected_wallet": "BCA",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev",
+      "income"
+    ]
+  },
+  {
+    "id": "NLP-041",
+    "sentence": "blanja sayur mayur di pasar 48k tunai",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "48000",
+    "expected_category": "Makanan & Minuman",
+    "expected_wallet": "Tunai",
+    "expected_goal": null,
+    "variation_tags": [
+      "typo",
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-042",
+    "sentence": "langganan spotify premium 55k pake ovo",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "55000",
+    "expected_category": "Hiburan",
+    "expected_wallet": "OVO",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-043",
+    "sentence": "mkn siang warteg 14rb tunai",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "14000",
+    "expected_category": "Makanan & Minuman",
+    "expected_wallet": "Tunai",
+    "expected_goal": null,
+    "variation_tags": [
+      "typo",
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-044",
+    "sentence": "beli kuota data darurat 10k dari dana",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "10000",
+    "expected_category": "Tagihan",
+    "expected_wallet": "Dana",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-045",
+    "sentence": "jasa cuci sepatu premium 60k bayar gopay",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "60000",
+    "expected_category": "Kebutuhan Harian",
+    "expected_wallet": "GoPay",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-046",
+    "sentence": "jual akun game laku 500k masuk ke dana",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "INCOME",
+    "expected_amount": "500000",
+    "expected_category": "Pemasukan Lain",
+    "expected_wallet": "Dana",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev",
+      "income"
+    ]
+  },
+  {
+    "id": "NLP-047",
+    "sentence": "pesen grabfood sate ayam 38rb pake ovo",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "38000",
+    "expected_category": "Makanan & Minuman",
+    "expected_wallet": "OVO",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-048",
+    "sentence": "bayar servis ac kamar 150rb tunai",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "150000",
+    "expected_category": "Tempat Tinggal",
+    "expected_wallet": "Tunai",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-049",
+    "sentence": "beli suplemen vitamin c 85k di kimia farma mandiri",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "85000",
+    "expected_category": "Kesehatan",
+    "expected_wallet": "Mandiri",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-050",
+    "sentence": "gaji sampingan desain grafis 1.8jt masuk bca",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "INCOME",
+    "expected_amount": "1800000",
+    "expected_category": "Gaji",
+    "expected_wallet": "BCA",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev",
+      "income"
+    ]
+  },
+  {
+    "id": "NLP-051",
+    "sentence": "Ngopi latte 32k di kulo bayar qr bca",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "32000",
+    "expected_category": "Makanan & Minuman",
+    "expected_wallet": "BCA",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-052",
+    "sentence": "isi saldo flazz 50rb bca",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "50000",
+    "expected_category": "Transportasi",
+    "expected_wallet": "BCA",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-053",
+    "sentence": "beli tiket kereta commuter line 8k gopay",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "8000",
+    "expected_category": "Transportasi",
+    "expected_wallet": "GoPay",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-054",
+    "sentence": "sedekah jumat berkah 50 ribu cash",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "50000",
+    "expected_category": "Sosial",
+    "expected_wallet": "Tunai",
+    "expected_goal": null,
+    "variation_tags": [
+      "standard_slang",
+      "code_mixing"
+    ]
+  },
+  {
+    "id": "NLP-055",
+    "sentence": "dpt arisan keluarga 1jt tunai",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "INCOME",
+    "expected_amount": "1000000",
+    "expected_category": "Pemasukan Lain",
+    "expected_wallet": "Tunai",
+    "expected_goal": null,
+    "variation_tags": [
+      "typo",
+      "nominal_abbrev",
+      "income"
+    ]
+  },
+  {
+    "id": "NLP-056",
+    "sentence": "beli kado ulang tahun temen 125k shopeepay",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "125000",
+    "expected_category": "Sosial",
+    "expected_wallet": "ShopeePay",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-057",
+    "sentence": "order shopeefood nasi padang 28rb dana",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "28000",
+    "expected_category": "Makanan & Minuman",
+    "expected_wallet": "Dana",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-058",
+    "sentence": "beli perlengkapan mandi sabun sampo 64rb mandiri",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "64000",
+    "expected_category": "Kebutuhan Harian",
+    "expected_wallet": "Mandiri",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-059",
+    "sentence": "tambal ban motor bocor 15k tunai",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "15000",
+    "expected_category": "Transportasi",
+    "expected_wallet": "Tunai",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-060",
+    "sentence": "bayar biaya cetak makalah tugas kuliah 22rb cash",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "22000",
+    "expected_category": "Pendidikan",
+    "expected_wallet": "Tunai",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev",
+      "code_mixing"
+    ]
+  },
+  {
+    "id": "NLP-061",
+    "sentence": "penjualan kaos preloved laku 90k masuk gopay",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "INCOME",
+    "expected_amount": "90000",
+    "expected_category": "Pemasukan Lain",
+    "expected_wallet": "GoPay",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev",
+      "income"
+    ]
+  },
+  {
+    "id": "NLP-062",
+    "sentence": "makan mie gacoan level 3 abis 18k ovo",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "18000",
+    "expected_category": "Makanan & Minuman",
+    "expected_wallet": "OVO",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-063",
+    "sentence": "beli cemilan jajan indomaret 33rb dana",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "33000",
+    "expected_category": "Makanan & Minuman",
+    "expected_wallet": "Dana",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-064",
+    "sentence": "byr retribusi sampah lingkungan 15000 tunai",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "15000",
+    "expected_category": "Tagihan",
+    "expected_wallet": "Tunai",
+    "expected_goal": null,
+    "variation_tags": [
+      "typo",
+      "standard_format"
+    ]
+  },
+  {
+    "id": "NLP-065",
+    "sentence": "isi bensin pertamax mobil 200rb debit bca",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "200000",
+    "expected_category": "Transportasi",
+    "expected_wallet": "BCA",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-066",
+    "sentence": "dapet komisi affiliate tiktok 350k ke dana",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "INCOME",
+    "expected_amount": "350000",
+    "expected_category": "Bonus",
+    "expected_wallet": "Dana",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev",
+      "income"
+    ]
+  },
+  {
+    "id": "NLP-067",
+    "sentence": "beli kabel charger type-c 45k di shopeepay",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "45000",
+    "expected_category": "Elektronik",
+    "expected_wallet": "ShopeePay",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-068",
+    "sentence": "mkn soto ayam lamongan 16rb pake qris bca",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "16000",
+    "expected_category": "Makanan & Minuman",
+    "expected_wallet": "BCA",
+    "expected_goal": null,
+    "variation_tags": [
+      "typo",
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-069",
+    "sentence": "beli kacamata minus baru 300rb mandiri",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "300000",
+    "expected_category": "Kesehatan",
+    "expected_wallet": "Mandiri",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-070",
+    "sentence": "dapat amplop kondangan dari temen 250k tunai",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "INCOME",
+    "expected_amount": "250000",
+    "expected_category": "Pemasukan Lain",
+    "expected_wallet": "Tunai",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev",
+      "income"
+    ]
+  },
+  {
+    "id": "NLP-071",
+    "sentence": "cuci mobil carwash 40k cash",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "40000",
+    "expected_category": "Transportasi",
+    "expected_wallet": "Tunai",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev",
+      "code_mixing"
+    ]
+  },
+  {
+    "id": "NLP-072",
+    "sentence": "beli mouse wireless logitech 160rb debit bca",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "160000",
+    "expected_category": "Elektronik",
+    "expected_wallet": "BCA",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-073",
+    "sentence": "bayar pbb pajak bumi dan bangunan 180k mandiri",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "180000",
+    "expected_category": "Tagihan",
+    "expected_wallet": "Mandiri",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-074",
+    "sentence": "beli kuota cloud storage google one 27rb gopay",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "27000",
+    "expected_category": "Tagihan",
+    "expected_wallet": "GoPay",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-075",
+    "sentence": "dapat tip proyek dari klien 100rb masuk ovo",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "INCOME",
+    "expected_amount": "100000",
+    "expected_category": "Bonus",
+    "expected_wallet": "OVO",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev",
+      "income"
+    ]
+  },
+  {
+    "id": "NLP-076",
+    "sentence": "beli gorengan bakwan dan tahu 10rb tunai",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "10000",
+    "expected_category": "Makanan & Minuman",
+    "expected_wallet": "Tunai",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-077",
+    "sentence": "tiket masuk tempat wisata pantai 25k bca",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "25000",
+    "expected_category": "Hiburan",
+    "expected_wallet": "BCA",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-078",
+    "sentence": "beli obat tetes mata rohto 17rb shopeepay",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "17000",
+    "expected_category": "Kesehatan",
+    "expected_wallet": "ShopeePay",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-079",
+    "sentence": "beli galon air aqua 20k tunai",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "20000",
+    "expected_category": "Kebutuhan Harian",
+    "expected_wallet": "Tunai",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-080",
+    "sentence": "reward survey online 50k masuk dana",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "INCOME",
+    "expected_amount": "50000",
+    "expected_category": "Bonus",
+    "expected_wallet": "Dana",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev",
+      "income"
+    ]
+  },
+  {
+    "id": "NLP-081",
+    "sentence": "dinner di all you can eat 198rb debit bca",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "198000",
+    "expected_category": "Makanan & Minuman",
+    "expected_wallet": "BCA",
+    "expected_goal": null,
+    "variation_tags": [
+      "code_mixing",
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-082",
+    "sentence": "sewa lapangan futsal 1 jam 120k gopay",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "120000",
+    "expected_category": "Hiburan",
+    "expected_wallet": "GoPay",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-083",
+    "sentence": "beli gas elpiji 3kg 22rb tunai",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "22000",
+    "expected_category": "Kebutuhan Harian",
+    "expected_wallet": "Tunai",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-084",
+    "sentence": "pembayaran domain web setahun 165k bca",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "165000",
+    "expected_category": "Tagihan",
+    "expected_wallet": "BCA",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-085",
+    "sentence": "dapet honor narasumber webinar 750k bca",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "INCOME",
+    "expected_amount": "750000",
+    "expected_category": "Gaji",
+    "expected_wallet": "BCA",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev",
+      "income"
+    ]
+  },
+  {
+    "id": "NLP-086",
+    "sentence": "beli helm bogo retro 220rb mandiri",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "220000",
+    "expected_category": "Transportasi",
+    "expected_wallet": "Mandiri",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-087",
+    "sentence": "bayar iuran keamanan perumahan 35k tunai",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "35000",
+    "expected_category": "Tagihan",
+    "expected_wallet": "Tunai",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-088",
+    "sentence": "beli cemilan roti o di stasiun 13k ovo",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "13000",
+    "expected_category": "Makanan & Minuman",
+    "expected_wallet": "OVO",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-089",
+    "sentence": "beli bantal tidur dacron 75k shopeepay",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "75000",
+    "expected_category": "Kebutuhan Harian",
+    "expected_wallet": "ShopeePay",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-090",
+    "sentence": "terima pengembalian dana refund tiket 180k masuk gopay",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "INCOME",
+    "expected_amount": "180000",
+    "expected_category": "Pemasukan Lain",
+    "expected_wallet": "GoPay",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev",
+      "income"
+    ]
+  },
+  {
+    "id": "NLP-091",
+    "sentence": "bayar fotocopy soal ujian 5rb tunai",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "5000",
+    "expected_category": "Pendidikan",
+    "expected_wallet": "Tunai",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-092",
+    "sentence": "beli jus alpukat kocok 15k dana",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "15000",
+    "expected_category": "Makanan & Minuman",
+    "expected_wallet": "Dana",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-093",
+    "sentence": "beli pulsa telkomsel reguler 50rb bca",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "50000",
+    "expected_category": "Tagihan",
+    "expected_wallet": "BCA",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-094",
+    "sentence": "blanja di minimarket indomaret habis 78.500 mandiri",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "EXPENSE",
+    "expected_amount": "78500",
+    "expected_category": "Belanja",
+    "expected_wallet": "Mandiri",
+    "expected_goal": null,
+    "variation_tags": [
+      "typo",
+      "standard_format"
+    ]
+  },
+  {
+    "id": "NLP-095",
+    "sentence": "gaji asisten lab praktikum 600k masuk bca",
+    "expected_action": "create_transaction",
+    "expected_transaction_type": "INCOME",
+    "expected_amount": "600000",
+    "expected_category": "Gaji",
+    "expected_wallet": "BCA",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev",
+      "income"
+    ]
+  },
+  {
+    "id": "NLP-096",
+    "sentence": "Pindahin uang 200rb dari BCA ke GoPay",
+    "expected_action": "transfer",
+    "expected_amount": "200000",
+    "expected_category": null,
+    "expected_wallet": "BCA",
+    "expected_destination_wallet": "GoPay",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-097",
+    "sentence": "tf 500k dari rekening mandiri ke bca",
+    "expected_action": "transfer",
+    "expected_amount": "500000",
+    "expected_category": null,
+    "expected_wallet": "Mandiri",
+    "expected_destination_wallet": "BCA",
+    "expected_goal": null,
+    "variation_tags": [
+      "typo",
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-098",
+    "sentence": "top up gopay 100 ribu dari bca",
+    "expected_action": "transfer",
+    "expected_amount": "100000",
+    "expected_category": null,
+    "expected_wallet": "BCA",
+    "expected_destination_wallet": "GoPay",
+    "expected_goal": null,
+    "variation_tags": [
+      "code_mixing",
+      "standard_slang"
+    ]
+  },
+  {
+    "id": "NLP-099",
+    "sentence": "tarik tunai 300rb dari atm bca ke dompet fisik",
+    "expected_action": "transfer",
+    "expected_amount": "300000",
+    "expected_category": null,
+    "expected_wallet": "BCA",
+    "expected_destination_wallet": "Tunai",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-100",
+    "sentence": "trf 1.5jt dari bca ke ovo",
+    "expected_action": "transfer",
+    "expected_amount": "1500000",
+    "expected_category": null,
+    "expected_wallet": "BCA",
+    "expected_destination_wallet": "OVO",
+    "expected_goal": null,
+    "variation_tags": [
+      "typo",
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-101",
+    "sentence": "pindah saldo 50k ovo ke gopay",
+    "expected_action": "transfer",
+    "expected_amount": "50000",
+    "expected_category": null,
+    "expected_wallet": "OVO",
+    "expected_destination_wallet": "GoPay",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-102",
+    "sentence": "isi saldo shopeepay 150rb lewat mandiri",
+    "expected_action": "transfer",
+    "expected_amount": "150000",
+    "expected_category": null,
+    "expected_wallet": "Mandiri",
+    "expected_destination_wallet": "ShopeePay",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-103",
+    "sentence": "transfer from bca to dana 250k",
+    "expected_action": "transfer",
+    "expected_amount": "250000",
+    "expected_category": null,
+    "expected_wallet": "BCA",
+    "expected_destination_wallet": "Dana",
+    "expected_goal": null,
+    "variation_tags": [
+      "code_mixing",
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-104",
+    "sentence": "masukin uang kembalian 50rb cash ke bca",
+    "expected_action": "transfer",
+    "expected_amount": "50000",
+    "expected_category": null,
+    "expected_wallet": "Tunai",
+    "expected_destination_wallet": "BCA",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-105",
+    "sentence": "geser saldo 400rb bca ke mandiri",
+    "expected_action": "transfer",
+    "expected_amount": "400000",
+    "expected_category": null,
+    "expected_wallet": "BCA",
+    "expected_destination_wallet": "Mandiri",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-106",
+    "sentence": "topup dana 80k dari gopay",
+    "expected_action": "transfer",
+    "expected_amount": "80000",
+    "expected_category": null,
+    "expected_wallet": "GoPay",
+    "expected_destination_wallet": "Dana",
+    "expected_goal": null,
+    "variation_tags": [
+      "code_mixing",
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-107",
+    "sentence": "tarik tunai 100k dari mandiri jadi cash",
+    "expected_action": "transfer",
+    "expected_amount": "100000",
+    "expected_category": null,
+    "expected_wallet": "Mandiri",
+    "expected_destination_wallet": "Tunai",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-108",
+    "sentence": "trf antar rekening 2jt dari bca ke mandiri",
+    "expected_action": "transfer",
+    "expected_amount": "2000000",
+    "expected_category": null,
+    "expected_wallet": "BCA",
+    "expected_destination_wallet": "Mandiri",
+    "expected_goal": null,
+    "variation_tags": [
+      "typo",
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-109",
+    "sentence": "pindahin sisa gopay 35rb ke ovo",
+    "expected_action": "transfer",
+    "expected_amount": "35000",
+    "expected_category": null,
+    "expected_wallet": "GoPay",
+    "expected_destination_wallet": "OVO",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-110",
+    "sentence": "topup ovo 300rb lwt mbanking bca",
+    "expected_action": "transfer",
+    "expected_amount": "300000",
+    "expected_category": null,
+    "expected_wallet": "BCA",
+    "expected_destination_wallet": "OVO",
+    "expected_goal": null,
+    "variation_tags": [
+      "typo",
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-111",
+    "sentence": "kirim 120k dari dana ke gopay",
+    "expected_action": "transfer",
+    "expected_amount": "120000",
+    "expected_category": null,
+    "expected_wallet": "Dana",
+    "expected_destination_wallet": "GoPay",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-112",
+    "sentence": "tarik cash 500.000 dari bca simpen di dompet",
+    "expected_action": "transfer",
+    "expected_amount": "500000",
+    "expected_category": null,
+    "expected_wallet": "BCA",
+    "expected_destination_wallet": "Tunai",
+    "expected_goal": null,
+    "variation_tags": [
+      "standard_format",
+      "code_mixing"
+    ]
+  },
+  {
+    "id": "NLP-113",
+    "sentence": "setor tunai 750k uang fisik ke bca",
+    "expected_action": "transfer",
+    "expected_amount": "750000",
+    "expected_category": null,
+    "expected_wallet": "Tunai",
+    "expected_destination_wallet": "BCA",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-114",
+    "sentence": "transfer 70k shopeepay ke dana",
+    "expected_action": "transfer",
+    "expected_amount": "70000",
+    "expected_category": null,
+    "expected_wallet": "ShopeePay",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-115",
+    "sentence": "pindahin dana darurat 1jt mandiri ke bca",
+    "expected_action": "transfer",
+    "expected_amount": "1000000",
+    "expected_category": null,
+    "expected_wallet": "Mandiri",
+    "expected_destination_wallet": "BCA",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev",
+      "ambiguity"
+    ]
+  },
+  {
+    "id": "NLP-116",
+    "sentence": "isi gopay 50 ribu dari mandiri",
+    "expected_action": "transfer",
+    "expected_amount": "50000",
+    "expected_category": null,
+    "expected_wallet": "Mandiri",
+    "expected_destination_wallet": "GoPay",
+    "expected_goal": null,
+    "variation_tags": [
+      "standard_slang"
+    ]
+  },
+  {
+    "id": "NLP-117",
+    "sentence": "tf 45rb ovo ke dana",
+    "expected_action": "transfer",
+    "expected_amount": "45000",
+    "expected_category": null,
+    "expected_wallet": "OVO",
+    "expected_destination_wallet": "Dana",
+    "expected_goal": null,
+    "variation_tags": [
+      "typo",
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-118",
+    "sentence": "alihkan 600k bca ke shopeepay",
+    "expected_action": "transfer",
+    "expected_amount": "600000",
+    "expected_category": null,
+    "expected_wallet": "BCA",
+    "expected_destination_wallet": "ShopeePay",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-119",
+    "sentence": "topup shopee pay 200rb dari gopay",
+    "expected_action": "transfer",
+    "expected_amount": "200000",
+    "expected_category": null,
+    "expected_wallet": "GoPay",
+    "expected_destination_wallet": "ShopeePay",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-120",
+    "sentence": "tarik tunai 250k mandiri ke cash",
+    "expected_action": "transfer",
+    "expected_amount": "250000",
+    "expected_category": null,
+    "expected_wallet": "Mandiri",
+    "expected_destination_wallet": "Tunai",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev",
+      "code_mixing"
+    ]
+  },
+  {
+    "id": "NLP-121",
+    "sentence": "pindahin saldo sisa belanja 15k shopeepay ke gopay",
+    "expected_action": "transfer",
+    "expected_amount": "15000",
+    "expected_category": null,
+    "expected_wallet": "ShopeePay",
+    "expected_destination_wallet": "GoPay",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-122",
+    "sentence": "setor tunai 1.2jt uang cash ke mandiri",
+    "expected_action": "transfer",
+    "expected_amount": "1200000",
+    "expected_category": null,
+    "expected_wallet": "Tunai",
+    "expected_destination_wallet": "Mandiri",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev",
+      "code_mixing"
+    ]
+  },
+  {
+    "id": "NLP-123",
+    "sentence": "transfer 350k dari bca ke ewallet dana",
+    "expected_action": "transfer",
+    "expected_amount": "350000",
+    "expected_category": null,
+    "expected_wallet": "BCA",
+    "expected_destination_wallet": "Dana",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-124",
+    "sentence": "tf 85rb dana ke ovo",
+    "expected_action": "transfer",
+    "expected_amount": "85000",
+    "expected_category": null,
+    "expected_wallet": "Dana",
+    "expected_destination_wallet": "OVO",
+    "expected_goal": null,
+    "variation_tags": [
+      "typo",
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-125",
+    "sentence": "topup e-money mandiri 100k pake bca",
+    "expected_action": "transfer",
+    "expected_amount": "100000",
+    "expected_category": null,
+    "expected_wallet": "BCA",
+    "expected_destination_wallet": "Mandiri",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-126",
+    "sentence": "geser dana 500k mandiri ke ovo",
+    "expected_action": "transfer",
+    "expected_amount": "500000",
+    "expected_category": null,
+    "expected_wallet": "Mandiri",
+    "expected_destination_wallet": "OVO",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-127",
+    "sentence": "pindahkan 90k dari gopay ke bca",
+    "expected_action": "transfer",
+    "expected_amount": "90000",
+    "expected_category": null,
+    "expected_wallet": "GoPay",
+    "expected_destination_wallet": "BCA",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-128",
+    "sentence": "tarik tunai uang saku 150rb bca simpan ke dompet",
+    "expected_action": "transfer",
+    "expected_amount": "150000",
+    "expected_category": null,
+    "expected_wallet": "BCA",
+    "expected_destination_wallet": "Tunai",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-129",
+    "sentence": "trf 65k dari ovo ke shopeepay",
+    "expected_action": "transfer",
+    "expected_amount": "65000",
+    "expected_category": null,
+    "expected_wallet": "OVO",
+    "expected_destination_wallet": "ShopeePay",
+    "expected_goal": null,
+    "variation_tags": [
+      "typo",
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-130",
+    "sentence": "top up dana 200 ribu melalui transfer bca",
+    "expected_action": "transfer",
+    "expected_amount": "200000",
+    "expected_category": null,
+    "expected_wallet": "BCA",
+    "expected_destination_wallet": "Dana",
+    "expected_goal": null,
+    "variation_tags": [
+      "standard_slang"
+    ]
+  },
+  {
+    "id": "NLP-131",
+    "sentence": "pindah 110k dana ke mandiri",
+    "expected_action": "transfer",
+    "expected_amount": "110000",
+    "expected_category": null,
+    "expected_wallet": "Dana",
+    "expected_destination_wallet": "Mandiri",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-132",
+    "sentence": "alihkan 1.8jt bca ke mandiri",
+    "expected_action": "transfer",
+    "expected_amount": "1800000",
+    "expected_category": null,
+    "expected_wallet": "BCA",
+    "expected_destination_wallet": "Mandiri",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-133",
+    "sentence": "tf saldo 30k gopay ke dana",
+    "expected_action": "transfer",
+    "expected_amount": "30000",
+    "expected_category": null,
+    "expected_wallet": "GoPay",
+    "expected_destination_wallet": "Dana",
+    "expected_goal": null,
+    "variation_tags": [
+      "typo",
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-134",
+    "sentence": "masukin 200rb cash ke dompet gopay",
+    "expected_action": "transfer",
+    "expected_amount": "200000",
+    "expected_category": null,
+    "expected_wallet": "Tunai",
+    "expected_destination_wallet": "GoPay",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev",
+      "code_mixing"
+    ]
+  },
+  {
+    "id": "NLP-135",
+    "sentence": "pindahkan 450k dari mandiri ke dana",
+    "expected_action": "transfer",
+    "expected_amount": "450000",
+    "expected_category": null,
+    "expected_wallet": "Mandiri",
+    "expected_destination_wallet": "Dana",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-136",
+    "sentence": "topup 50k shopeepay pake saldo bca",
+    "expected_action": "transfer",
+    "expected_amount": "50000",
+    "expected_category": null,
+    "expected_wallet": "BCA",
+    "expected_destination_wallet": "ShopeePay",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-137",
+    "sentence": "tarik 1jt bca ke uang tunai",
+    "expected_action": "transfer",
+    "expected_amount": "1000000",
+    "expected_category": null,
+    "expected_wallet": "BCA",
+    "expected_destination_wallet": "Tunai",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-138",
+    "sentence": "tf balik 75k dari ovo ke bca",
+    "expected_action": "transfer",
+    "expected_amount": "75000",
+    "expected_category": null,
+    "expected_wallet": "OVO",
+    "expected_destination_wallet": "BCA",
+    "expected_goal": null,
+    "variation_tags": [
+      "typo",
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-139",
+    "sentence": "pindahin dana 220k gopay ke mandiri",
+    "expected_action": "transfer",
+    "expected_amount": "220000",
+    "expected_category": null,
+    "expected_wallet": "GoPay",
+    "expected_destination_wallet": "Mandiri",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-140",
+    "sentence": "setor uang 400rb cash masuk rekening mandiri",
+    "expected_action": "transfer",
+    "expected_amount": "400000",
+    "expected_category": null,
+    "expected_wallet": "Tunai",
+    "expected_destination_wallet": "Mandiri",
+    "expected_goal": null,
+    "variation_tags": [
+      "nominal_abbrev",
+      "code_mixing"
+    ]
+  },
+  {
+    "id": "NLP-141",
+    "sentence": "Nabung 500rb buat beli laptop dari rekening BCA",
+    "expected_action": "goal_contribution",
+    "expected_amount": "500000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "BCA",
+    "expected_goal": "Laptop Baru",
+    "variation_tags": [
+      "nominal_abbrev",
+      "ambiguity"
+    ]
+  },
+  {
+    "id": "NLP-142",
+    "sentence": "setor 1jt ke tabungan dana darurat pake bca",
+    "expected_action": "goal_contribution",
+    "expected_amount": "1000000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "BCA",
+    "expected_goal": "Dana Darurat",
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-143",
+    "sentence": "alokasi 250k buat target liburan bali dari gopay",
+    "expected_action": "goal_contribution",
+    "expected_amount": "250000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "GoPay",
+    "expected_goal": "Liburan ke Bali",
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-144",
+    "sentence": "nabung 2jt untuk dp rumah dari mandiri",
+    "expected_action": "goal_contribution",
+    "expected_amount": "2000000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "Mandiri",
+    "expected_goal": "DP Rumah",
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-145",
+    "sentence": "simpan 100rb ke goal laptop baru dari ovo",
+    "expected_action": "goal_contribution",
+    "expected_amount": "100000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "OVO",
+    "expected_goal": "Laptop Baru",
+    "variation_tags": [
+      "nominal_abbrev",
+      "code_mixing"
+    ]
+  },
+  {
+    "id": "NLP-146",
+    "sentence": "masukin 300k ke celengan umroh tunai",
+    "expected_action": "goal_contribution",
+    "expected_amount": "300000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "Tunai",
+    "expected_goal": "Umroh",
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-147",
+    "sentence": "tabung 750 ribu ke dana darurat via bca",
+    "expected_action": "goal_contribution",
+    "expected_amount": "750000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "BCA",
+    "expected_goal": "Dana Darurat",
+    "variation_tags": [
+      "standard_slang"
+    ]
+  },
+  {
+    "id": "NLP-148",
+    "sentence": "setor 150k buat target beli sepatu running dari gopay",
+    "expected_action": "goal_contribution",
+    "expected_amount": "150000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "GoPay",
+    "expected_goal": "Sepatu Running",
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-149",
+    "sentence": "nabung 400rb bca untuk liburan bali",
+    "expected_action": "goal_contribution",
+    "expected_amount": "400000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "BCA",
+    "expected_goal": "Liburan ke Bali",
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-150",
+    "sentence": "sisihin 500k dari gaji mandiri buat goal laptop",
+    "expected_action": "goal_contribution",
+    "expected_amount": "500000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "Mandiri",
+    "expected_goal": "Laptop Baru",
+    "variation_tags": [
+      "nominal_abbrev",
+      "code_mixing"
+    ]
+  },
+  {
+    "id": "NLP-151",
+    "sentence": "topup 200k ke target tabungan nikah dari dana",
+    "expected_action": "goal_contribution",
+    "expected_amount": "200000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "Dana",
+    "expected_goal": "Tabungan Nikah",
+    "variation_tags": [
+      "code_mixing",
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-152",
+    "sentence": "nabung mingguan 50rb tunai celengan liburan",
+    "expected_action": "goal_contribution",
+    "expected_amount": "50000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "Tunai",
+    "expected_goal": "Liburan ke Bali",
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-153",
+    "sentence": "setor dana 1.5jt dari bca ke target dp rumah",
+    "expected_action": "goal_contribution",
+    "expected_amount": "1500000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "BCA",
+    "expected_goal": "DP Rumah",
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-154",
+    "sentence": "simpan 350k ke dana darurat dari mandiri",
+    "expected_action": "goal_contribution",
+    "expected_amount": "350000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "Mandiri",
+    "expected_goal": "Dana Darurat",
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-155",
+    "sentence": "alokasi sisa freelance 800rb ke goal laptop baru bca",
+    "expected_action": "goal_contribution",
+    "expected_amount": "800000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "BCA",
+    "expected_goal": "Laptop Baru",
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-156",
+    "sentence": "nabung 100k di shopeepay buat beli sepatu",
+    "expected_action": "goal_contribution",
+    "expected_amount": "100000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "ShopeePay",
+    "expected_goal": "Sepatu Running",
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-157",
+    "sentence": "setorin 250rb cash buat target umroh",
+    "expected_action": "goal_contribution",
+    "expected_amount": "250000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "Tunai",
+    "expected_goal": "Umroh",
+    "variation_tags": [
+      "nominal_abbrev",
+      "code_mixing"
+    ]
+  },
+  {
+    "id": "NLP-158",
+    "sentence": "transfer 500k dari bca buat kontribusi target liburan",
+    "expected_action": "goal_contribution",
+    "expected_amount": "500000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "BCA",
+    "expected_goal": "Liburan ke Bali",
+    "variation_tags": [
+      "nominal_abbrev",
+      "ambiguity"
+    ]
+  },
+  {
+    "id": "NLP-159",
+    "sentence": "tabung 1jt dari mandiri untuk dana darurat",
+    "expected_action": "goal_contribution",
+    "expected_amount": "1000000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "Mandiri",
+    "expected_goal": "Dana Darurat",
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-160",
+    "sentence": "masukkan 200rb gopay ke goal laptop baru",
+    "expected_action": "goal_contribution",
+    "expected_amount": "200000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "GoPay",
+    "expected_goal": "Laptop Baru",
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-161",
+    "sentence": "setor 150k ovo buat tabungan nikah",
+    "expected_action": "goal_contribution",
+    "expected_amount": "150000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "OVO",
+    "expected_goal": "Tabungan Nikah",
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-162",
+    "sentence": "nabung 300rb tunai ke celengan dp rumah",
+    "expected_action": "goal_contribution",
+    "expected_amount": "300000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "Tunai",
+    "expected_goal": "DP Rumah",
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-163",
+    "sentence": "alokasikan 450k bca ke tabungan umroh",
+    "expected_action": "goal_contribution",
+    "expected_amount": "450000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "BCA",
+    "expected_goal": "Umroh",
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-164",
+    "sentence": "simpan 50rb dana ke goal beli sepatu",
+    "expected_action": "goal_contribution",
+    "expected_amount": "50000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "Dana",
+    "expected_goal": "Sepatu Running",
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-165",
+    "sentence": "nabung 1.2jt mandiri untuk target laptop m4",
+    "expected_action": "goal_contribution",
+    "expected_amount": "1200000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "Mandiri",
+    "expected_goal": "Laptop Baru",
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-166",
+    "sentence": "setor 600k bca ke goal dana darurat",
+    "expected_action": "goal_contribution",
+    "expected_amount": "600000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "BCA",
+    "expected_goal": "Dana Darurat",
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-167",
+    "sentence": "tabung 250k shopeepay buat liburan akhir tahun",
+    "expected_action": "goal_contribution",
+    "expected_amount": "250000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "ShopeePay",
+    "expected_goal": "Liburan ke Bali",
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-168",
+    "sentence": "masukin 75rb cash ke target celengan sepatu",
+    "expected_action": "goal_contribution",
+    "expected_amount": "75000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "Tunai",
+    "expected_goal": "Sepatu Running",
+    "variation_tags": [
+      "nominal_abbrev",
+      "code_mixing"
+    ]
+  },
+  {
+    "id": "NLP-169",
+    "sentence": "setorin 3jt bca langsung ke dp rumah",
+    "expected_action": "goal_contribution",
+    "expected_amount": "3000000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "BCA",
+    "expected_goal": "DP Rumah",
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-170",
+    "sentence": "nabung 100 ribu gopay untuk target nikah",
+    "expected_action": "goal_contribution",
+    "expected_amount": "100000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "GoPay",
+    "expected_goal": "Tabungan Nikah",
+    "variation_tags": [
+      "standard_slang"
+    ]
+  },
+  {
+    "id": "NLP-171",
+    "sentence": "alokasi 500k ovo ke goal laptop baru",
+    "expected_action": "goal_contribution",
+    "expected_amount": "500000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "OVO",
+    "expected_goal": "Laptop Baru",
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-172",
+    "sentence": "simpan 200k dana ke tabungan umroh",
+    "expected_action": "goal_contribution",
+    "expected_amount": "200000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "Dana",
+    "expected_goal": "Umroh",
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-173",
+    "sentence": "setor 800k mandiri ke rekening dana darurat",
+    "expected_action": "goal_contribution",
+    "expected_amount": "800000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "Mandiri",
+    "expected_goal": "Dana Darurat",
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-174",
+    "sentence": "nabung 150rb cash ke tabungan liburan bali",
+    "expected_action": "goal_contribution",
+    "expected_amount": "150000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "Tunai",
+    "expected_goal": "Liburan ke Bali",
+    "variation_tags": [
+      "nominal_abbrev",
+      "code_mixing"
+    ]
+  },
+  {
+    "id": "NLP-175",
+    "sentence": "masukkan 350k bca ke goal tabungan nikah",
+    "expected_action": "goal_contribution",
+    "expected_amount": "350000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "BCA",
+    "expected_goal": "Tabungan Nikah",
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-176",
+    "sentence": "tabung 500k mandiri buat target dp rumah",
+    "expected_action": "goal_contribution",
+    "expected_amount": "500000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "Mandiri",
+    "expected_goal": "DP Rumah",
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-177",
+    "sentence": "setor 100k gopay ke goal sepatu running",
+    "expected_action": "goal_contribution",
+    "expected_amount": "100000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "GoPay",
+    "expected_goal": "Sepatu Running",
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-178",
+    "sentence": "alokasi 700k bca ke target laptop baru",
+    "expected_action": "goal_contribution",
+    "expected_amount": "700000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "BCA",
+    "expected_goal": "Laptop Baru",
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-179",
+    "sentence": "nabung 250k dana buat dana darurat",
+    "expected_action": "goal_contribution",
+    "expected_amount": "250000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "Dana",
+    "expected_goal": "Dana Darurat",
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-180",
+    "sentence": "setorin 400rb bca ke celengan umroh",
+    "expected_action": "goal_contribution",
+    "expected_amount": "400000",
+    "expected_category": "Tabungan",
+    "expected_wallet": "BCA",
+    "expected_goal": "Umroh",
+    "variation_tags": [
+      "nominal_abbrev"
+    ]
+  },
+  {
+    "id": "NLP-181",
+    "sentence": "Gimana kondisi keuanganku bulan ini?",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": null,
+    "variation_tags": [
+      "general_inquiry"
+    ]
+  },
+  {
+    "id": "NLP-182",
+    "sentence": "Apakah anggaranku masih aman untuk sisa bulan ini?",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": null,
+    "variation_tags": [
+      "budget_check"
+    ]
+  },
+  {
+    "id": "NLP-183",
+    "sentence": "Pengeluaranku paling boros di kategori apa ya?",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": null,
+    "variation_tags": [
+      "spending_breakdown"
+    ]
+  },
+  {
+    "id": "NLP-184",
+    "sentence": "Aku mau beli laptop 15 juta dalam 6 bulan apakah realistis?",
+    "expected_action": "financial_advice",
+    "expected_amount": "15000000",
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": "Laptop",
+    "variation_tags": [
+      "planning",
+      "feasibility"
+    ]
+  },
+  {
+    "id": "NLP-185",
+    "sentence": "Berapa total saldo di semua dompet dan rekeningku sekarang?",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": null,
+    "variation_tags": [
+      "wallet_summary"
+    ]
+  },
+  {
+    "id": "NLP-186",
+    "sentence": "Bisa minta saran cara hemat pengeluaran makan?",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": "Makanan & Minuman",
+    "expected_wallet": null,
+    "expected_goal": null,
+    "variation_tags": [
+      "advice"
+    ]
+  },
+  {
+    "id": "NLP-187",
+    "sentence": "Cek sisa budget makanan bulan ini dong",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": "Makanan & Minuman",
+    "expected_wallet": null,
+    "expected_goal": null,
+    "variation_tags": [
+      "budget_check"
+    ]
+  },
+  {
+    "id": "NLP-188",
+    "sentence": "Berapa persen pengeluaran terhadap pemasukan saya bulan ini?",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": null,
+    "variation_tags": [
+      "ratio_inquiry"
+    ]
+  },
+  {
+    "id": "NLP-189",
+    "sentence": "Mau nabung 20 juta buat nikah dalam setahun, harus nabung berapa per bulan?",
+    "expected_action": "financial_advice",
+    "expected_amount": "20000000",
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": "Nikah",
+    "variation_tags": [
+      "planning"
+    ]
+  },
+  {
+    "id": "NLP-190",
+    "sentence": "Apakah kondisi finansialku tergolong sehat, stabil, atau waspada?",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": null,
+    "variation_tags": [
+      "saw_health_check"
+    ]
+  },
+  {
+    "id": "NLP-191",
+    "sentence": "Berapa pengeluaran terbesarku minggu ini?",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": null,
+    "variation_tags": [
+      "spending_breakdown"
+    ]
+  },
+  {
+    "id": "NLP-192",
+    "sentence": "Kalau aku mau beli motor 25jt dalam 10 bulan sanggup gak ya?",
+    "expected_action": "financial_advice",
+    "expected_amount": "25000000",
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": "Motor",
+    "variation_tags": [
+      "planning",
+      "feasibility"
+    ]
+  },
+  {
+    "id": "NLP-193",
+    "sentence": "Berapa sisa dana darurat yang masih harus saya kumpulkan?",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": "Dana Darurat",
+    "variation_tags": [
+      "goal_check"
+    ]
+  },
+  {
+    "id": "NLP-194",
+    "sentence": "Apakah aman kalau saya belanja 1 juta hari ini?",
+    "expected_action": "financial_advice",
+    "expected_amount": "1000000",
+    "expected_category": "Belanja",
+    "expected_wallet": null,
+    "expected_goal": null,
+    "variation_tags": [
+      "affordability_check"
+    ]
+  },
+  {
+    "id": "NLP-195",
+    "sentence": "Tolong berikan ringkasan arus kas bulan ini",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": null,
+    "variation_tags": [
+      "summary"
+    ]
+  },
+  {
+    "id": "NLP-196",
+    "sentence": "Cek progress target laptop baru saya sampai mana",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": "Laptop Baru",
+    "variation_tags": [
+      "goal_check"
+    ]
+  },
+  {
+    "id": "NLP-197",
+    "sentence": "Berapa batas pengeluaran harian yang aman untuk sisa bulan ini?",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": null,
+    "variation_tags": [
+      "budget_check",
+      "daily_safe_spend"
+    ]
+  },
+  {
+    "id": "NLP-198",
+    "sentence": "Bulan ini saya defisit atau surplus berapa?",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": null,
+    "variation_tags": [
+      "summary"
+    ]
+  },
+  {
+    "id": "NLP-199",
+    "sentence": "Rencana liburan ke jepang butuh 30jt dalam 1 tahun, gimana simulasinya?",
+    "expected_action": "financial_advice",
+    "expected_amount": "30000000",
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": "Liburan Jepang",
+    "variation_tags": [
+      "planning"
+    ]
+  },
+  {
+    "id": "NLP-200",
+    "sentence": "Tolong evaluasi rasio tabungan saya apakah sudah memenuhi 20%?",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": null,
+    "variation_tags": [
+      "ratio_inquiry",
+      "saw_health_check"
+    ]
+  },
+  {
+    "id": "NLP-201",
+    "sentence": "Dompet mana yang paling banyak saldonya saat ini?",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": null,
+    "variation_tags": [
+      "wallet_summary"
+    ]
+  },
+  {
+    "id": "NLP-202",
+    "sentence": "Berapa anggaran transportasi yang tersisa untuk minggu ini?",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": "Transportasi",
+    "expected_wallet": null,
+    "expected_goal": null,
+    "variation_tags": [
+      "budget_check"
+    ]
+  },
+  {
+    "id": "NLP-203",
+    "sentence": "Gimana strategi melunasi tagihan kalau arus kas lagi mepet?",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": "Tagihan",
+    "expected_wallet": null,
+    "expected_goal": null,
+    "variation_tags": [
+      "advice"
+    ]
+  },
+  {
+    "id": "NLP-204",
+    "sentence": "Bisa bantu hitung simulasi beli hp 7jt dengan cicilan mandiri?",
+    "expected_action": "financial_advice",
+    "expected_amount": "7000000",
+    "expected_category": null,
+    "expected_wallet": "Mandiri",
+    "expected_goal": "HP Baru",
+    "variation_tags": [
+      "planning"
+    ]
+  },
+  {
+    "id": "NLP-205",
+    "sentence": "Berapa rata-rata pengeluaran harian saya selama bulan ini?",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": null,
+    "variation_tags": [
+      "spending_breakdown"
+    ]
+  },
+  {
+    "id": "NLP-206",
+    "sentence": "Apakah saya bisa mencapai target dana darurat sebelum akhir tahun?",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": "Dana Darurat",
+    "variation_tags": [
+      "goal_check",
+      "feasibility"
+    ]
+  },
+  {
+    "id": "NLP-207",
+    "sentence": "Kategori pengeluaran mana yang melebihi batas anggaran?",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": null,
+    "variation_tags": [
+      "budget_check"
+    ]
+  },
+  {
+    "id": "NLP-208",
+    "sentence": "Berapa bulan ketahanan dana darurat saya jika terjadi PHK?",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": "Dana Darurat",
+    "variation_tags": [
+      "saw_health_check",
+      "liquidity_check"
+    ]
+  },
+  {
+    "id": "NLP-209",
+    "sentence": "Tolong berikan rekomendasi alokasi gaji ideal 50/30/20 untuk saya",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": null,
+    "variation_tags": [
+      "advice",
+      "ratio_inquiry"
+    ]
+  },
+  {
+    "id": "NLP-210",
+    "sentence": "Apakah pengeluaran hiburan saya sudah terlalu berlebihan bulan ini?",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": "Hiburan",
+    "expected_wallet": null,
+    "expected_goal": null,
+    "variation_tags": [
+      "budget_check"
+    ]
+  },
+  {
+    "id": "NLP-211",
+    "sentence": "Mau beli ipad 12 juta dalam 4 bulan, apa cukup surplus tabunganku?",
+    "expected_action": "financial_advice",
+    "expected_amount": "12000000",
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": "iPad",
+    "variation_tags": [
+      "planning",
+      "feasibility"
+    ]
+  },
+  {
+    "id": "NLP-212",
+    "sentence": "Bagaimana tren pengeluaran saya dibanding bulan kemarin?",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": null,
+    "variation_tags": [
+      "summary",
+      "trend"
+    ]
+  },
+  {
+    "id": "NLP-213",
+    "sentence": "Bisa cek apakah ada anggaran yang berstatus critical?",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": null,
+    "variation_tags": [
+      "budget_check"
+    ]
+  },
+  {
+    "id": "NLP-214",
+    "sentence": "Rekomendasi pemotongan pengeluaran paling efektif di pos apa?",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": null,
+    "variation_tags": [
+      "advice",
+      "spending_breakdown"
+    ]
+  },
+  {
+    "id": "NLP-215",
+    "sentence": "Berapa persen progress target tabungan liburan saya?",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": "Liburan ke Bali",
+    "variation_tags": [
+      "goal_check"
+    ]
+  },
+  {
+    "id": "NLP-216",
+    "sentence": "Tolong berikan skor kesehatan finansial saya saat ini",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": null,
+    "variation_tags": [
+      "saw_health_check"
+    ]
+  },
+  {
+    "id": "NLP-217",
+    "sentence": "Berapa sisa uang yang bisa dipakai belanja tanpa mengganggu target tabungan?",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": "Belanja",
+    "expected_wallet": null,
+    "expected_goal": null,
+    "variation_tags": [
+      "budget_check",
+      "affordability_check"
+    ]
+  },
+  {
+    "id": "NLP-218",
+    "sentence": "Apakah saya bisa menabung 1 juta bulan ini dengan pengeluaran sekarang?",
+    "expected_action": "financial_advice",
+    "expected_amount": "1000000",
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": null,
+    "variation_tags": [
+      "feasibility",
+      "planning"
+    ]
+  },
+  {
+    "id": "NLP-219",
+    "sentence": "Rangkum kondisi keuangan dan pengeluaran 5 hari terakhir",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": null,
+    "variation_tags": [
+      "summary"
+    ]
+  },
+  {
+    "id": "NLP-220",
+    "sentence": "Apa langkah awal terbaik untuk memperbaiki skor keuangan saya?",
+    "expected_action": "financial_advice",
+    "expected_amount": null,
+    "expected_category": null,
+    "expected_wallet": null,
+    "expected_goal": null,
+    "variation_tags": [
+      "advice",
+      "saw_health_check"
+    ]
+  }
+]

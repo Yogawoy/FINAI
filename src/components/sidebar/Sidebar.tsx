@@ -28,7 +28,6 @@ export interface NavItemConfig {
   label: string;
   href: string;
   icon: LucideIcon;
-  hasActivityDot?: boolean;
 }
 
 export interface NavGroupConfig {
@@ -106,7 +105,6 @@ export const NAVIGATION_GROUPS: NavGroupConfig[] = [
         label: 'Asisten FinAI',
         href: '/app/ai-assistant',
         icon: Sparkles,
-        hasActivityDot: true,
       },
     ],
   },
@@ -237,7 +235,6 @@ export default function Sidebar() {
                     icon={item.icon}
                     isActive={active}
                     isNested={group.isCollapsible}
-                    hasActivityDot={item.hasActivityDot}
                     onClick={onItemClick}
                   />
                 );

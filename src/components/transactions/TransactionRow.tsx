@@ -1,22 +1,13 @@
 'use client';
 
 import React from 'react';
-import {
-  Utensils,
-  Car,
-  Coffee,
-  ShoppingBag,
-  Zap,
-  Film,
-  Heart,
-  BookOpen,
-  Sparkles,
-  Building,
-  TrendingUp,
-  Pencil,
-  Trash2,
-} from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { Transaction } from '@/types';
+import {
+  getTransactionCategoryLabel,
+  getTransactionCategoryTheme,
+} from '@/lib/categories';
+import { renderTransactionCategoryIcon } from '@/components/categories/CategoryIcon';
 import { formatIDR } from '@/lib/format';
 
 interface TransactionRowProps {
@@ -26,131 +17,14 @@ interface TransactionRowProps {
   onDelete: (tx: Transaction, e: React.MouseEvent) => void;
 }
 
-export const getCategoryIcon = (category: string) => {
-  switch (category) {
-    case 'food':
-      return <Utensils size={18} />;
-    case 'transport':
-      return <Car size={18} />;
-    case 'coffee':
-      return <Coffee size={18} />;
-    case 'shopping':
-      return <ShoppingBag size={18} />;
-    case 'bills':
-      return <Zap size={18} />;
-    case 'entertainment':
-      return <Film size={18} />;
-    case 'health':
-      return <Heart size={18} />;
-    case 'education':
-      return <BookOpen size={18} />;
-    case 'salary':
-      return <Building size={18} />;
-    case 'freelance':
-      return <Sparkles size={18} />;
-    case 'investment':
-      return <TrendingUp size={18} />;
-    default:
-      return <Sparkles size={18} />;
-  }
-};
+export const getCategoryIcon = (category: string) =>
+  renderTransactionCategoryIcon(category, 18);
 
-export const getCategoryColor = (category: string, type: 'income' | 'expense') => {
-  if (type === 'income') {
-    return {
-      bg: 'bg-gradient-to-tr from-[#D0EFE5] to-[#BCE6D9]',
-      text: 'text-[#1B7354]',
-      border: 'border-[#B2E9D7]',
-      rowHover: 'hover:bg-[#EAF8F3]/50',
-    };
-  }
+export const getCategoryColor = (category: string, type: 'income' | 'expense') =>
+  getTransactionCategoryTheme(category, type).row;
 
-  switch (category) {
-    case 'food':
-      return {
-        bg: 'bg-gradient-to-tr from-[#E4E2FB] to-[#DDD9FA]',
-        text: 'text-[#7C7CE6]',
-        border: 'border-[#D8D4FA]',
-        rowHover: 'hover:bg-[#F3F2FF]/60',
-      };
-    case 'transport':
-      return {
-        bg: 'bg-gradient-to-tr from-[#D6E4FA] to-[#C9D8F5]',
-        text: 'text-[#3E6FB0]',
-        border: 'border-[#BED6F9]',
-        rowHover: 'hover:bg-[#F0F5FE]/60',
-      };
-    case 'bills':
-      return {
-        bg: 'bg-gradient-to-tr from-[#FCE2E0] to-[#FAD4D2]',
-        text: 'text-[#B83A38]',
-        border: 'border-[#FAC2BE]',
-        rowHover: 'hover:bg-[#FFF2F1]/60',
-      };
-    case 'entertainment':
-      return {
-        bg: 'bg-gradient-to-tr from-[#EBE9FE] to-[#DFDCFD]',
-        text: 'text-[#6B66DA]',
-        border: 'border-[#D5D2FB]',
-        rowHover: 'hover:bg-[#F5F4FF]/60',
-      };
-    case 'shopping':
-      return {
-        bg: 'bg-gradient-to-tr from-[#D0EFE5] to-[#BCE6D9]',
-        text: 'text-[#1B7354]',
-        border: 'border-[#B2E9D7]',
-        rowHover: 'hover:bg-[#EAF8F3]/50',
-      };
-    case 'health':
-      return {
-        bg: 'bg-gradient-to-tr from-[#FCE2E0] to-[#FAD4D2]',
-        text: 'text-[#B83A38]',
-        border: 'border-[#FAC2BE]',
-        rowHover: 'hover:bg-[#FFF2F1]/60',
-      };
-    case 'education':
-      return {
-        bg: 'bg-gradient-to-tr from-[#D6E4FA] to-[#C9D8F5]',
-        text: 'text-[#3E6FB0]',
-        border: 'border-[#BED6F9]',
-        rowHover: 'hover:bg-[#F0F5FE]/60',
-      };
-    default:
-      return {
-        bg: 'bg-gradient-to-tr from-[#E4E2FB] to-[#DDD9FA]',
-        text: 'text-[#7C7CE6]',
-        border: 'border-[#D8D4FA]',
-        rowHover: 'hover:bg-[#F3F2FF]/60',
-      };
-  }
-};
-
-export const formatCategoryLabel = (category: string) => {
-  switch (category) {
-    case 'food':
-      return 'Makanan & Minuman';
-    case 'transport':
-      return 'Transportasi';
-    case 'bills':
-      return 'Tagihan & Utilitas';
-    case 'entertainment':
-      return 'Hiburan';
-    case 'shopping':
-      return 'Belanja';
-    case 'health':
-      return 'Kesehatan';
-    case 'education':
-      return 'Pendidikan';
-    case 'salary':
-      return 'Gaji Pokok';
-    case 'freelance':
-      return 'Proyek Freelance';
-    case 'investment':
-      return 'Dividen Investasi';
-    default:
-      return 'Lainnya';
-  }
-};
+export const formatCategoryLabel = (category: string) =>
+  getTransactionCategoryLabel(category);
 
 export default function TransactionRow({
   transaction,

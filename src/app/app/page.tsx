@@ -41,6 +41,13 @@ import Badge from '@/components/ui/Badge';
 import Modal from '@/components/ui/Modal';
 import WalletCard from '@/components/wallet/WalletCard';
 import { formatIDR } from '@/lib/format';
+import {
+  EXPENSE_CATEGORIES,
+  INCOME_CATEGORIES,
+  getTransactionCategoryColor,
+  getTransactionCategoryLabel,
+  normalizeCategoryKey,
+} from '@/lib/categories';
 import { apiClient, mapApiErrorMessage } from '@/lib/api-client';
 import { emitRefresh, onRefresh } from '@/lib/data-refresh';
 import DashboardSkeleton from '@/components/loading/DashboardSkeleton';
@@ -53,6 +60,7 @@ interface DashboardWallet {
   balance: number;
   accountLast4?: string | null;
   institution?: string | null;
+  color?: string | null;
 }
 
 interface DashboardTransaction {
@@ -96,7 +104,8 @@ export default function DashboardPage() {
 
   // Form State: Catat Pengeluaran & Pemasukan
   const [txTitle, setTxTitle] = useState('');
-  const [txCategory, setTxCategory] = useState('Makanan & Minuman');
+  const [txCategory, setTxCategory] = useState('food');
+  const [incomeCategory, setIncomeCategory] = useState('salary');
   const [txAmount, setTxAmount] = useState('');
   const [txAccount, setTxAccount] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -165,6 +174,7 @@ export default function DashboardPage() {
           balance: Number(w.balance),
           accountLast4: w.accountLast4,
           institution: w.institution,
+          color: w.color,
         }));
         setWallets(wData);
 
@@ -230,11 +240,11 @@ export default function DashboardPage() {
       if (budgetsRes.status === 'fulfilled') {
         const bData = (budgetsRes.value.budgets || []).map((b: any) => ({
           id: b.id,
-          name: b.category,
-          category: b.category,
+          name: getTransactionCategoryLabel(b.category),
+          category: normalizeCategoryKey(b.category),
           spent: Number(b.usedAmount || 0),
           limit: Number(b.limitAmount),
-          color: '#7C7CE6',
+          color: getTransactionCategoryColor(b.category),
         }));
         setBudgetsList(bData);
       }
@@ -356,7 +366,7 @@ export default function DashboardPage() {
         walletId: txAccount,
         type: 'EXPENSE',
         amount: Number(txAmount),
-        category: txCategory,
+        category: normalizeCategoryKey(txCategory),
         description: txTitle,
       });
       setTxTitle('');
@@ -382,7 +392,7 @@ export default function DashboardPage() {
         walletId: txAccount,
         type: 'INCOME',
         amount: Number(txAmount),
-        category: 'salary',
+        category: normalizeCategoryKey(incomeCategory),
         description: txTitle,
       });
       setTxTitle('');
@@ -523,9 +533,6 @@ export default function DashboardPage() {
             <span className="text-xs font-extrabold uppercase tracking-widest text-[#757A95]">
               Dompet Digital FinAI
             </span>
-            <span className="text-xs font-semibold text-[#1B7354] bg-[#D0EFE5] px-3 py-1 rounded-full">
-              {wallets.length > 0 ? 'Kartu Aktif' : 'Belum Ada Dompet'}
-            </span>
           </div>
 
           <div className="w-full">
@@ -635,7 +642,6 @@ export default function DashboardPage() {
                   {savingsRate}% <span className="text-base text-[#757A95] font-semibold">/ 100</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-xs font-bold text-[#1B7354] mt-1">
-                  <span className="w-2 h-2 rounded-full bg-[#1B7354]" />
                   <span>{savingsRate >= 20 ? 'Sangat Sehat' : savingsRate >= 10 ? 'Cukup Sehat' : 'Perlu Diperbaiki'}</span>
                 </div>
               </div>
@@ -797,16 +803,12 @@ export default function DashboardPage() {
                   className="w-full px-4 py-2.5 bg-black/[0.02] border border-black/[0.06] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#7C7CE6]/50 focus:bg-white text-[#242636]" />
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <CustomSelect label="Kategori" value={txCategory} onChange={setTxCategory}
-                  options={[
-                    { value: 'food', label: 'Makanan & Minuman' },
-                    { value: 'transport', label: 'Transportasi' },
-                    { value: 'bills', label: 'Tagihan & Utilitas' },
-                    { value: 'shopping', label: 'Belanja' },
-                    { value: 'entertainment', label: 'Hiburan' },
-                    { value: 'health', label: 'Kesehatan' },
-                    { value: 'education', label: 'Pendidikan' },
-                  ]} />
+                <CustomSelect
+                  label="Kategori"
+                  value={txCategory}
+                  onChange={setTxCategory}
+                  options={EXPENSE_CATEGORIES.map((c) => ({ value: c.id, label: c.label }))}
+                />
                 <CustomSelect label="Dompet" value={txAccount} onChange={setTxAccount} options={walletOptions} />
               </div>
               <div>
@@ -838,6 +840,15 @@ export default function DashboardPage() {
                 <label className="text-xs font-semibold text-[#757A95] block mb-1">Sumber Pemasukan</label>
                 <input type="text" required placeholder="misal: Gaji Bulanan, Proyek UI/UX Freelance, Dividen" value={txTitle} onChange={(e) => setTxTitle(e.target.value)}
                   className="w-full px-4 py-2.5 bg-black/[0.02] border border-black/[0.06] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#7C7CE6]/50 focus:bg-white text-[#242636]" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <CustomSelect
+                  label="Kategori"
+                  value={incomeCategory}
+                  onChange={setIncomeCategory}
+                  options={INCOME_CATEGORIES.map((c) => ({ value: c.id, label: c.label }))}
+                />
+                <CustomSelect label="Dompet Tujuan" value={txAccount} onChange={setTxAccount} options={walletOptions} />
               </div>
               <div>
                 <label className="text-xs font-semibold text-[#757A95] block mb-1">Nominal Pemasukan (Rp)</label>

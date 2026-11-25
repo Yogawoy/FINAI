@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Wallet, Receipt, Target, PieChart, ShieldCheck } from 'lucide-react';
+import { Wallet, Receipt, Target, PieChart } from 'lucide-react';
 import { formatIDR } from '@/lib/format';
 
 interface AIContextBarProps {
@@ -9,29 +9,17 @@ interface AIContextBarProps {
   monthlyExpense?: number;
   activeGoalsCount?: number;
   activeBudgetsCount?: number;
-  contextDate?: string;
 }
 
 export default function AIContextBar({
-  balance = 24560000,
-  monthlyExpense = 6230000,
-  activeGoalsCount = 4,
-  activeBudgetsCount = 6,
-  contextDate = 'September 2026',
+  balance = 0,
+  monthlyExpense = 0,
+  activeGoalsCount = 0,
+  activeBudgetsCount = 0,
 }: AIContextBarProps) {
   return (
     <div className="p-3.5 sm:p-4 rounded-2xl bg-white border border-[#E8EAF2]/80 shadow-[0_2px_12px_rgba(36,38,54,0.02)]">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-        {/* Context Label Tag */}
-        <div className="flex items-center gap-2 text-xs font-semibold text-[#757A95]">
-          <div className="w-5 h-5 rounded-md bg-[#EDEAFC] text-[#5F5ED4] flex items-center justify-center shrink-0">
-            <ShieldCheck size={12} />
-          </div>
-          <span>Konteks: Data Keuangan {contextDate}</span>
-        </div>
-
-        {/* Compact Metrics Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 text-xs divide-x-0 sm:divide-x divide-[#E8EAF2]">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-6 text-xs divide-x-0 sm:divide-x divide-[#E8EAF2]">
           {/* Saldo Kas */}
           <div className="flex items-center gap-2 sm:pl-0">
             <div className="w-7 h-7 rounded-lg bg-[#EDEAFC] text-[#5F5ED4] flex items-center justify-center shrink-0">
@@ -84,7 +72,6 @@ export default function AIContextBar({
             </div>
           </div>
         </div>
-      </div>
     </div>
   );
 }

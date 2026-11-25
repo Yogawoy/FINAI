@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { PieChart, TrendingDown, Sparkles, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { getTransactionCategoryColor, getTransactionCategoryLabel } from '@/lib/categories';
 import { formatIDR } from '@/lib/format';
 
 interface SpendingBreakdownItem {
@@ -16,24 +17,6 @@ interface SpendingBreakdownCardProps {
   totalAmount?: number;
   note?: string;
 }
-
-const CATEGORY_COLORS: Record<string, string> = {
-  bills: 'bg-[#EF4444]',
-  tagihan: 'bg-[#EF4444]',
-  food: 'bg-[#F59E0B]',
-  makanan: 'bg-[#F59E0B]',
-  transport: 'bg-[#3B82F6]',
-  transportasi: 'bg-[#3B82F6]',
-  shopping: 'bg-[#EC4899]',
-  belanja: 'bg-[#EC4899]',
-  other: 'bg-[#8B5CF6]',
-  lainnya: 'bg-[#8B5CF6]',
-};
-
-const getCategoryColor = (name: string) => {
-  const key = name.toLowerCase().trim();
-  return CATEGORY_COLORS[key] || 'bg-[#7C7CE6]';
-};
 
 export default function SpendingBreakdownCard({
   items,
@@ -99,14 +82,15 @@ export default function SpendingBreakdownCard({
               : computedTotal > 0
               ? Math.round((item.total / computedTotal) * 100)
               : 0;
-          const colorClass = getCategoryColor(item.category);
+          const categoryColor = getTransactionCategoryColor(item.category);
+          const categoryLabel = getTransactionCategoryLabel(item.category);
 
           return (
             <div key={idx} className="space-y-1.5">
               <div className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2">
-                  <span className={`w-2 h-2 rounded-full ${colorClass}`} />
-                  <span className="font-bold text-[#242636]">{item.category}</span>
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: categoryColor }} />
+                  <span className="font-bold text-[#242636]">{categoryLabel}</span>
                 </div>
                 <div className="flex items-center gap-1.5 font-bold tabular-nums">
                   <span className="text-[#242636]">{formatIDR(item.total)}</span>
@@ -119,8 +103,8 @@ export default function SpendingBreakdownCard({
               {/* Progress Bar Track */}
               <div className="w-full h-1.5 rounded-full bg-black/[0.04] overflow-hidden">
                 <div
-                  className={`h-full rounded-full ${colorClass} transition-all duration-500`}
-                  style={{ width: `${pct}%` }}
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{ width: `${pct}%`, backgroundColor: categoryColor }}
                 />
               </div>
             </div>

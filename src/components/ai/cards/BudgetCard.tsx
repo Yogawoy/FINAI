@@ -1,17 +1,9 @@
 'use client';
 
 import React from 'react';
-import {
-  PieChart,
-  Calendar,
-  TrendingUp,
-  AlertTriangle,
-  ShoppingBag,
-  Utensils,
-  Car,
-  Zap,
-  CheckCircle2,
-} from 'lucide-react';
+import { Calendar, TrendingUp, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { getTransactionCategoryLabel } from '@/lib/categories';
+import { renderTransactionCategoryIcon } from '@/components/categories/CategoryIcon';
 import { formatIDR } from '@/lib/format';
 
 interface BudgetCardProps {
@@ -24,29 +16,7 @@ interface BudgetCardProps {
   period?: string;
 }
 
-const CATEGORY_NAMES: Record<string, string> = {
-  shopping: 'Belanja',
-  belanja: 'Belanja',
-  food: 'Makanan',
-  makanan: 'Makanan',
-  transport: 'Transportasi',
-  transportasi: 'Transportasi',
-  bills: 'Tagihan',
-  tagihan: 'Tagihan',
-  entertainment: 'Hiburan',
-  hiburan: 'Hiburan',
-  other: 'Lainnya',
-  lainnya: 'Lainnya',
-};
-
-const getCategoryIcon = (raw: string) => {
-  const key = raw.toLowerCase().trim();
-  if (key.includes('belanja') || key.includes('shopping')) return <ShoppingBag size={16} />;
-  if (key.includes('makan') || key.includes('food')) return <Utensils size={16} />;
-  if (key.includes('transport')) return <Car size={16} />;
-  if (key.includes('tagihan') || key.includes('bill')) return <Zap size={16} />;
-  return <PieChart size={16} />;
-};
+const getCategoryIcon = (raw: string) => renderTransactionCategoryIcon(raw, 16);
 
 export default function BudgetCard({
   category,
@@ -57,7 +27,7 @@ export default function BudgetCard({
   status,
   period,
 }: BudgetCardProps) {
-  const categoryLabel = CATEGORY_NAMES[category.toLowerCase().trim()] || category;
+  const categoryLabel = getTransactionCategoryLabel(category);
   const pct = Math.min(Math.max(percentage, 0), 100);
   const isOver = percentage > 100 || (limitAmount > 0 && usedAmount > limitAmount);
   const isWarning = percentage >= 75 && percentage <= 100;

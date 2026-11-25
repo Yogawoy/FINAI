@@ -2,17 +2,20 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import {
-  Building2,
-  Wallet as WalletIcon,
-  Banknote,
-  CreditCard,
-  PiggyBank,
-  TrendingUp,
-  Sparkles,
-} from 'lucide-react';
+import { Wifi } from 'lucide-react';
 import { Wallet, WalletColorTheme } from '@/types';
 import { formatIDR } from '@/lib/format';
+import {
+  getWalletTheme,
+  getWalletIcon,
+  getWalletTypeLabels,
+  formatEmbossedCardNumber,
+} from '@/lib/walletTheme';
+import {
+  CardMaterialLayers,
+  EmvGoldChip,
+  CardNetworkEmblem,
+} from '@/components/wallet/PhysicalCardSurface';
 
 interface WalletCardProps {
   wallet: Wallet;
@@ -25,181 +28,124 @@ interface WalletCardProps {
 }
 
 export const getWalletIconComponent = (iconName: string, size = 18) => {
-  switch (iconName?.toLowerCase()) {
-    case 'bank':
-    case 'building2':
-      return <Building2 size={size} />;
-    case 'cash':
-    case 'banknote':
-      return <Banknote size={size} />;
-    case 'card':
-    case 'creditcard':
-      return <CreditCard size={size} />;
-    case 'savings':
-    case 'piggybank':
-      return <PiggyBank size={size} />;
-    case 'investment':
-    case 'trendingup':
-      return <TrendingUp size={size} />;
-    case 'other':
-    case 'sparkles':
-      return <Sparkles size={size} />;
-    case 'wallet':
-    default:
-      return <WalletIcon size={size} />;
-  }
+  return getWalletIcon(iconName, size);
 };
 
 export const getWalletThemeClasses = (theme: WalletColorTheme | string) => {
-  switch (theme) {
-    case 'blue':
-      return {
-        bgGradient: 'bg-gradient-to-br from-[#3B82F6] via-[#4F92FA] to-[#2563EB]',
-        shadow: 'shadow-[0_14px_35px_rgba(59,130,246,0.32)]',
-        chipBg: 'bg-white/20 text-white border-white/30',
-        accentBg: 'bg-[#D6E4FA]',
-        accentText: 'text-[#3E6FB0]',
-      };
-    case 'mint':
-      return {
-        bgGradient: 'bg-gradient-to-br from-[#10B981] via-[#1EB889] to-[#059669]',
-        shadow: 'shadow-[0_14px_35px_rgba(16,185,129,0.32)]',
-        chipBg: 'bg-white/20 text-white border-white/30',
-        accentBg: 'bg-[#D0EFE5]',
-        accentText: 'text-[#1B7354]',
-      };
-    case 'peach':
-      return {
-        bgGradient: 'bg-gradient-to-br from-[#F87171] via-[#FA8080] to-[#DC4B4B]',
-        shadow: 'shadow-[0_14px_35px_rgba(248,113,113,0.32)]',
-        chipBg: 'bg-white/20 text-white border-white/30',
-        accentBg: 'bg-[#FCE2E0]',
-        accentText: 'text-[#B83A38]',
-      };
-    case 'neutral':
-      return {
-        bgGradient: 'bg-gradient-to-br from-[#64748B] via-[#718096] to-[#475569]',
-        shadow: 'shadow-[0_14px_35px_rgba(100,116,139,0.32)]',
-        chipBg: 'bg-white/20 text-white border-white/30',
-        accentBg: 'bg-[#E2E8F0]',
-        accentText: 'text-[#475569]',
-      };
-    case 'lavender':
-      return {
-        bgGradient: 'bg-gradient-to-br from-[#8B82DF] via-[#A098E8] to-[#7B72D4]',
-        shadow: 'shadow-[0_14px_35px_rgba(139,130,223,0.35)]',
-        chipBg: 'bg-white/20 text-white border-white/30',
-        accentBg: 'bg-[#E4E2FB]',
-        accentText: 'text-[#5F5ED4]',
-      };
-    case 'periwinkle':
-    default:
-      return {
-        bgGradient: 'bg-gradient-to-br from-[#6A69DC] via-[#7C7CE6] to-[#5554C8]',
-        shadow: 'shadow-[0_14px_35px_rgba(106,105,220,0.35)]',
-        chipBg: 'bg-white/20 text-white border-white/30',
-        accentBg: 'bg-[#E4E2FB]',
-        accentText: 'text-[#5F5ED4]',
-      };
-  }
+  const resolved = getWalletTheme({ color: theme });
+  return {
+    bgGradient: resolved.bgGradient,
+    shadow: resolved.shadow,
+    chipBg: resolved.chipBg,
+    accentBg: resolved.accentBg,
+    accentText: resolved.accentText,
+  };
 };
 
 export const formatWalletTypeLabel = (type: string) => {
-  switch (type) {
+  const { typeLabel } = getWalletTypeLabels(type);
+  switch ((type || '').toLowerCase()) {
     case 'bank':
       return 'Rekening Bank';
     case 'ewallet':
+    case 'e_wallet':
       return 'E-Wallet';
     case 'cash':
       return 'Uang Tunai';
-    case 'savings':
-      return 'Tabungan';
-    case 'investment':
-      return 'Investasi';
     default:
-      return 'Lainnya';
+      return typeLabel;
   }
 };
 
 export default function WalletCard({
   wallet,
   onClick,
-  onEdit,
-  onDelete,
   isMasked = false,
   className = '',
-  size = 'normal',
 }: WalletCardProps) {
-  const themeStyle = getWalletThemeClasses(wallet.colorTheme || 'periwinkle');
+  const theme = getWalletTheme({
+    id: wallet.id,
+    name: wallet.name,
+    type: wallet.type,
+    colorTheme: wallet.colorTheme,
+    icon: wallet.icon,
+  });
 
-  // Format account identifier to 16-digit card look if short
-  const formattedCardNumber = React.useMemo(() => {
-    const raw = wallet.accountIdentifier || '4821';
-    if (raw.includes('•••• •••• ••••')) return raw;
-    if (raw.startsWith('•••• ')) return `•••• •••• ${raw}`;
-    return `•••• •••• •••• ${raw.replace(/\D/g, '').slice(-4) || '4821'}`;
-  }, [wallet.accountIdentifier]);
+  const formattedCardNumber = React.useMemo(
+    () => formatEmbossedCardNumber(wallet.accountIdentifier),
+    [wallet.accountIdentifier]
+  );
 
   return (
     <motion.div
       whileHover={onClick ? { y: -3, scale: 1.01 } : {}}
       transition={{ type: 'spring', stiffness: 350, damping: 25 }}
       onClick={() => onClick?.(wallet)}
-      className={`relative w-full rounded-[24px] p-5 sm:p-6 text-white ${themeStyle.bgGradient} ${themeStyle.shadow} border border-white/30 overflow-hidden flex flex-col justify-between select-none min-h-[190px] sm:min-h-[205px] ${
+      className={`group relative w-full h-[215px] sm:h-[225px] rounded-2xl p-5 text-white ${theme.bgGradient} ${theme.shadow} border border-white/25 ring-1 ring-inset ring-white/15 overflow-hidden flex flex-col justify-between select-none ${
         onClick ? 'cursor-pointer' : ''
       } ${className}`}
     >
-      {/* Decorative ambient background overlays */}
-      <div className="absolute -right-8 -top-8 w-36 h-36 rounded-full bg-white/15 blur-xl pointer-events-none" />
-      <div className="absolute -left-8 -bottom-8 w-32 h-32 rounded-full bg-black/10 blur-xl pointer-events-none" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.22),transparent_70%)] pointer-events-none" />
+      <CardMaterialLayers enableHoverSweep />
 
-      {/* Top Row: Brand on left & Frosted circular icon badge on right */}
-      <div className="relative z-10 flex items-center justify-between">
-        <div>
-          <span className="text-[11px] font-bold tracking-wider text-white/90 drop-shadow-xs">
-            Dompet FinAI
+      {/* Top Row: Nama Dompet & Sublabel Mikro (Kiri) + Emblem Jaringan Minimalis & Ikon Tipe (Kanan) */}
+      <div className="relative z-10 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h4 className="text-sm sm:text-[15px] font-bold tracking-wide text-white truncate leading-tight drop-shadow-[0_1px_1px_rgba(0,0,0,0.18)]">
+            {wallet.name || 'Dompet FinAI'}
+          </h4>
+          <span className="text-[9px] tracking-[0.22em] uppercase text-white/70 font-semibold block mt-0.5 leading-none">
+            {theme.subLabel}
           </span>
         </div>
 
-        {/* Circular frosted glass icon badge */}
-        <div className="w-9 h-9 rounded-full bg-white/20 backdrop-blur-md border border-white/40 flex items-center justify-center text-white shadow-xs">
-          {getWalletIconComponent(wallet.icon || 'Bank', 18)}
-        </div>
+        <CardNetworkEmblem icon={getWalletIcon(wallet, 14)} />
       </div>
 
-      {/* Middle Area: Wallet Name, Type & Large Balance */}
-      <div className="relative z-10 my-auto pt-2 pb-1">
-        <div className="flex items-baseline justify-between gap-2">
-          <div>
-            <h4 className="text-base sm:text-lg font-extrabold text-white tracking-tight leading-tight">
-              {wallet.name || 'BCA'}
-            </h4>
-            <span className="text-[11px] font-medium text-white/80 block mt-0.5">
-              {formatWalletTypeLabel(wallet.type)}
-            </span>
+      {/* Middle Row: Chip EMV Emas Metalik + Contactless (Kiri) & Saldo Tersedia (Kanan) */}
+      <div className="relative z-10 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5 shrink-0">
+          <EmvGoldChip idSuffix={`col-${wallet.id}`} />
+          <Wifi
+            size={17}
+            className="text-white/80 rotate-90 drop-shadow-[0_1px_1px_rgba(0,0,0,0.2)]"
+            aria-hidden="true"
+          />
+        </div>
+
+        <div className="text-right min-w-0">
+          <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.16em] text-white/75 block mb-0.5">
+            SALDO TERSEDIA
+          </span>
+          <div className="text-xl sm:text-2xl font-bold tracking-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.22)] tabular-nums truncate leading-tight">
+            {isMasked ? 'Rp ••••••••' : formatIDR(wallet.balance)}
           </div>
         </div>
-
-        {/* Large Prominent Balance */}
-        <div className="text-xl sm:text-2xl font-extrabold text-white tracking-tight tabular-nums mt-2">
-          {isMasked ? 'Rp ••••••••' : formatIDR(wallet.balance)}
-        </div>
       </div>
 
-      {/* Bottom Area: Card Number, Holder Name & Expiry */}
-      <div className="relative z-10 pt-2 space-y-1.5 border-t border-white/15">
-        <div className="font-mono text-white/90 text-xs sm:text-[13px] tracking-widest">
+      {/* Bottom Row: Nomor Kartu Embossed + Card Holder & Valid Thru */}
+      <div className="relative z-10 space-y-2">
+        <div className="font-mono text-[14px] sm:text-[15px] tracking-[0.22em] text-white/95 drop-shadow-[0_1.5px_1px_rgba(0,0,0,0.38)] truncate">
           {formattedCardNumber}
         </div>
 
-        <div className="flex items-center justify-between text-[11px] text-white/85 pt-0.5">
-          <span className="font-semibold uppercase tracking-wide">
-            {wallet.holderName || 'Yoga W.'}
-          </span>
-          <span className="font-mono text-white/75">
-            {wallet.expiry || '08/26'}
-          </span>
+        <div className="flex items-end justify-between gap-3">
+          <div className="min-w-0">
+            <span className="text-[8px] tracking-[0.18em] text-white/60 uppercase block leading-none mb-1">
+              CARD HOLDER
+            </span>
+            <span className="text-xs font-semibold tracking-[0.14em] uppercase text-white/95 truncate block leading-none drop-shadow-[0_1px_1px_rgba(0,0,0,0.25)]">
+              {wallet.holderName || 'PENGGUNA FINAI'}
+            </span>
+          </div>
+
+          <div className="text-right shrink-0">
+            <span className="text-[8px] tracking-[0.18em] text-white/60 uppercase block leading-none mb-1">
+              VALID THRU
+            </span>
+            <span className="font-mono text-xs tracking-widest text-white/90 leading-none block drop-shadow-[0_1px_1px_rgba(0,0,0,0.25)]">
+              {wallet.expiry || '11/29'}
+            </span>
+          </div>
         </div>
       </div>
     </motion.div>

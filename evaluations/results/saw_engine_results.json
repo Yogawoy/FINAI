@@ -1,0 +1,350 @@
+{
+  "summary": {
+    "total": 11,
+    "passed": 11,
+    "failed": 0
+  },
+  "results": [
+    {
+      "testId": "TC-SAW-01",
+      "name": "Kasus Nilai Nol Mutlak (Zero Division Immunity)",
+      "profile": {
+        "totalBalance": 0,
+        "monthlyIncome": 0,
+        "monthlyExpense": 0,
+        "totalBudgetLimit": 0,
+        "totalBudgetSpent": 0
+      },
+      "expectedStatus": "Warning",
+      "actualStatus": "Warning",
+      "sawScore": 0.5,
+      "score100": 50,
+      "criteria": {
+        "c1_savingsRate": 0.5,
+        "c2_expenseControl": 0.5,
+        "c3_budgetAdherence": 1,
+        "c4_liquidityBuffer": 0
+      },
+      "metrics": {
+        "netCashFlow": 0,
+        "savingsRatePercent": 0,
+        "expenseRatioPercent": 0,
+        "budgetUtilizationPercent": 0,
+        "liquidityMonths": 0
+      },
+      "passed": true,
+      "latencyMs": 27.23090000000002,
+      "notes": "Menguji ketahanan sistem terhadap pembagian nol (0/0) saat user baru mendaftar tanpa transaksi."
+    },
+    {
+      "testId": "TC-SAW-02",
+      "name": "Surplus Finansial Prima (Strong Profile)",
+      "profile": {
+        "totalBalance": 25000000,
+        "monthlyIncome": 12000000,
+        "monthlyExpense": 4000000,
+        "totalBudgetLimit": 4500000,
+        "totalBudgetSpent": 3200000
+      },
+      "expectedStatus": "Strong",
+      "actualStatus": "Strong",
+      "sawScore": 1,
+      "score100": 100,
+      "criteria": {
+        "c1_savingsRate": 1,
+        "c2_expenseControl": 1,
+        "c3_budgetAdherence": 1,
+        "c4_liquidityBuffer": 1
+      },
+      "metrics": {
+        "netCashFlow": 8000000,
+        "savingsRatePercent": 66.7,
+        "expenseRatioPercent": 33.3,
+        "budgetUtilizationPercent": 71.1,
+        "liquidityMonths": 6.3
+      },
+      "passed": true,
+      "latencyMs": 0.1413000000000011,
+      "notes": "Pengeluaran rendah (33% dari income), tabungan 66%, likuiditas > 6 bulan."
+    },
+    {
+      "testId": "TC-SAW-03",
+      "name": "Kondisi Finansial Stabil Moderat (Stable Profile)",
+      "profile": {
+        "totalBalance": 8000000,
+        "monthlyIncome": 7500000,
+        "monthlyExpense": 5000000,
+        "totalBudgetLimit": 5000000,
+        "totalBudgetSpent": 4800000
+      },
+      "expectedStatus": "Stable",
+      "actualStatus": "Stable",
+      "sawScore": 0.76,
+      "score100": 76,
+      "criteria": {
+        "c1_savingsRate": 1,
+        "c2_expenseControl": 1,
+        "c3_budgetAdherence": 0.267,
+        "c4_liquidityBuffer": 0.533
+      },
+      "metrics": {
+        "netCashFlow": 2500000,
+        "savingsRatePercent": 33.3,
+        "expenseRatioPercent": 66.7,
+        "budgetUtilizationPercent": 96,
+        "liquidityMonths": 1.6
+      },
+      "passed": true,
+      "latencyMs": 0.09820000000001983,
+      "notes": "Arus kas positif (33%), anggaran terkendali 96%, likuiditas 1.6 bulan."
+    },
+    {
+      "testId": "TC-SAW-03B",
+      "name": "Kondisi Finansial Waspada (Warning Status Benchmark)",
+      "profile": {
+        "totalBalance": 12000000,
+        "monthlyIncome": 10000000,
+        "monthlyExpense": 8500000,
+        "totalBudgetLimit": 8000000,
+        "totalBudgetSpent": 7400000
+      },
+      "expectedStatus": "Warning",
+      "actualStatus": "Warning",
+      "sawScore": 0.569,
+      "score100": 56.9,
+      "criteria": {
+        "c1_savingsRate": 0.75,
+        "c2_expenseControl": 0.5,
+        "c3_budgetAdherence": 0.5,
+        "c4_liquidityBuffer": 0.471
+      },
+      "metrics": {
+        "netCashFlow": 1500000,
+        "savingsRatePercent": 15,
+        "expenseRatioPercent": 85,
+        "budgetUtilizationPercent": 92.5,
+        "liquidityMonths": 1.4
+      },
+      "passed": true,
+      "latencyMs": 0.03429999999997335,
+      "notes": "Tabungan 15% (di bawah target optimal 20%), pengeluaran 85%, anggaran mendekati batas, tergolong status Warning."
+    },
+    {
+      "testId": "TC-SAW-04",
+      "name": "Arus Kas Sangat Ketat & Anggaran Terlampaui (Borderline Critical Profile)",
+      "profile": {
+        "totalBalance": 2000000,
+        "monthlyIncome": 5000000,
+        "monthlyExpense": 4700000,
+        "totalBudgetLimit": 4000000,
+        "totalBudgetSpent": 4600000
+      },
+      "expectedStatus": "Critical",
+      "actualStatus": "Critical",
+      "sawScore": 0.348,
+      "score100": 34.8,
+      "criteria": {
+        "c1_savingsRate": 0.3,
+        "c2_expenseControl": 0.2,
+        "c3_budgetAdherence": 0.85,
+        "c4_liquidityBuffer": 0.142
+      },
+      "metrics": {
+        "netCashFlow": 300000,
+        "savingsRatePercent": 6,
+        "expenseRatioPercent": 94,
+        "budgetUtilizationPercent": 115,
+        "liquidityMonths": 0.4
+      },
+      "passed": true,
+      "latencyMs": 0.041600000000016735,
+      "notes": "Surplus hanya 6%, anggaran terlampaui 115%, dan buffer darurat hanya 0.4 bulan (< 2 minggu), tepat diklasifikasikan Critical."
+    },
+    {
+      "testId": "TC-SAW-05",
+      "name": "Defisit Ekstrem & Arus Kas Negatif (Severe Deficit Profile)",
+      "profile": {
+        "totalBalance": 500000,
+        "monthlyIncome": 3000000,
+        "monthlyExpense": 6500000,
+        "totalBudgetLimit": 3000000,
+        "totalBudgetSpent": 6200000
+      },
+      "expectedStatus": "Critical",
+      "actualStatus": "Critical",
+      "sawScore": 0.005,
+      "score100": 0.5,
+      "criteria": {
+        "c1_savingsRate": 0,
+        "c2_expenseControl": 0,
+        "c3_budgetAdherence": 0,
+        "c4_liquidityBuffer": 0.026
+      },
+      "metrics": {
+        "netCashFlow": -3500000,
+        "savingsRatePercent": -116.7,
+        "expenseRatioPercent": 216.7,
+        "budgetUtilizationPercent": 206.7,
+        "liquidityMonths": 0.1
+      },
+      "passed": true,
+      "latencyMs": 0.048699999999996635,
+      "notes": "Pengeluaran lebih dari 2x pemasukan, pembengkakan anggaran 200%, buffer kurang dari 3 hari."
+    },
+    {
+      "testId": "TC-SAW-06",
+      "name": "Saldo Nol & Pengeluaran Berjalan (Zero Balance Critical)",
+      "profile": {
+        "totalBalance": 0,
+        "monthlyIncome": 2000000,
+        "monthlyExpense": 2800000,
+        "totalBudgetLimit": 2000000,
+        "totalBudgetSpent": 2500000
+      },
+      "expectedStatus": "Critical",
+      "actualStatus": "Critical",
+      "sawScore": 0.15,
+      "score100": 15,
+      "criteria": {
+        "c1_savingsRate": 0,
+        "c2_expenseControl": 0,
+        "c3_budgetAdherence": 0.75,
+        "c4_liquidityBuffer": 0
+      },
+      "metrics": {
+        "netCashFlow": -800000,
+        "savingsRatePercent": -40,
+        "expenseRatioPercent": 140,
+        "budgetUtilizationPercent": 125,
+        "liquidityMonths": 0
+      },
+      "passed": true,
+      "latencyMs": 0.03260000000000218,
+      "notes": "Likuiditas nol total dengan defisit bulanan."
+    },
+    {
+      "testId": "TC-SAW-07",
+      "name": "Anggaran Terlampaui Ekstrem (Severe Budget Overrun Critical)",
+      "profile": {
+        "totalBalance": 10000000,
+        "monthlyIncome": 10000000,
+        "monthlyExpense": 9500000,
+        "totalBudgetLimit": 3000000,
+        "totalBudgetSpent": 9000000
+      },
+      "expectedStatus": "Critical",
+      "actualStatus": "Critical",
+      "sawScore": 0.195,
+      "score100": 19.5,
+      "criteria": {
+        "c1_savingsRate": 0.25,
+        "c2_expenseControl": 0.167,
+        "c3_budgetAdherence": 0,
+        "c4_liquidityBuffer": 0.351
+      },
+      "metrics": {
+        "netCashFlow": 500000,
+        "savingsRatePercent": 5,
+        "expenseRatioPercent": 95,
+        "budgetUtilizationPercent": 300,
+        "liquidityMonths": 1.1
+      },
+      "passed": true,
+      "latencyMs": 0.023199999999974352,
+      "notes": "Kepatuhan anggaran terdegradasi total (300% overspend), mengindikasikan krisis tata kelola pengeluaran."
+    },
+    {
+      "testId": "TC-SAW-08",
+      "name": "Income Tinggi Tapi Boros Total (High Income Low Buffer Critical)",
+      "profile": {
+        "totalBalance": 3000000,
+        "monthlyIncome": 30000000,
+        "monthlyExpense": 29500000,
+        "totalBudgetLimit": 20000000,
+        "totalBudgetSpent": 28000000
+      },
+      "expectedStatus": "Critical",
+      "actualStatus": "Critical",
+      "sawScore": 0.168,
+      "score100": 16.8,
+      "criteria": {
+        "c1_savingsRate": 0.083,
+        "c2_expenseControl": 0.056,
+        "c3_budgetAdherence": 0.6,
+        "c4_liquidityBuffer": 0.034
+      },
+      "metrics": {
+        "netCashFlow": 500000,
+        "savingsRatePercent": 1.7,
+        "expenseRatioPercent": 98.3,
+        "budgetUtilizationPercent": 140,
+        "liquidityMonths": 0.1
+      },
+      "passed": true,
+      "latencyMs": 0.041299999999978354,
+      "notes": "Membuktikan bahwa pendapatan besar tanpa tabungan dan likuiditas (< 3 hari cadangan) diklasifikasikan rawan krisis (Critical)."
+    },
+    {
+      "testId": "TC-SAW-09",
+      "name": "Dana Darurat Sangat Besar Tapi Tidak Ada Income (Asset-Rich No Income)",
+      "profile": {
+        "totalBalance": 100000000,
+        "monthlyIncome": 0,
+        "monthlyExpense": 5000000,
+        "totalBudgetLimit": 5000000,
+        "totalBudgetSpent": 5000000
+      },
+      "expectedStatus": "Critical",
+      "actualStatus": "Critical",
+      "sawScore": 0.2,
+      "score100": 20,
+      "criteria": {
+        "c1_savingsRate": 0,
+        "c2_expenseControl": 0,
+        "c3_budgetAdherence": 0,
+        "c4_liquidityBuffer": 1
+      },
+      "metrics": {
+        "netCashFlow": -5000000,
+        "savingsRatePercent": -100,
+        "expenseRatioPercent": 999,
+        "budgetUtilizationPercent": 100,
+        "liquidityMonths": 20
+      },
+      "passed": true,
+      "latencyMs": 0.07299999999997908,
+      "notes": "Tanpa pemasukan bulanan (skor C1=0, C2=0), SAW mencerminkan risiko arus kas jangka panjang."
+    },
+    {
+      "testId": "TC-SAW-10",
+      "name": "Threshold Boundary Case (Kategori Strong)",
+      "profile": {
+        "totalBalance": 18000000,
+        "monthlyIncome": 10000000,
+        "monthlyExpense": 4500000,
+        "totalBudgetLimit": 5000000,
+        "totalBudgetSpent": 4000000
+      },
+      "expectedStatus": "Strong",
+      "actualStatus": "Strong",
+      "sawScore": 1,
+      "score100": 100,
+      "criteria": {
+        "c1_savingsRate": 1,
+        "c2_expenseControl": 1,
+        "c3_budgetAdherence": 1,
+        "c4_liquidityBuffer": 1
+      },
+      "metrics": {
+        "netCashFlow": 5500000,
+        "savingsRatePercent": 55,
+        "expenseRatioPercent": 45,
+        "budgetUtilizationPercent": 80,
+        "liquidityMonths": 4
+      },
+      "passed": true,
+      "latencyMs": 0.029999999999972715,
+      "notes": "Profil prima dengan tabungan 55%, likuiditas > 3 bulan, dan anggaran 80% disiplin."
+    }
+  ]
+}

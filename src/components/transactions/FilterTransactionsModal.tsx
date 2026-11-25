@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { Search, X, SlidersHorizontal, Check } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
-import { TransactionCategory, TransactionType } from '@/types';
+import { TransactionType } from '@/types';
+import { TRANSACTION_CATEGORIES } from '@/lib/categories';
 import { DateFilterType } from './TransactionFilters';
 
 interface FilterTransactionsModalProps {
@@ -22,14 +23,7 @@ interface FilterTransactionsModalProps {
 
 const CATEGORY_CHIPS = [
   { id: 'all', label: 'Semua Kategori' },
-  { id: 'food', label: 'Makanan' },
-  { id: 'transport', label: 'Transportasi' },
-  { id: 'shopping', label: 'Belanja' },
-  { id: 'bills', label: 'Tagihan' },
-  { id: 'entertainment', label: 'Hiburan' },
-  { id: 'health', label: 'Kesehatan' },
-  { id: 'education', label: 'Pendidikan' },
-  { id: 'other', label: 'Lainnya' },
+  ...TRANSACTION_CATEGORIES.map((c) => ({ id: c.id, label: c.shortLabel })),
 ];
 
 const DATE_RANGE_CHIPS: { id: DateFilterType; label: string }[] = [

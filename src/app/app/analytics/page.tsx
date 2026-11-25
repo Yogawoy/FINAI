@@ -1,16 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import {
-  LineChart as LineChartIcon,
-  TrendingUp,
-  PieChart as PieChartIcon,
-  Calendar,
-  Sparkles,
-  ArrowDownLeft,
-  ArrowUpRight,
-  ShieldCheck,
-} from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 import {
   BarChart,
   Bar,
@@ -27,16 +18,17 @@ import Header from '@/components/navigation/Header';
 import GlassCard from '@/components/ui/GlassCard';
 import Badge from '@/components/ui/Badge';
 import { formatIDR } from '@/lib/format';
+import {
+  getTransactionCategoryColor,
+  getTransactionCategoryLabel,
+  normalizeCategoryKey,
+} from '@/lib/categories';
 import { apiClient, mapApiErrorMessage } from '@/lib/api-client';
 import { onRefresh } from '@/lib/data-refresh';
 
 // Loading & Page Transition
 import AnalyticsSkeleton from '@/components/loading/AnalyticsSkeleton';
 import PageTransition from '@/components/loading/PageTransition';
-
-// Selaras dengan opsi ChartPeriodSelect varian analytics
-// ('7 Hari' | '30 Hari' | '3 Bulan' | '6 Bulan' | '1 Tahun').
-const TIMEFRAMES = ['7 Hari', '30 Hari', '3 Bulan', '6 Bulan', '1 Tahun'];
 
 function timeframeToDays(timeframe: string): number {
   switch (timeframe) {
@@ -54,34 +46,6 @@ function timeframeToDays(timeframe: string): number {
       return 180;
   }
 }
-
-const CATEGORY_COLORS: Record<string, string> = {
-  food: '#7C7CE6',
-  transport: '#8E9AF7',
-  entertainment: '#D6E4FA',
-  shopping: '#1B7354',
-  bills: '#F97316',
-  health: '#D0EFE5',
-  education: '#9F7AEA',
-  salary: '#10B981',
-  freelance: '#3B82F6',
-  investment: '#F59E0B',
-  other: '#757A95',
-};
-
-const CATEGORY_LABELS: Record<string, string> = {
-  food: 'Food & Dining',
-  transport: 'Transportation',
-  entertainment: 'Entertainment',
-  shopping: 'Shopping & Goods',
-  bills: 'Bills & Utilities',
-  health: 'Health & Medical',
-  education: 'Education',
-  salary: 'Salary',
-  freelance: 'Freelance',
-  investment: 'Investment',
-  other: 'Other',
-};
 
 interface TransactionRaw {
   id: string;
@@ -236,16 +200,16 @@ export default function AnalyticsPage() {
     // Category breakdown
     const categoryMap: Record<string, number> = {};
     expenses.forEach((t) => {
-      const cat = t.category || 'other';
+      const cat = normalizeCategoryKey(t.category);
       categoryMap[cat] = (categoryMap[cat] || 0) + Number(t.amount);
     });
 
     const categoryBreakdown = Object.entries(categoryMap)
       .map(([cat, amount]) => ({
-        name: CATEGORY_LABELS[cat] || cat,
+        name: getTransactionCategoryLabel(cat, 'short'),
         amount,
         percentage: totalExpense > 0 ? Math.round((amount / totalExpense) * 100) : 0,
-        color: CATEGORY_COLORS[cat] || '#757A95',
+        color: getTransactionCategoryColor(cat),
         category: cat,
       }))
       .sort((a, b) => b.amount - a.amount)
@@ -303,25 +267,8 @@ export default function AnalyticsPage() {
 
         {/* Header */}
         <Header
-          title="Analisis & Intelijen Keuangan"
-          subtitle="Evaluasi mendalam pergerakan arus kas, porsi kategori belanja, dan rasio tabungan"
-          actionButton={
-            <div className="flex items-center gap-1 p-1 glass-pill rounded-2xl">
-              {TIMEFRAMES.map((tf) => (
-                <button
-                  key={tf}
-                  onClick={() => setSelectedTimeframe(tf)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                    selectedTimeframe === tf
-                      ? 'bg-gradient-to-r from-[#7C7CE6] to-[#8C8BE8] text-white shadow-xs'
-                      : 'text-[#757A95] hover:text-[#242636]'
-                  }`}
-                >
-                  {tf}
-                </button>
-              ))}
-            </div>
-          }
+          title="Analisis Keuangan"
+          subtitle=""
         />
 
         {/* Top 3 Core Metrics */}
@@ -356,10 +303,7 @@ export default function AnalyticsPage() {
           </GlassCard>
 
           <GlassCard variant="subtle" className="p-6">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-[#757A95] uppercase tracking-wider">Rata-rata Pengeluaran/Hari</span>
-              <Badge variant="glass" size="sm">Aktif</Badge>
-            </div>
+            <span className="text-xs font-bold text-[#757A95] uppercase tracking-wider block">Rata-rata Pengeluaran/Hari</span>
             <div className="text-3xl font-extrabold text-[#242636] mt-2">{formatIDR(analytics.avgDaily)}</div>
             <span className="text-xs text-[#757A95] mt-1 block">
               Dari total {formatIDR(analytics.totalExpenseFormatted)} pengeluaran
@@ -386,10 +330,7 @@ export default function AnalyticsPage() {
           {/* Category Breakdown Donut */}
           <GlassCard className="lg:col-span-6 p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <div>
-                <Badge variant="periwinkle" size="sm" icon={<PieChartIcon size={12} />}>Porsi Kategori</Badge>
-                <h3 className="text-base font-bold text-[#242636] mt-1">Alokasi Pengeluaran per Pos</h3>
-              </div>
+              <h3 className="text-base font-bold text-[#242636]">Alokasi Pengeluaran per Pos</h3>
               <span className="text-xs font-bold text-[#7C7CE6]">
                 Total {formatIDR(analytics.totalExpenseFormatted)}
               </span>
@@ -449,13 +390,7 @@ export default function AnalyticsPage() {
           {/* Day-of-Week Spending Bar Chart */}
           <GlassCard className="lg:col-span-6 p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <div>
-                <Badge variant="periwinkle" size="sm" icon={<Calendar size={12} />}>Ritme Mingguan</Badge>
-                <h3 className="text-base font-bold text-[#242636] mt-1">Aktivitas Belanja Harian</h3>
-              </div>
-              <span className="text-xs font-semibold text-[#1B7354] bg-[#D0EFE5] px-2.5 py-0.5 rounded-full">
-                Pola Teratur
-              </span>
+              <h3 className="text-base font-bold text-[#242636]">Aktivitas Belanja Harian</h3>
             </div>
 
             <div className="h-56 w-full pt-4">

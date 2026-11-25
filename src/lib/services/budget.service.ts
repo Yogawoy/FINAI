@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { CreateBudgetInput, UpdateBudgetInput } from '@/lib/validations/budget';
+import { normalizeCategoryKey } from '@/lib/categories';
 
 export type BudgetHealthStatus = 'SAFE' | 'WARNING' | 'CRITICAL';
 
@@ -64,14 +65,14 @@ export class BudgetService {
       for (const expense of expenses) {
         const month = expense.transactionDate.getMonth() + 1;
         const year = expense.transactionDate.getFullYear();
-        const key = `${year}-${month}-${expense.category.toLowerCase().trim()}`;
+        const key = `${year}-${month}-${normalizeCategoryKey(expense.category)}`;
         const current = expenseByPeriodAndCategory.get(key) || new Prisma.Decimal(0);
         expenseByPeriodAndCategory.set(key, current.plus(expense.amount));
       }
     }
 
     return budgets.map((budget) => {
-      const key = `${budget.year}-${budget.month}-${budget.category.toLowerCase().trim()}`;
+      const key = `${budget.year}-${budget.month}-${normalizeCategoryKey(budget.category)}`;
       const usedAmount = expenseByPeriodAndCategory.get(key) || new Prisma.Decimal(0);
       const remainingAmount = budget.limitAmount.minus(usedAmount);
       const percentage = budget.limitAmount.gt(0)
@@ -134,26 +135,21 @@ export class BudgetService {
    */
   static async createBudget(userId: string, input: CreateBudgetInput) {
     const { category, limitAmount, month, year } = input;
+    const canonicalCategory = normalizeCategoryKey(category);
 
-    const existing = await prisma.budget.findUnique({
-      where: {
-        userId_category_month_year: {
-          userId,
-          category,
-          month,
-          year,
-        },
-      },
+    const periodBudgets = await prisma.budget.findMany({
+      where: { userId, month, year },
+      select: { id: true, category: true },
     });
 
-    if (existing) {
+    if (periodBudgets.some((b) => normalizeCategoryKey(b.category) === canonicalCategory)) {
       throw new BudgetConflictError(`Anggaran untuk kategori '${category}' pada periode ini sudah dibuat`);
     }
 
     return prisma.budget.create({
       data: {
         userId,
-        category,
+        category: canonicalCategory,
         limitAmount: new Prisma.Decimal(limitAmount),
         month,
         year,
@@ -174,26 +170,26 @@ export class BudgetService {
     }
 
     const category = input.category ?? existing.category;
+    const canonicalCategory = normalizeCategoryKey(category);
     const month = input.month ?? existing.month;
     const year = input.year ?? existing.year;
 
-    const duplicate = await prisma.budget.findFirst({
+    const periodDuplicates = await prisma.budget.findMany({
       where: {
         id: { not: budgetId },
         userId,
-        category,
         month,
         year,
       },
-      select: { id: true },
+      select: { id: true, category: true },
     });
 
-    if (duplicate) {
+    if (periodDuplicates.some((b) => normalizeCategoryKey(b.category) === canonicalCategory)) {
       throw new BudgetConflictError(`Anggaran untuk kategori '${category}' pada periode ini sudah dibuat`);
     }
 
     const data: Prisma.BudgetUpdateInput = {};
-    if (input.category !== undefined) data.category = input.category;
+    if (input.category !== undefined) data.category = canonicalCategory;
     if (input.limitAmount !== undefined) data.limitAmount = new Prisma.Decimal(input.limitAmount);
     if (input.month !== undefined) data.month = input.month;
     if (input.year !== undefined) data.year = input.year;

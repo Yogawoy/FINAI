@@ -4,6 +4,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Plus } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { Transaction, TransactionType } from '@/types';
+import { getTransactionCategoryLabel, normalizeTransactionCategory } from '@/lib/categories';
 import { apiClient, mapApiErrorMessage } from '@/lib/api-client';
 import { emitRefresh, onRefresh } from '@/lib/data-refresh';
 
@@ -37,7 +38,7 @@ function mapBackendTransactionToUI(tx: any): Transaction {
     id: tx.id,
     type,
     amount: Number(tx.amount),
-    category: tx.category as any,
+    category: normalizeTransactionCategory(tx.category),
     title: tx.description,
     date: dateStr,
     time: timeStr,
@@ -166,7 +167,9 @@ export default function TransactionsPage() {
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
         const matchTitle = tx.title.toLowerCase().includes(query);
-        const matchCategory = tx.category.toLowerCase().includes(query);
+        const matchCategory =
+          tx.category.toLowerCase().includes(query) ||
+          getTransactionCategoryLabel(tx.category).toLowerCase().includes(query);
         const matchAmount = tx.amount.toString().includes(query);
 
         if (!matchTitle && !matchCategory && !matchAmount) {

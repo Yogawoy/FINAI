@@ -30,7 +30,6 @@ export default function GoalFilters({
     { id: 'all', label: 'Semua Target' },
     { id: 'active', label: 'Aktif' },
     { id: 'completed', label: 'Tercapai' },
-    { id: 'attention', label: 'Perlu Perhatian' },
   ];
 
   const sortOptions = [

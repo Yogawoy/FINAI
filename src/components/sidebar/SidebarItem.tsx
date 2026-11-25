@@ -10,7 +10,6 @@ interface SidebarItemProps {
   icon: LucideIcon;
   isActive: boolean;
   isNested?: boolean;
-  hasActivityDot?: boolean;
   onClick?: () => void;
 }
 
@@ -20,7 +19,6 @@ export default function SidebarItem({
   icon: Icon,
   isActive,
   isNested = false,
-  hasActivityDot = false,
   onClick,
 }: SidebarItemProps) {
   return (
@@ -46,18 +44,6 @@ export default function SidebarItem({
         />
         <span className="truncate">{label}</span>
       </div>
-
-      {/* Subtle indicator dot (for AI Assistant or notifications) */}
-      {hasActivityDot && (
-        <span
-          className={`w-2 h-2 rounded-full shrink-0 transition-colors ${
-            isActive
-              ? 'bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]'
-              : 'bg-[#7C7CE6] shadow-[0_0_6px_rgba(124,124,230,0.6)] animate-pulse'
-          }`}
-          aria-hidden="true"
-        />
-      )}
     </Link>
   );
 }

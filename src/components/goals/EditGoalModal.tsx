@@ -8,6 +8,7 @@ import DatePicker from '@/components/ui/DatePicker';
 import SegmentedControl from '@/components/ui/SegmentedControl';
 import WalletSelect from '@/components/ui/WalletSelect';
 import { GoalItem, GoalCategoryType, GoalColorTheme, GoalFrequency, Wallet } from '@/types';
+import { GOAL_CATEGORIES, normalizeGoalCategory } from '@/lib/categories';
 import { formatIDR } from '@/lib/format';
 import GoalTransferFlow from './GoalTransferFlow';
 
@@ -19,16 +20,10 @@ interface EditGoalModalProps {
   wallets?: Wallet[];
 }
 
-const CATEGORY_OPTIONS: { id: GoalCategoryType; label: string }[] = [
-  { id: 'laptop', label: 'Gadget / Laptop' },
-  { id: 'travel', label: 'Liburan & Wisata' },
-  { id: 'emergency', label: 'Dana Darurat' },
-  { id: 'vehicle', label: 'Kendaraan' },
-  { id: 'home', label: 'Rumah & Properti' },
-  { id: 'course', label: 'Edukasi / Kursus' },
-  { id: 'wedding', label: 'Pernikahan' },
-  { id: 'other', label: 'Lainnya' },
-];
+const CATEGORY_OPTIONS: { id: GoalCategoryType; label: string }[] = GOAL_CATEGORIES.map((c) => ({
+  id: c.id,
+  label: c.shortLabel,
+}));
 
 const COLOR_OPTIONS: { id: GoalColorTheme; label: string; bgClass: string }[] = [
   { id: 'periwinkle', label: 'Periwinkle', bgClass: 'bg-[#7C7CE6]' },
@@ -62,7 +57,7 @@ export default function EditGoalModal({
   useEffect(() => {
     if (goal) {
       setTitle(goal.title);
-      setCategory(goal.category);
+      setCategory(normalizeGoalCategory(goal.category));
       setTargetAmountRaw(goal.targetAmount.toString());
       setTargetDate(goal.targetDate);
       setFrequency(goal.frequency);

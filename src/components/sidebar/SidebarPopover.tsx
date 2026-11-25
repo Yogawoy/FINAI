@@ -70,19 +70,21 @@ export default function SidebarPopover({
             </Link>
           </div>
 
-          <div className="p-1 pt-1.5">
-            <button
-              type="button"
-              onClick={() => {
-                onClose();
-                onLogout?.();
-              }}
-              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#D94F4F] hover:bg-[#FEF3F2] transition-colors cursor-pointer"
-            >
-              <LogOut size={15} />
-              <span>Keluar</span>
-            </button>
-          </div>
+          {onLogout && (
+            <div className="p-1 pt-1.5">
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onLogout();
+                }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#D94F4F] hover:bg-[#FEF3F2] transition-colors cursor-pointer"
+              >
+                <LogOut size={15} />
+                <span>Keluar</span>
+              </button>
+            </div>
+          )}
         </motion.div>
       )}
     </AnimatePresence>

@@ -1,22 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
-import {
-  Utensils,
-  Car,
-  ShoppingBag,
-  Zap,
-  Sparkles,
-  Plus,
-  X,
-} from 'lucide-react';
+import { Sparkles, Plus, X } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import DatePicker from '@/components/ui/DatePicker';
 import TimePicker from '@/components/ui/TimePicker';
 import WalletSelect from '@/components/ui/WalletSelect';
 import type { WalletOption } from '@/components/ui/WalletSelect';
 import SegmentedControl from '@/components/ui/SegmentedControl';
-import { Transaction, TransactionCategory, TransactionType } from '@/types';
+import { TransactionCategory, TransactionType } from '@/types';
+import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/lib/categories';
+import { renderTransactionCategoryIcon } from '@/components/categories/CategoryIcon';
 import { formatIDR } from '@/lib/format';
 
 interface AddTransactionModalProps {
@@ -25,15 +19,6 @@ interface AddTransactionModalProps {
   onAddTransaction: (newTx: any) => void;
   wallets?: WalletOption[];
 }
-
-// 5 Core quick category cards with SVG icons
-const CORE_CATEGORIES: { id: TransactionCategory; label: string; icon: React.ReactNode }[] = [
-  { id: 'food', label: 'Makanan', icon: <Utensils size={18} /> },
-  { id: 'transport', label: 'Transportasi', icon: <Car size={18} /> },
-  { id: 'shopping', label: 'Belanja', icon: <ShoppingBag size={18} /> },
-  { id: 'bills', label: 'Tagihan', icon: <Zap size={18} /> },
-  { id: 'other', label: 'Lainnya', icon: <Sparkles size={18} /> },
-];
 
 export default function AddTransactionModal({
   isOpen,
@@ -209,7 +194,14 @@ export default function AddTransactionModal({
             {/* 1. Type Toggle Custom Segmented Control */}
             <SegmentedControl
               value={type}
-              onChange={(val) => setType(val as TransactionType)}
+              onChange={(val) => {
+                const nextType = val as TransactionType;
+                setType(nextType);
+                const nextList = nextType === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+                if (!nextList.some((c) => c.id === category)) {
+                  setCategory(nextType === 'income' ? 'salary' : 'food');
+                }
+              }}
               options={[
                 { value: 'expense', label: 'Pengeluaran' },
                 { value: 'income', label: 'Pemasukan' },
@@ -239,22 +231,22 @@ export default function AddTransactionModal({
               <label className="text-[11px] font-bold text-[#757A95] uppercase tracking-wider block">
                 Kategori
               </label>
-              <div className="grid grid-cols-5 gap-2">
-                {CORE_CATEGORIES.map((cat) => {
+              <div className="grid grid-cols-4 gap-2 max-h-44 overflow-y-auto pr-0.5">
+                {(type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES).map((cat) => {
                   const isSelected = category === cat.id;
                   return (
                     <button
                       key={cat.id}
                       type="button"
                       onClick={() => setCategory(cat.id)}
-                      className={`flex flex-col items-center justify-center p-2.5 rounded-2xl border transition-all cursor-pointer ${
+                      className={`flex flex-col items-center justify-center p-2 rounded-2xl border transition-all cursor-pointer ${
                         isSelected
-                          ? 'bg-[#E4E2FB]/80 border-[#7C7CE6] text-[#5F5ED4] shadow-xs scale-102 font-bold'
+                          ? 'bg-[#E4E2FB]/80 border-[#7C7CE6] text-[#5F5ED4] shadow-xs font-bold'
                           : 'bg-white border-black/[0.06] text-[#757A95] hover:bg-black/[0.02] hover:text-[#242636]'
                       }`}
                     >
-                      <div className="mb-1">{cat.icon}</div>
-                      <span className="text-[11px]">{cat.label}</span>
+                      <div className="mb-1">{renderTransactionCategoryIcon(cat.id, 17)}</div>
+                      <span className="text-[10px] leading-tight text-center line-clamp-2">{cat.shortLabel}</span>
                     </button>
                   );
                 })}

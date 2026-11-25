@@ -1,0 +1,81 @@
+{
+  "summary": {
+    "totalTests": 7,
+    "passed": 7,
+    "failed": 0,
+    "allPassed": true,
+    "executionDate": "2026-11-24T13:29:33.579Z"
+  },
+  "tests": [
+    {
+      "id": "HITL-01",
+      "name": "Action Card Draf Tanpa Konfirmasi = 0 Mutasi Basis Data",
+      "category": "HITL",
+      "passed": true,
+      "expected": "Mutasi transaksi = 0, Saldo tetap Rp1.000.000",
+      "actual": "Mutasi transaksi = 0, Saldo = Rp1.000.000",
+      "latencyMs": 1352
+    },
+    {
+      "id": "HITL-02",
+      "name": "Action Card Dibatalkan Pengguna = 0 Mutasi Basis Data",
+      "category": "HITL",
+      "passed": true,
+      "expected": "Mutasi transaksi = 0, Saldo tidak berubah",
+      "actual": "Mutasi transaksi = 0, Saldo = Rp1.000.000",
+      "latencyMs": 727.1
+    },
+    {
+      "id": "HITL-03",
+      "name": "Action Card Dikonfirmasi Eksplisit = Tepat 1 Mutasi Atomik",
+      "category": "HITL",
+      "passed": true,
+      "expected": "Mutasi transaksi = 1, Saldo berkurang Rp250.000 menjadi Rp750.000",
+      "actual": "Mutasi transaksi = 1, Saldo = Rp750.000",
+      "latencyMs": 5575.7
+    },
+    {
+      "id": "BAL-01",
+      "name": "Proteksi Saldo Negatif pada Transaksi Pengeluaran (Expense Overdraft)",
+      "category": "BalanceProtection",
+      "passed": true,
+      "expected": "Ditolak dengan InsufficientBalanceError, Saldo tetap Rp750.000",
+      "actual": "Error ditangkap: InsufficientBalanceError, Saldo saat ini: Rp750.000",
+      "latencyMs": 1316.6
+    },
+    {
+      "id": "TRF-01",
+      "name": "Sinkronisasi Transfer Atomik Antar-Dompet (ACID Consistency)",
+      "category": "AtomicTransfer",
+      "passed": true,
+      "expected": "BCA = Rp450.000, GoPay = Rp500.000",
+      "actual": "BCA = Rp450.000, GoPay = Rp500.000",
+      "latencyMs": 4771.7
+    },
+    {
+      "id": "TRF-02",
+      "name": "Proteksi Saldo Kurang pada Transfer Antar-Dompet",
+      "category": "AtomicTransfer",
+      "passed": true,
+      "expected": "Ditolak dan kedua saldo tidak mengalami mutasi",
+      "actual": "Ditolak: Saldo dompet asal tidak mencukupi untuk transfer, Saldo BCA: Rp450.000, GoPay: Rp500.000",
+      "latencyMs": 4074.9
+    },
+    {
+      "id": "RACE-01",
+      "name": "Uji Konkurensi Paralel 10 Request Serentak (Anti Double-Spending)",
+      "category": "RaceCondition",
+      "passed": true,
+      "expected": "Tepat 1 sukses, 9 ditolak, Saldo akhir asal Rp400.000, tujuan Rp600.000",
+      "actual": "Sukses: 1, Ditolak: 9, Saldo Asal: Rp400.000, Saldo Tujuan: Rp600.000",
+      "latencyMs": 2609.5,
+      "details": {
+        "totalRequests": 10,
+        "successCount": 1,
+        "rejectedCount": 9,
+        "finalSourceBalance": 400000,
+        "finalTargetBalance": 600000
+      }
+    }
+  ]
+}

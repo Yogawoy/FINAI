@@ -6,6 +6,7 @@ import { Plus } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import TransactionToast from '@/components/transactions/TransactionToast';
 import { GoalItem, GoalContribution, Wallet } from '@/types';
+import { normalizeGoalCategory } from '@/lib/categories';
 import { formatIDR } from '@/lib/format';
 import { apiClient, mapApiErrorMessage } from '@/lib/api-client';
 import { emitRefresh, onRefresh } from '@/lib/data-refresh';
@@ -29,16 +30,20 @@ function mapBackendGoalToUI(g: any): GoalItem {
   const currentAmount = Number(g.currentAmount);
   const targetAmount = Number(g.targetAmount);
   const isCompleted = currentAmount >= targetAmount;
+  const remaining = Math.max(0, targetAmount - currentAmount);
+  const deadlineMs = g.deadline ? new Date(g.deadline).getTime() : Date.now() + 86400000 * 180;
+  const monthsLeft = Math.max(1, Math.ceil((deadlineMs - Date.now()) / (1000 * 60 * 60 * 24 * 30)));
+  const monthlySaving = remaining > 0 ? Math.ceil(remaining / monthsLeft) : 0;
 
   return {
     id: g.id,
     title: g.name,
-    category: g.category as any,
+    category: normalizeGoalCategory(g.category),
     targetAmount,
     currentAmount,
     targetDate: g.deadline ? new Date(g.deadline).toISOString().split('T')[0] : '',
     frequency: (String(g.frequency).toLowerCase() === 'weekly' ? 'weekly' : 'monthly') as any,
-    monthlySaving: 0,
+    monthlySaving,
     autoDeposit: Boolean(g.autoDeposit),
     nextDueDate: g.nextDueDate ? new Date(g.nextDueDate).toISOString().split('T')[0] : undefined,
     sourceWalletId: g.sourceWalletId || '',
@@ -47,7 +52,6 @@ function mapBackendGoalToUI(g: any): GoalItem {
     destinationWalletName: g.destinationWallet?.name || 'Pos Tabungan',
     colorTheme: 'indigo',
     status: isCompleted ? 'completed' : 'on_track',
-    notes: g.name,
     createdAt: g.createdAt,
     contributions: (g.contributions || []).map((c: any) => ({
       id: c.id,
@@ -212,8 +216,16 @@ function GoalsContent() {
       result = result.filter((g) => g.currentAmount >= g.targetAmount || g.status === 'completed');
     }
 
+    if (selectedSort === 'deadline_asc') {
+      result.sort((a, b) => new Date(a.targetDate || 0).getTime() - new Date(b.targetDate || 0).getTime());
+    } else if (selectedSort === 'progress_desc') {
+      result.sort((a, b) => (b.targetAmount > 0 ? b.currentAmount / b.targetAmount : 0) - (a.targetAmount > 0 ? a.currentAmount / a.targetAmount : 0));
+    } else if (selectedSort === 'progress_asc') {
+      result.sort((a, b) => (a.targetAmount > 0 ? a.currentAmount / a.targetAmount : 0) - (b.targetAmount > 0 ? b.currentAmount / b.targetAmount : 0));
+    }
+
     return result;
-  }, [goals, searchQuery, selectedFilter]);
+  }, [goals, searchQuery, selectedFilter, selectedSort]);
 
   const handleCreateGoalSubmit = async (newGoal: GoalItem) => {
     try {
@@ -359,9 +371,6 @@ function GoalsContent() {
             <h1 className="text-2xl sm:text-3xl font-extrabold text-[#242636] tracking-tight">
               Target Impian
             </h1>
-            <p className="text-xs sm:text-sm text-[#757A95] mt-0.5">
-              Wujudkan rencana dan impian finansial Anda menjadi kenyataan.
-            </p>
           </div>
 
           <div className="flex items-center gap-3">
@@ -395,14 +404,9 @@ function GoalsContent() {
 
         <section className="space-y-5">
           <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <h2 className="text-lg sm:text-xl font-bold text-[#242636] tracking-tight">
-                Daftar Target Saya
-              </h2>
-              <p className="text-xs text-[#757A95]">
-                Pantau seluruh target jangka pendek dan panjang Anda.
-              </p>
-            </div>
+            <h2 className="text-lg sm:text-xl font-bold text-[#242636] tracking-tight">
+              Daftar Target Saya
+            </h2>
 
             <span className="text-xs font-bold text-[#757A95] bg-[#F4F3F9] px-3 py-1 rounded-full">
               {filteredGoals.length} Target

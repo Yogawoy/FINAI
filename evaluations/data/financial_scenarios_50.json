@@ -1,0 +1,944 @@
+[
+  {
+    "id": "SCN-01",
+    "category": "Surplus Sehat",
+    "name": "Profesional Muda Hemat",
+    "description": "Pemasukan 15jt, pengeluaran 5jt, saldo 35jt, anggaran terkontrol rapi.",
+    "profile": {
+      "monthlyIncome": 15000000,
+      "monthlyExpense": 5000000,
+      "totalBalance": 35000000,
+      "totalBudgetLimit": 6000000,
+      "totalBudgetSpent": 4800000,
+      "totalGoalTarget": 50000000,
+      "totalGoalCurrent": 20000000
+    },
+    "groundTruth": {
+      "netCashFlow": 10000000,
+      "savingsRatePercent": 66.7,
+      "expenseRatioPercent": 33.3,
+      "budgetUtilizationPercent": 80,
+      "liquidityMonths": 7,
+      "sawScore": 1,
+      "score100": 100,
+      "deterministicStatus": "Strong"
+    }
+  },
+  {
+    "id": "SCN-02",
+    "category": "Surplus Sehat",
+    "name": "Keluarga Baru Mapan",
+    "description": "Pemasukan gabungan 22jt, pengeluaran 9jt, cadangan likuiditas 60jt.",
+    "profile": {
+      "monthlyIncome": 22000000,
+      "monthlyExpense": 9000000,
+      "totalBalance": 60000000,
+      "totalBudgetLimit": 10000000,
+      "totalBudgetSpent": 8500000,
+      "totalGoalTarget": 100000000,
+      "totalGoalCurrent": 45000000
+    },
+    "groundTruth": {
+      "netCashFlow": 13000000,
+      "savingsRatePercent": 59.1,
+      "expenseRatioPercent": 40.9,
+      "budgetUtilizationPercent": 85,
+      "liquidityMonths": 6.7,
+      "sawScore": 1,
+      "score100": 100,
+      "deterministicStatus": "Strong"
+    }
+  },
+  {
+    "id": "SCN-03",
+    "category": "Surplus Sehat",
+    "name": "Freelancer Sukses Berdisiplin",
+    "description": "Pemasukan 18jt, pengeluaran 6.5jt, likuiditas darurat 40jt.",
+    "profile": {
+      "monthlyIncome": 18000000,
+      "monthlyExpense": 6500000,
+      "totalBalance": 40000000,
+      "totalBudgetLimit": 7500000,
+      "totalBudgetSpent": 6000000,
+      "totalGoalTarget": 30000000,
+      "totalGoalCurrent": 18000000
+    },
+    "groundTruth": {
+      "netCashFlow": 11500000,
+      "savingsRatePercent": 63.9,
+      "expenseRatioPercent": 36.1,
+      "budgetUtilizationPercent": 80,
+      "liquidityMonths": 6.2,
+      "sawScore": 1,
+      "score100": 100,
+      "deterministicStatus": "Strong"
+    }
+  },
+  {
+    "id": "SCN-04",
+    "category": "Surplus Sehat",
+    "name": "Karyawan Senior Frugal",
+    "description": "Pemasukan 12jt, pengeluaran 4jt, saldo 28jt, tabungan 66%.",
+    "profile": {
+      "monthlyIncome": 12000000,
+      "monthlyExpense": 4000000,
+      "totalBalance": 28000000,
+      "totalBudgetLimit": 4500000,
+      "totalBudgetSpent": 3800000,
+      "totalGoalTarget": 20000000,
+      "totalGoalCurrent": 15000000
+    },
+    "groundTruth": {
+      "netCashFlow": 8000000,
+      "savingsRatePercent": 66.7,
+      "expenseRatioPercent": 33.3,
+      "budgetUtilizationPercent": 84.4,
+      "liquidityMonths": 7,
+      "sawScore": 1,
+      "score100": 100,
+      "deterministicStatus": "Strong"
+    }
+  },
+  {
+    "id": "SCN-05",
+    "category": "Surplus Sehat",
+    "name": "Eksekutif Muda Dana Melimpah",
+    "description": "Pemasukan 35jt, pengeluaran 12jt, saldo 90jt, rasio tabungan 65%.",
+    "profile": {
+      "monthlyIncome": 35000000,
+      "monthlyExpense": 12000000,
+      "totalBalance": 90000000,
+      "totalBudgetLimit": 14000000,
+      "totalBudgetSpent": 11000000,
+      "totalGoalTarget": 150000000,
+      "totalGoalCurrent": 70000000
+    },
+    "groundTruth": {
+      "netCashFlow": 23000000,
+      "savingsRatePercent": 65.7,
+      "expenseRatioPercent": 34.3,
+      "budgetUtilizationPercent": 78.6,
+      "liquidityMonths": 7.5,
+      "sawScore": 1,
+      "score100": 100,
+      "deterministicStatus": "Strong"
+    }
+  },
+  {
+    "id": "SCN-06",
+    "category": "Defisit Arus Kas",
+    "name": "Defisit Berat Konsumtif",
+    "description": "Pemasukan 5jt tapi pengeluaran 7.8jt, saldo menipis jadi 1jt.",
+    "profile": {
+      "monthlyIncome": 5000000,
+      "monthlyExpense": 7800000,
+      "totalBalance": 1000000,
+      "totalBudgetLimit": 5000000,
+      "totalBudgetSpent": 7500000,
+      "totalGoalTarget": 10000000,
+      "totalGoalCurrent": 500000
+    },
+    "groundTruth": {
+      "netCashFlow": -2800000,
+      "savingsRatePercent": -56,
+      "expenseRatioPercent": 156,
+      "budgetUtilizationPercent": 150,
+      "liquidityMonths": 0.1,
+      "sawScore": 0.109,
+      "score100": 10.9,
+      "deterministicStatus": "Critical"
+    }
+  },
+  {
+    "id": "SCN-07",
+    "category": "Defisit Arus Kas",
+    "name": "Biaya Rumah Tangga Membengkak",
+    "description": "Pemasukan 8jt, pengeluaran 11jt karena perbaikan rumah mendadak.",
+    "profile": {
+      "monthlyIncome": 8000000,
+      "monthlyExpense": 11000000,
+      "totalBalance": 2500000,
+      "totalBudgetLimit": 8000000,
+      "totalBudgetSpent": 10800000
+    },
+    "groundTruth": {
+      "netCashFlow": -3000000,
+      "savingsRatePercent": -37.5,
+      "expenseRatioPercent": 137.5,
+      "budgetUtilizationPercent": 135,
+      "liquidityMonths": 0.2,
+      "sawScore": 0.145,
+      "score100": 14.5,
+      "deterministicStatus": "Critical"
+    }
+  },
+  {
+    "id": "SCN-08",
+    "category": "Defisit Arus Kas",
+    "name": "Mahasiswa Akhir Menipis",
+    "description": "Pemasukan kiriman 2jt, pengeluaran 3.2jt, saldo tersisa 250rb.",
+    "profile": {
+      "monthlyIncome": 2000000,
+      "monthlyExpense": 3200000,
+      "totalBalance": 250000,
+      "totalBudgetLimit": 2000000,
+      "totalBudgetSpent": 3100000
+    },
+    "groundTruth": {
+      "netCashFlow": -1200000,
+      "savingsRatePercent": -60,
+      "expenseRatioPercent": 160,
+      "budgetUtilizationPercent": 155,
+      "liquidityMonths": 0.1,
+      "sawScore": 0.095,
+      "score100": 9.5,
+      "deterministicStatus": "Critical"
+    }
+  },
+  {
+    "id": "SCN-09",
+    "category": "Defisit Arus Kas",
+    "name": "Pekerja Lepas Sepi Proyek",
+    "description": "Pemasukan hanya 3jt, pengeluaran rutin 5.5jt, saldo 800rb.",
+    "profile": {
+      "monthlyIncome": 3000000,
+      "monthlyExpense": 5500000,
+      "totalBalance": 800000,
+      "totalBudgetLimit": 4000000,
+      "totalBudgetSpent": 5200000
+    },
+    "groundTruth": {
+      "netCashFlow": -2500000,
+      "savingsRatePercent": -83.3,
+      "expenseRatioPercent": 183.3,
+      "budgetUtilizationPercent": 130,
+      "liquidityMonths": 0.1,
+      "sawScore": 0.15,
+      "score100": 15,
+      "deterministicStatus": "Critical"
+    }
+  },
+  {
+    "id": "SCN-10",
+    "category": "Defisit Arus Kas",
+    "name": "Gaya Hidup Melebihi Kemampuan",
+    "description": "Pemasukan 10jt, pengeluaran kartu kredit membengkak 16jt, saldo 2jt.",
+    "profile": {
+      "monthlyIncome": 10000000,
+      "monthlyExpense": 16000000,
+      "totalBalance": 2000000,
+      "totalBudgetLimit": 9000000,
+      "totalBudgetSpent": 15500000
+    },
+    "groundTruth": {
+      "netCashFlow": -6000000,
+      "savingsRatePercent": -60,
+      "expenseRatioPercent": 160,
+      "budgetUtilizationPercent": 172.2,
+      "liquidityMonths": 0.1,
+      "sawScore": 0.064,
+      "score100": 6.4,
+      "deterministicStatus": "Critical"
+    }
+  },
+  {
+    "id": "SCN-11",
+    "category": "Anggaran Lewat Batas",
+    "name": "Overbudget Makan & Hiburan",
+    "description": "Income 7jt, belanja habis 6.8jt, pos makan tembus 180% limit.",
+    "profile": {
+      "monthlyIncome": 7000000,
+      "monthlyExpense": 6800000,
+      "totalBalance": 4000000,
+      "totalBudgetLimit": 4500000,
+      "totalBudgetSpent": 6500000
+    },
+    "groundTruth": {
+      "netCashFlow": 200000,
+      "savingsRatePercent": 2.9,
+      "expenseRatioPercent": 97.1,
+      "budgetUtilizationPercent": 144.4,
+      "liquidityMonths": 0.6,
+      "sawScore": 0.222,
+      "score100": 22.2,
+      "deterministicStatus": "Critical"
+    }
+  },
+  {
+    "id": "SCN-12",
+    "category": "Anggaran Lewat Batas",
+    "name": "Kalap Belanja Promo Tanggal Kembar",
+    "description": "Income 9jt, expense 8.7jt, belanja online 200% dari alokasi.",
+    "profile": {
+      "monthlyIncome": 9000000,
+      "monthlyExpense": 8700000,
+      "totalBalance": 5000000,
+      "totalBudgetLimit": 6000000,
+      "totalBudgetSpent": 8400000
+    },
+    "groundTruth": {
+      "netCashFlow": 300000,
+      "savingsRatePercent": 3.3,
+      "expenseRatioPercent": 96.7,
+      "budgetUtilizationPercent": 140,
+      "liquidityMonths": 0.6,
+      "sawScore": 0.242,
+      "score100": 24.2,
+      "deterministicStatus": "Critical"
+    }
+  },
+  {
+    "id": "SCN-13",
+    "category": "Anggaran Lewat Batas",
+    "name": "Overbudget Ekstrem Kendaraan",
+    "description": "Income 6jt, expense 5.9jt, servis kendaraan 250% budget.",
+    "profile": {
+      "monthlyIncome": 6000000,
+      "monthlyExpense": 5900000,
+      "totalBalance": 3000000,
+      "totalBudgetLimit": 3500000,
+      "totalBudgetSpent": 5600000
+    },
+    "groundTruth": {
+      "netCashFlow": 100000,
+      "savingsRatePercent": 1.7,
+      "expenseRatioPercent": 98.3,
+      "budgetUtilizationPercent": 160,
+      "liquidityMonths": 0.5,
+      "sawScore": 0.156,
+      "score100": 15.6,
+      "deterministicStatus": "Critical"
+    }
+  },
+  {
+    "id": "SCN-14",
+    "category": "Anggaran Lewat Batas",
+    "name": "Banyak Undangan Pernikahan",
+    "description": "Income 8.5jt, expense 8.2jt, pos sosial membengkak 170%.",
+    "profile": {
+      "monthlyIncome": 8500000,
+      "monthlyExpense": 8200000,
+      "totalBalance": 6000000,
+      "totalBudgetLimit": 5000000,
+      "totalBudgetSpent": 7800000
+    },
+    "groundTruth": {
+      "netCashFlow": 300000,
+      "savingsRatePercent": 3.5,
+      "expenseRatioPercent": 96.5,
+      "budgetUtilizationPercent": 156,
+      "liquidityMonths": 0.7,
+      "sawScore": 0.225,
+      "score100": 22.5,
+      "deterministicStatus": "Critical"
+    }
+  },
+  {
+    "id": "SCN-15",
+    "category": "Anggaran Lewat Batas",
+    "name": "Langganan Digital Menumpuk",
+    "description": "Income 11jt, expense 10.5jt, anggaran hobi dan langganan tembus 160%.",
+    "profile": {
+      "monthlyIncome": 11000000,
+      "monthlyExpense": 10500000,
+      "totalBalance": 7000000,
+      "totalBudgetLimit": 7000000,
+      "totalBudgetSpent": 10000000
+    },
+    "groundTruth": {
+      "netCashFlow": 500000,
+      "savingsRatePercent": 4.5,
+      "expenseRatioPercent": 95.5,
+      "budgetUtilizationPercent": 142.9,
+      "liquidityMonths": 0.7,
+      "sawScore": 0.272,
+      "score100": 27.2,
+      "deterministicStatus": "Critical"
+    }
+  },
+  {
+    "id": "SCN-16",
+    "category": "Saldo Nol / Menipis",
+    "name": "Saldo Nol Total Habis",
+    "description": "Saldo dompet 0, pemasukan 3jt, pengeluaran 3.2jt, darurat total.",
+    "profile": {
+      "monthlyIncome": 3000000,
+      "monthlyExpense": 3200000,
+      "totalBalance": 0,
+      "totalBudgetLimit": 3000000,
+      "totalBudgetSpent": 3100000
+    },
+    "groundTruth": {
+      "netCashFlow": -200000,
+      "savingsRatePercent": -6.7,
+      "expenseRatioPercent": 106.7,
+      "budgetUtilizationPercent": 103.3,
+      "liquidityMonths": 0,
+      "sawScore": 0.193,
+      "score100": 19.3,
+      "deterministicStatus": "Critical"
+    }
+  },
+  {
+    "id": "SCN-17",
+    "category": "Saldo Nol / Menipis",
+    "name": "Buffer Darurat Kritis Kurang 3 Hari",
+    "description": "Saldo tersisa 150rb, pengeluaran harian 80rb, risiko gagal bayar.",
+    "profile": {
+      "monthlyIncome": 4000000,
+      "monthlyExpense": 4300000,
+      "totalBalance": 150000,
+      "totalBudgetLimit": 3800000,
+      "totalBudgetSpent": 4200000
+    },
+    "groundTruth": {
+      "netCashFlow": -300000,
+      "savingsRatePercent": -7.5,
+      "expenseRatioPercent": 107.5,
+      "budgetUtilizationPercent": 110.5,
+      "liquidityMonths": 0,
+      "sawScore": 0.181,
+      "score100": 18.1,
+      "deterministicStatus": "Critical"
+    }
+  },
+  {
+    "id": "SCN-18",
+    "category": "Saldo Nol / Menipis",
+    "name": "Pekerja Baru Belum Gajian",
+    "description": "Saldo 200rb, pengeluaran bulanan 2.5jt, belum ada income bulan ini.",
+    "profile": {
+      "monthlyIncome": 0,
+      "monthlyExpense": 2500000,
+      "totalBalance": 200000,
+      "totalBudgetLimit": 2500000,
+      "totalBudgetSpent": 2400000
+    },
+    "groundTruth": {
+      "netCashFlow": -2500000,
+      "savingsRatePercent": -100,
+      "expenseRatioPercent": 999,
+      "budgetUtilizationPercent": 96,
+      "liquidityMonths": 0.1,
+      "sawScore": 0.059,
+      "score100": 5.9,
+      "deterministicStatus": "Critical"
+    }
+  },
+  {
+    "id": "SCN-19",
+    "category": "Saldo Nol / Menipis",
+    "name": "Terkuras Membayar Uang Pangkal",
+    "description": "Pemasukan 6jt, pengeluaran 8jt, seluruh saldo terkuras sisa 50rb.",
+    "profile": {
+      "monthlyIncome": 6000000,
+      "monthlyExpense": 8000000,
+      "totalBalance": 50000,
+      "totalBudgetLimit": 6000000,
+      "totalBudgetSpent": 7800000
+    },
+    "groundTruth": {
+      "netCashFlow": -2000000,
+      "savingsRatePercent": -33.3,
+      "expenseRatioPercent": 133.3,
+      "budgetUtilizationPercent": 130,
+      "liquidityMonths": 0,
+      "sawScore": 0.14,
+      "score100": 14,
+      "deterministicStatus": "Critical"
+    }
+  },
+  {
+    "id": "SCN-20",
+    "category": "Saldo Nol / Menipis",
+    "name": "Gali Lubang Tutup Lubang",
+    "description": "Saldo 100rb, income 5jt, expense 5.4jt, tanpa cadangan kas sama sekali.",
+    "profile": {
+      "monthlyIncome": 5000000,
+      "monthlyExpense": 5400000,
+      "totalBalance": 100000,
+      "totalBudgetLimit": 5000000,
+      "totalBudgetSpent": 5300000
+    },
+    "groundTruth": {
+      "netCashFlow": -400000,
+      "savingsRatePercent": -8,
+      "expenseRatioPercent": 108,
+      "budgetUtilizationPercent": 106,
+      "liquidityMonths": 0,
+      "sawScore": 0.189,
+      "score100": 18.9,
+      "deterministicStatus": "Critical"
+    }
+  },
+  {
+    "id": "SCN-21",
+    "category": "Multi-Dompet",
+    "name": "Saldo Tersebar di 5 E-Wallet",
+    "description": "Income 8jt, expense 5.5jt, saldo 12jt terbagi di BCA, Gopay, OVO, Dana, ShopeePay.",
+    "profile": {
+      "monthlyIncome": 8000000,
+      "monthlyExpense": 5500000,
+      "totalBalance": 12000000,
+      "totalBudgetLimit": 6000000,
+      "totalBudgetSpent": 5200000
+    },
+    "groundTruth": {
+      "netCashFlow": 2500000,
+      "savingsRatePercent": 31.3,
+      "expenseRatioPercent": 68.8,
+      "budgetUtilizationPercent": 86.7,
+      "liquidityMonths": 2.2,
+      "sawScore": 0.923,
+      "score100": 92.3,
+      "deterministicStatus": "Strong"
+    }
+  },
+  {
+    "id": "SCN-22",
+    "category": "Multi-Dompet",
+    "name": "Dominasi Rekening Bisnis vs Pribadi",
+    "description": "Income 14jt, expense 9jt, saldo 25jt di 2 rekening bank dan kas fisik.",
+    "profile": {
+      "monthlyIncome": 14000000,
+      "monthlyExpense": 9000000,
+      "totalBalance": 25000000,
+      "totalBudgetLimit": 10000000,
+      "totalBudgetSpent": 8600000
+    },
+    "groundTruth": {
+      "netCashFlow": 5000000,
+      "savingsRatePercent": 35.7,
+      "expenseRatioPercent": 64.3,
+      "budgetUtilizationPercent": 86,
+      "liquidityMonths": 2.8,
+      "sawScore": 0.972,
+      "score100": 97.2,
+      "deterministicStatus": "Strong"
+    }
+  },
+  {
+    "id": "SCN-23",
+    "category": "Multi-Dompet",
+    "name": "E-Wallet Berlebih Tunai Kosong",
+    "description": "Income 6.5jt, expense 4.8jt, saldo 9jt di e-wallet tanpa pegangan tunai.",
+    "profile": {
+      "monthlyIncome": 6500000,
+      "monthlyExpense": 4800000,
+      "totalBalance": 9000000,
+      "totalBudgetLimit": 5500000,
+      "totalBudgetSpent": 4500000
+    },
+    "groundTruth": {
+      "netCashFlow": 1700000,
+      "savingsRatePercent": 26.2,
+      "expenseRatioPercent": 73.8,
+      "budgetUtilizationPercent": 81.8,
+      "liquidityMonths": 1.9,
+      "sawScore": 0.887,
+      "score100": 88.7,
+      "deterministicStatus": "Strong"
+    }
+  },
+  {
+    "id": "SCN-24",
+    "category": "Multi-Dompet",
+    "name": "Tabungan Kunci di Deposito",
+    "description": "Income 10jt, expense 7jt, saldo 50jt tapi dana cair hanya 3jt di rekening aktif.",
+    "profile": {
+      "monthlyIncome": 10000000,
+      "monthlyExpense": 7000000,
+      "totalBalance": 15000000,
+      "totalBudgetLimit": 7500000,
+      "totalBudgetSpent": 6800000
+    },
+    "groundTruth": {
+      "netCashFlow": 3000000,
+      "savingsRatePercent": 30,
+      "expenseRatioPercent": 70,
+      "budgetUtilizationPercent": 90.7,
+      "liquidityMonths": 2.1,
+      "sawScore": 0.867,
+      "score100": 86.7,
+      "deterministicStatus": "Strong"
+    }
+  },
+  {
+    "id": "SCN-25",
+    "category": "Multi-Dompet",
+    "name": "Distribusi Saldo Cukup Rata",
+    "description": "Income 16jt, expense 10jt, saldo 30jt di 3 bank nasional.",
+    "profile": {
+      "monthlyIncome": 16000000,
+      "monthlyExpense": 10000000,
+      "totalBalance": 30000000,
+      "totalBudgetLimit": 11000000,
+      "totalBudgetSpent": 9700000
+    },
+    "groundTruth": {
+      "netCashFlow": 6000000,
+      "savingsRatePercent": 37.5,
+      "expenseRatioPercent": 62.5,
+      "budgetUtilizationPercent": 88.2,
+      "liquidityMonths": 3,
+      "sawScore": 0.958,
+      "score100": 95.8,
+      "deterministicStatus": "Strong"
+    }
+  },
+  {
+    "id": "SCN-26",
+    "category": "Kontribusi Target",
+    "name": "Nabung Ambisius DP Rumah",
+    "description": "Income 10jt, expense 5jt, setor target 4.5jt per bulan, arus kas tersisa mepet.",
+    "profile": {
+      "monthlyIncome": 10000000,
+      "monthlyExpense": 5000000,
+      "totalBalance": 20000000,
+      "totalBudgetLimit": 5500000,
+      "totalBudgetSpent": 4900000,
+      "totalGoalTarget": 80000000,
+      "totalGoalCurrent": 35000000
+    },
+    "groundTruth": {
+      "netCashFlow": 5000000,
+      "savingsRatePercent": 50,
+      "expenseRatioPercent": 50,
+      "budgetUtilizationPercent": 89.1,
+      "liquidityMonths": 4,
+      "sawScore": 0.945,
+      "score100": 94.5,
+      "deterministicStatus": "Strong"
+    }
+  },
+  {
+    "id": "SCN-27",
+    "category": "Kontribusi Target",
+    "name": "Setoran 3 Target Bersamaan",
+    "description": "Income 12jt, expense 7jt, nabung laptop, nikah, dan liburan total 4jt.",
+    "profile": {
+      "monthlyIncome": 12000000,
+      "monthlyExpense": 7000000,
+      "totalBalance": 22000000,
+      "totalBudgetLimit": 8000000,
+      "totalBudgetSpent": 6800000,
+      "totalGoalTarget": 60000000,
+      "totalGoalCurrent": 25000000
+    },
+    "groundTruth": {
+      "netCashFlow": 5000000,
+      "savingsRatePercent": 41.7,
+      "expenseRatioPercent": 58.3,
+      "budgetUtilizationPercent": 85,
+      "liquidityMonths": 3.1,
+      "sawScore": 1,
+      "score100": 100,
+      "deterministicStatus": "Strong"
+    }
+  },
+  {
+    "id": "SCN-28",
+    "category": "Kontribusi Target",
+    "name": "Target Terlalu Berat Melebihi Surplus",
+    "description": "Income 5jt, expense 4.2jt, memaksakan setor target 1.5jt (defisit tersembunyi).",
+    "profile": {
+      "monthlyIncome": 5000000,
+      "monthlyExpense": 4200000,
+      "totalBalance": 3000000,
+      "totalBudgetLimit": 4500000,
+      "totalBudgetSpent": 4100000,
+      "totalGoalTarget": 25000000,
+      "totalGoalCurrent": 4000000
+    },
+    "groundTruth": {
+      "netCashFlow": 800000,
+      "savingsRatePercent": 16,
+      "expenseRatioPercent": 84,
+      "budgetUtilizationPercent": 91.1,
+      "liquidityMonths": 0.7,
+      "sawScore": 0.566,
+      "score100": 56.6,
+      "deterministicStatus": "Warning"
+    }
+  },
+  {
+    "id": "SCN-29",
+    "category": "Kontribusi Target",
+    "name": "Target Dana Darurat Hampir Tercapai",
+    "description": "Income 9jt, expense 5.5jt, saldo 25jt, progres target 90%.",
+    "profile": {
+      "monthlyIncome": 9000000,
+      "monthlyExpense": 5500000,
+      "totalBalance": 25000000,
+      "totalBudgetLimit": 6000000,
+      "totalBudgetSpent": 5300000,
+      "totalGoalTarget": 20000000,
+      "totalGoalCurrent": 18000000
+    },
+    "groundTruth": {
+      "netCashFlow": 3500000,
+      "savingsRatePercent": 38.9,
+      "expenseRatioPercent": 61.1,
+      "budgetUtilizationPercent": 88.3,
+      "liquidityMonths": 4.5,
+      "sawScore": 0.956,
+      "score100": 95.6,
+      "deterministicStatus": "Strong"
+    }
+  },
+  {
+    "id": "SCN-30",
+    "category": "Kontribusi Target",
+    "name": "Alokasi Tabungan Seimbang 50/30/20",
+    "description": "Income 15jt, expense 7.5jt, tabungan 3jt teralokasi otomatis ke goal.",
+    "profile": {
+      "monthlyIncome": 15000000,
+      "monthlyExpense": 7500000,
+      "totalBalance": 32000000,
+      "totalBudgetLimit": 8500000,
+      "totalBudgetSpent": 7200000,
+      "totalGoalTarget": 50000000,
+      "totalGoalCurrent": 22000000
+    },
+    "groundTruth": {
+      "netCashFlow": 7500000,
+      "savingsRatePercent": 50,
+      "expenseRatioPercent": 50,
+      "budgetUtilizationPercent": 84.7,
+      "liquidityMonths": 4.3,
+      "sawScore": 1,
+      "score100": 100,
+      "deterministicStatus": "Strong"
+    }
+  },
+  {
+    "id": "SCN-31",
+    "category": "Kasus Ekstrem",
+    "name": "Zero Activity Baru Buka Akun",
+    "description": "Semua nilai 0 rupiah, belum ada transaksi tercatat.",
+    "profile": {
+      "monthlyIncome": 0,
+      "monthlyExpense": 0,
+      "totalBalance": 0,
+      "totalBudgetLimit": 0,
+      "totalBudgetSpent": 0
+    },
+    "groundTruth": {
+      "netCashFlow": 0,
+      "savingsRatePercent": 0,
+      "expenseRatioPercent": 0,
+      "budgetUtilizationPercent": 0,
+      "liquidityMonths": 0,
+      "sawScore": 0.5,
+      "score100": 50,
+      "deterministicStatus": "Warning"
+    }
+  },
+  {
+    "id": "SCN-32",
+    "category": "Kasus Ekstrem",
+    "name": "Pemasukan Sangat Besar Sekali Waktu",
+    "description": "Income 80jt (pesangon/jual aset), expense 10jt, saldo 120jt.",
+    "profile": {
+      "monthlyIncome": 80000000,
+      "monthlyExpense": 10000000,
+      "totalBalance": 120000000,
+      "totalBudgetLimit": 12000000,
+      "totalBudgetSpent": 9500000
+    },
+    "groundTruth": {
+      "netCashFlow": 70000000,
+      "savingsRatePercent": 87.5,
+      "expenseRatioPercent": 12.5,
+      "budgetUtilizationPercent": 79.2,
+      "liquidityMonths": 12,
+      "sawScore": 1,
+      "score100": 100,
+      "deterministicStatus": "Strong"
+    }
+  },
+  {
+    "id": "SCN-33",
+    "category": "Kasus Ekstrem",
+    "name": "Pensiunan Kaya Aset Tanpa Gaji",
+    "description": "Income 0, expense bulanan 6jt, saldo 150jt (cadangan likuiditas 25 bulan).",
+    "profile": {
+      "monthlyIncome": 0,
+      "monthlyExpense": 6000000,
+      "totalBalance": 150000000,
+      "totalBudgetLimit": 6500000,
+      "totalBudgetSpent": 5800000
+    },
+    "groundTruth": {
+      "netCashFlow": -6000000,
+      "savingsRatePercent": -100,
+      "expenseRatioPercent": 999,
+      "budgetUtilizationPercent": 89.2,
+      "liquidityMonths": 25,
+      "sawScore": 0.344,
+      "score100": 34.4,
+      "deterministicStatus": "Critical"
+    }
+  },
+  {
+    "id": "SCN-34",
+    "category": "Kasus Ekstrem",
+    "name": "Income Sangat Tinggi Tapi 100% Habis",
+    "description": "Income 50jt, expense 50jt, saldo hanya 1jt (gaya hidup ultra boros).",
+    "profile": {
+      "monthlyIncome": 50000000,
+      "monthlyExpense": 50000000,
+      "totalBalance": 1000000,
+      "totalBudgetLimit": 40000000,
+      "totalBudgetSpent": 49000000
+    },
+    "groundTruth": {
+      "netCashFlow": 0,
+      "savingsRatePercent": 0,
+      "expenseRatioPercent": 100,
+      "budgetUtilizationPercent": 122.5,
+      "liquidityMonths": 0,
+      "sawScore": 0.156,
+      "score100": 15.6,
+      "deterministicStatus": "Critical"
+    }
+  },
+  {
+    "id": "SCN-35",
+    "category": "Kasus Ekstrem",
+    "name": "Defisit Bencana 5x Lipat Income",
+    "description": "Income 4jt, expense 20jt akibat musibah medis, saldo minus/kritis 100rb.",
+    "profile": {
+      "monthlyIncome": 4000000,
+      "monthlyExpense": 20000000,
+      "totalBalance": 100000,
+      "totalBudgetLimit": 4000000,
+      "totalBudgetSpent": 19500000
+    },
+    "groundTruth": {
+      "netCashFlow": -16000000,
+      "savingsRatePercent": -400,
+      "expenseRatioPercent": 500,
+      "budgetUtilizationPercent": 487.5,
+      "liquidityMonths": 0,
+      "sawScore": 0,
+      "score100": 0,
+      "deterministicStatus": "Critical"
+    }
+  },
+  {
+    "id": "SCN-36",
+    "category": "Finansial Stabil",
+    "name": "Karyawan Menengah Moderat",
+    "description": "Income 10jt, expense 7.5jt (75% rasio), saldo 7.5jt (1 bulan buffer), budget 96% terpakai.",
+    "profile": {
+      "monthlyIncome": 10000000,
+      "monthlyExpense": 7500000,
+      "totalBalance": 7500000,
+      "totalBudgetLimit": 7500000,
+      "totalBudgetSpent": 7200000
+    },
+    "groundTruth": {
+      "netCashFlow": 2500000,
+      "savingsRatePercent": 25,
+      "expenseRatioPercent": 75,
+      "budgetUtilizationPercent": 96,
+      "liquidityMonths": 1,
+      "sawScore": 0.67,
+      "score100": 67,
+      "deterministicStatus": "Stable"
+    }
+  },
+  {
+    "id": "SCN-37",
+    "category": "Finansial Stabil",
+    "name": "Pegawai Negeri Golongan III",
+    "description": "Income 8jt, expense 6jt (75% rasio), saldo 6jt (buffer 1 bulan), anggaran 90% disiplin.",
+    "profile": {
+      "monthlyIncome": 8000000,
+      "monthlyExpense": 6000000,
+      "totalBalance": 6000000,
+      "totalBudgetLimit": 6000000,
+      "totalBudgetSpent": 5500000
+    },
+    "groundTruth": {
+      "netCashFlow": 2000000,
+      "savingsRatePercent": 25,
+      "expenseRatioPercent": 75,
+      "budgetUtilizationPercent": 91.7,
+      "liquidityMonths": 1,
+      "sawScore": 0.728,
+      "score100": 72.8,
+      "deterministicStatus": "Stable"
+    }
+  },
+  {
+    "id": "SCN-38",
+    "category": "Finansial Stabil",
+    "name": "Guru Swasta Berkeluarga",
+    "description": "Income 7jt, expense 5.4jt (77% rasio), saldo 8jt (buffer 1.5 bulan).",
+    "profile": {
+      "monthlyIncome": 7000000,
+      "monthlyExpense": 5400000,
+      "totalBalance": 8000000,
+      "totalBudgetLimit": 5500000,
+      "totalBudgetSpent": 5100000
+    },
+    "groundTruth": {
+      "netCashFlow": 1600000,
+      "savingsRatePercent": 22.9,
+      "expenseRatioPercent": 77.1,
+      "budgetUtilizationPercent": 92.7,
+      "liquidityMonths": 1.5,
+      "sawScore": 0.724,
+      "score100": 72.4,
+      "deterministicStatus": "Stable"
+    }
+  },
+  {
+    "id": "SCN-39",
+    "category": "Finansial Stabil",
+    "name": "Desainer UI/UX In-House",
+    "description": "Income 12jt, expense 9.2jt (76% rasio), saldo 12jt (buffer 1.3 bulan).",
+    "profile": {
+      "monthlyIncome": 12000000,
+      "monthlyExpense": 9200000,
+      "totalBalance": 12000000,
+      "totalBudgetLimit": 9500000,
+      "totalBudgetSpent": 8900000
+    },
+    "groundTruth": {
+      "netCashFlow": 2800000,
+      "savingsRatePercent": 23.3,
+      "expenseRatioPercent": 76.7,
+      "budgetUtilizationPercent": 93.7,
+      "liquidityMonths": 1.3,
+      "sawScore": 0.705,
+      "score100": 70.5,
+      "deterministicStatus": "Stable"
+    }
+  },
+  {
+    "id": "SCN-40",
+    "category": "Finansial Waspada",
+    "name": "Single Worker Tabungan Tipis",
+    "description": "Income 6jt, expense 5.2jt (86% rasio), saldo 3.5jt (buffer 0.67 bulan).",
+    "profile": {
+      "monthlyIncome": 6000000,
+      "monthlyExpense": 5200000,
+      "totalBalance": 3500000,
+      "totalBudgetLimit": 5300000,
+      "totalBudgetSpent": 5000000
+    },
+    "groundTruth": {
+      "netCashFlow": 800000,
+      "savingsRatePercent": 13.3,
+      "expenseRatioPercent": 86.7,
+      "budgetUtilizationPercent": 94.3,
+      "liquidityMonths": 0.7,
+      "sawScore": 0.454,
+      "score100": 45.4,
+      "deterministicStatus": "Warning"
+    }
+  }
+]

@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import GlassCard from '@/components/ui/GlassCard';
 import CustomSelect, { SelectOption } from '@/components/ui/CustomSelect';
+import { EXPENSE_CATEGORIES, normalizeTransactionCategory } from '@/lib/categories';
 import SettingRow from './SettingRow';
 
 interface PreferencesSectionProps {
@@ -48,13 +49,11 @@ const NUMBER_FORMAT_OPTIONS: SelectOption[] = [
   { value: 'en', label: 'Internasional (10,000.00)', sublabel: 'Koma ribuan, titik desimal' },
 ];
 
-const CATEGORY_OPTIONS: SelectOption[] = [
-  { value: 'Belanja', label: 'Belanja & Kebutuhan', sublabel: 'Pos default transaksi' },
-  { value: 'Makanan', label: 'Makanan & Minuman', sublabel: 'Kuliner dan santapan' },
-  { value: 'Transportasi', label: 'Transportasi', sublabel: 'Bensin & ongkos' },
-  { value: 'Tagihan', label: 'Tagihan & Utilitas', sublabel: 'Listrik, air, WiFi' },
-  { value: 'Hiburan', label: 'Hiburan', sublabel: 'Rekreasi & hobi' },
-];
+const CATEGORY_OPTIONS: SelectOption[] = EXPENSE_CATEGORIES.map((c) => ({
+  value: c.id,
+  label: c.label,
+  sublabel: c.id === 'other' ? 'Kategori umum' : `Pos ${c.shortLabel.toLowerCase()}`,
+}));
 
 const PAYDAY_OPTIONS: SelectOption[] = [
   { value: '25', label: 'Tanggal 25 Bulanan', sublabel: 'Siklus standar payroll' },
@@ -155,7 +154,7 @@ export default function PreferencesSection({
           action={
             <div className="w-48 sm:w-56">
               <CustomSelect
-                value={defaultCategory}
+                value={normalizeTransactionCategory(defaultCategory)}
                 onChange={onDefaultCategoryChange}
                 options={CATEGORY_OPTIONS}
               />

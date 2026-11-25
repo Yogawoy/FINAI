@@ -23,7 +23,9 @@ export function middleware(request: NextRequest) {
   const bearerToken = authHeader?.startsWith('Bearer ')
     ? authHeader.slice(7).trim()
     : null;
-  const sessionToken = (bearerToken && bearerToken.length > 0 ? bearerToken : null) || request.cookies.get(AUTH_COOKIE_NAME)?.value;
+  const sessionToken =
+    (bearerToken && bearerToken.length > 0 ? bearerToken : null) ||
+    request.cookies.get(AUTH_COOKIE_NAME)?.value;
   const isAuthenticated = Boolean(sessionToken);
 
   // 1. Check Protected API Routes
@@ -51,7 +53,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // 3. Redirect authenticated user away from public auth routes (/login, /register) to /app
+  // 3. Redirect authenticated user away from /login or /register to /app
   if ((pathname === '/login' || pathname === '/register') && isAuthenticated) {
     return NextResponse.redirect(new URL('/app', request.url));
   }

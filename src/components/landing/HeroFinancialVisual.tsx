@@ -169,7 +169,6 @@ export default function HeroFinancialVisual() {
               <span className="text-[10px] font-bold uppercase tracking-wider text-[#7C7CE6]">
                 FinAI Insight
               </span>
-              <span className="w-1.5 h-1.5 rounded-full bg-[#1B7354]" />
             </div>
             <p className="text-xs font-semibold text-[#242636] leading-tight truncate sm:whitespace-normal">
               Pengeluaran makananmu minggu ini 14% lebih rendah.

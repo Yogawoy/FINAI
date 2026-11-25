@@ -82,7 +82,7 @@ async function main() {
         walletId: bca.id,
         type: 'INCOME',
         amount: new Prisma.Decimal(15000000),
-        category: 'Gaji & Pendapatan',
+        category: 'salary',
         description: 'Gaji Bulanan Software Engineer',
         transactionDate: new Date('2026-09-01T08:00:00Z'),
       },
@@ -91,7 +91,7 @@ async function main() {
         walletId: gopay.id,
         type: 'EXPENSE',
         amount: new Prisma.Decimal(45000),
-        category: 'Makanan',
+        category: 'food',
         description: 'Makan Siang Nasi Padang',
         transactionDate: new Date('2026-09-01T12:30:00Z'),
       },
@@ -100,7 +100,7 @@ async function main() {
         walletId: gopay.id,
         type: 'EXPENSE',
         amount: new Prisma.Decimal(28000),
-        category: 'Transportasi',
+        category: 'transport',
         description: 'Transportasi Ojek Online ke Kantor',
         transactionDate: new Date('2026-09-01T07:45:00Z'),
       },
@@ -109,7 +109,7 @@ async function main() {
         walletId: cash.id,
         type: 'EXPENSE',
         amount: new Prisma.Decimal(50000),
-        category: 'Hiburan',
+        category: 'entertainment',
         description: 'Nonton Bioskop Akhir Pekan',
         transactionDate: new Date('2026-09-01T19:00:00Z'),
       },
@@ -118,7 +118,7 @@ async function main() {
 
   console.log('📝 Transaksi pemasukan & pengeluaran berhasil dimasukkan');
 
-  // 5. Buat Pos Anggaran (Makanan, Transportasi, Hiburan)
+  // 5. Buat Pos Anggaran (food, transport, entertainment)
   const now = new Date();
   const currentMonth = now.getMonth() + 1;
   const currentYear = now.getFullYear();
@@ -127,21 +127,21 @@ async function main() {
     data: [
       {
         userId: user.id,
-        category: 'Makanan',
+        category: 'food',
         limitAmount: new Prisma.Decimal(3000000),
         month: currentMonth,
         year: currentYear,
       },
       {
         userId: user.id,
-        category: 'Transportasi',
+        category: 'transport',
         limitAmount: new Prisma.Decimal(1000000),
         month: currentMonth,
         year: currentYear,
       },
       {
         userId: user.id,
-        category: 'Hiburan',
+        category: 'entertainment',
         limitAmount: new Prisma.Decimal(1500000),
         month: currentMonth,
         year: currentYear,
@@ -149,7 +149,7 @@ async function main() {
     ],
   });
 
-  console.log('📊 Pos Anggaran (Makanan, Transportasi, Hiburan) berhasil disiapkan');
+  console.log('📊 Pos Anggaran (food, transport, entertainment) berhasil disiapkan');
 
   // 6. Buat 2 Target Impian (Goals: Laptop Baru & Kuliah)
   const laptopDeadline = new Date();
@@ -162,7 +162,7 @@ async function main() {
     data: {
       userId: user.id,
       name: 'Laptop Baru',
-      category: 'Teknologi & Kerja',
+      category: 'laptop',
       targetAmount: new Prisma.Decimal(12000000),
       currentAmount: new Prisma.Decimal(3500000),
       deadline: laptopDeadline,
@@ -176,7 +176,7 @@ async function main() {
     data: {
       userId: user.id,
       name: 'Kuliah',
-      category: 'Pendidikan',
+      category: 'course',
       targetAmount: new Prisma.Decimal(25000000),
       currentAmount: new Prisma.Decimal(8000000),
       deadline: kuliahDeadline,

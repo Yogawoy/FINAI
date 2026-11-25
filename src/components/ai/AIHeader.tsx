@@ -29,23 +29,14 @@ export default function AIHeader({ onNewChat, onClearChat }: AIHeaderProps) {
 
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E8EAF2]/80">
-      {/* Title & Status */}
-      <div className="space-y-1">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#7C7CE6] to-[#8C8BE8] text-white flex items-center justify-center shadow-[0_4px_12px_rgba(124,124,230,0.3)]">
-            <Sparkles size={16} />
-          </div>
-          <h1 className="text-xl sm:text-2xl font-black text-[#242636] tracking-tight">
-            Asisten FinAI
-          </h1>
-          <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#EBF7F2] border border-[#D0EFE5] text-[11px] font-semibold text-[#1B7354]">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#1B7354] animate-pulse" />
-            <span>Siap membantu</span>
-          </div>
+      {/* Title */}
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#7C7CE6] to-[#8C8BE8] text-white flex items-center justify-center shadow-[0_4px_12px_rgba(124,124,230,0.3)]">
+          <Sparkles size={16} />
         </div>
-        <p className="text-xs sm:text-sm font-medium text-[#757A95]">
-          Asisten keuangan yang memahami kondisi finansialmu.
-        </p>
+        <h1 className="text-xl sm:text-2xl font-black text-[#242636] tracking-tight">
+          Asisten FinAI
+        </h1>
       </div>
 
       {/* Action Buttons */}

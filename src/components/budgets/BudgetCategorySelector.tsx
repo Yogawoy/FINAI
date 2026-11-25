@@ -1,14 +1,9 @@
 'use client';
 
 import React from 'react';
-import {
-  Utensils,
-  Car,
-  Gamepad2,
-  ShoppingBag,
-  MoreHorizontal,
-} from 'lucide-react';
 import { TransactionCategory } from '@/types';
+import { BUDGET_CATEGORIES as CANONICAL_BUDGET_CATEGORIES } from '@/lib/categories';
+import { renderTransactionCategoryIcon } from '@/components/categories/CategoryIcon';
 
 export interface CategoryOption {
   id: TransactionCategory;
@@ -17,38 +12,12 @@ export interface CategoryOption {
   defaultColor: string;
 }
 
-export const BUDGET_CATEGORIES: CategoryOption[] = [
-  {
-    id: 'food',
-    label: 'Makanan & Minuman',
-    icon: <Utensils size={18} />,
-    defaultColor: '#7C7CE6',
-  },
-  {
-    id: 'transport',
-    label: 'Transportasi',
-    icon: <Car size={18} />,
-    defaultColor: '#8E9AF7',
-  },
-  {
-    id: 'entertainment',
-    label: 'Hiburan',
-    icon: <Gamepad2 size={18} />,
-    defaultColor: '#F59E0B',
-  },
-  {
-    id: 'shopping',
-    label: 'Belanja',
-    icon: <ShoppingBag size={18} />,
-    defaultColor: '#10B981',
-  },
-  {
-    id: 'other',
-    label: 'Lainnya',
-    icon: <MoreHorizontal size={18} />,
-    defaultColor: '#8B5CF6',
-  },
-];
+export const BUDGET_CATEGORIES: CategoryOption[] = CANONICAL_BUDGET_CATEGORIES.map((c) => ({
+  id: c.id,
+  label: c.label,
+  icon: renderTransactionCategoryIcon(c.id, 18),
+  defaultColor: c.color,
+}));
 
 interface BudgetCategorySelectorProps {
   selectedCategory: TransactionCategory;
@@ -64,7 +33,7 @@ export default function BudgetCategorySelector({
       <label className="text-[11px] font-bold text-[#757A95] uppercase tracking-wider block">
         Kategori Anggaran
       </label>
-      <div className="grid grid-cols-5 gap-2">
+      <div className="grid grid-cols-4 gap-2 max-h-48 overflow-y-auto pr-0.5">
         {BUDGET_CATEGORIES.map((cat) => {
           const isSelected = selectedCategory === cat.id;
           return (
@@ -72,7 +41,7 @@ export default function BudgetCategorySelector({
               key={cat.id}
               type="button"
               onClick={() => onSelectCategory(cat.id)}
-              className={`p-2.5 rounded-2xl border flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer text-center min-h-[72px] ${
+              className={`p-2 rounded-2xl border flex flex-col items-center justify-center gap-1 transition-all cursor-pointer text-center min-h-[64px] ${
                 isSelected
                   ? 'bg-[#EDEAFC] border-[#7C7CE6] text-[#5F5ED4] shadow-xs font-bold'
                   : 'bg-[#F8F9FD] border-black/[0.05] text-[#757A95] hover:bg-black/[0.02] hover:text-[#242636]'

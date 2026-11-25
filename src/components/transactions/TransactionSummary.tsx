@@ -32,8 +32,7 @@ export default function TransactionSummary({
         {/* 1. Kartu Pemasukan (Mint / Emerald Soft Gradient) */}
         <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#EAF8F3] via-[#D5F2E8] to-[#C2EBDD] border border-[#B0E5D4] shadow-[0_8px_25px_rgba(27,115,84,0.07)] space-y-2 transition-all hover:scale-[1.02] hover:shadow-[0_10px_30px_rgba(27,115,84,0.12)]">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-[#1B7354] flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#1B7354]" />
+            <span className="text-xs font-bold text-[#1B7354]">
               Pemasukan
             </span>
             <div className="w-7 h-7 rounded-xl bg-[#1B7354] text-white flex items-center justify-center shadow-xs">
@@ -53,8 +52,7 @@ export default function TransactionSummary({
         {/* 2. Kartu Pengeluaran (Peach / Coral Soft Gradient) */}
         <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#FFF1F0] via-[#FCE3E1] to-[#FAD4D0] border border-[#F7C0BC] shadow-[0_8px_25px_rgba(184,58,56,0.07)] space-y-2 transition-all hover:scale-[1.02] hover:shadow-[0_10px_30px_rgba(184,58,56,0.12)]">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-[#B83A38] flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#B83A38]" />
+            <span className="text-xs font-bold text-[#B83A38]">
               Pengeluaran
             </span>
             <div className="w-7 h-7 rounded-xl bg-[#B83A38] text-white flex items-center justify-center shadow-xs">
@@ -74,8 +72,7 @@ export default function TransactionSummary({
         {/* 3. Kartu Arus Kas Bersih (Periwinkle / Lavender Gradient) */}
         <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#F3F2FF] via-[#E7E5FC] to-[#DAD6FA] border border-[#CAC4F8] shadow-[0_8px_25px_rgba(124,124,230,0.08)] space-y-2 transition-all hover:scale-[1.02] hover:shadow-[0_10px_30px_rgba(124,124,230,0.14)]">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-[#5F5ED4] flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#5F5ED4]" />
+            <span className="text-xs font-bold text-[#5F5ED4]">
               Arus Kas Bersih
             </span>
             <div className="w-7 h-7 rounded-xl bg-[#7C7CE6] text-white flex items-center justify-center shadow-xs">
@@ -95,8 +92,7 @@ export default function TransactionSummary({
         {/* 4. Kartu Rata-rata Harian (Ice Blue / Sky Gradient) */}
         <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#F0F5FE] via-[#E0EDFD] to-[#D0E3FC] border border-[#BBD6FB] shadow-[0_8px_25px_rgba(62,111,176,0.07)] space-y-2 transition-all hover:scale-[1.02] hover:shadow-[0_10px_30px_rgba(62,111,176,0.12)]">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-[#3E6FB0] flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#3E6FB0]" />
+            <span className="text-xs font-bold text-[#3E6FB0]">
               Rata-rata Harian
             </span>
             <div className="w-7 h-7 rounded-xl bg-[#3E6FB0] text-white flex items-center justify-center shadow-xs">

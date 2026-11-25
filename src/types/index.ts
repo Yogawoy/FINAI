@@ -1,13 +1,20 @@
 export type TransactionCategory =
   | 'food'
   | 'transport'
-  | 'entertainment'
-  | 'bills'
   | 'shopping'
+  | 'bills'
+  | 'daily_needs'
+  | 'housing'
+  | 'entertainment'
   | 'health'
   | 'education'
+  | 'social'
+  | 'debt'
+  | 'electronics'
   | 'salary'
   | 'freelance'
+  | 'bonus'
+  | 'business'
   | 'investment'
   | 'other';
 
@@ -96,6 +103,8 @@ export type GoalCategoryType =
   | 'course'
   | 'home'
   | 'wedding'
+  | 'worship'
+  | 'business'
   | 'other';
 
 export interface GoalContribution {

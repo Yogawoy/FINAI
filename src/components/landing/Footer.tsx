@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import AuthBrand from '@/components/auth/AuthBrand';
+import BrandLogo from './BrandLogo';
 
 export default function Footer() {
   return (
@@ -11,7 +11,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-8">
           {/* Brand Col (5 Cols) */}
           <div className="md:col-span-5 space-y-4">
-            <AuthBrand />
+            <BrandLogo />
             <p className="text-xs sm:text-sm text-[#757A95] max-w-sm leading-relaxed">
               Personal finance, made simpler. Asisten cerdas untuk mencatat, merencanakan, dan memahami arah keuanganmu.
             </p>

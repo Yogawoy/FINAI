@@ -3,6 +3,7 @@
 import React from 'react';
 import { Search, X, SlidersHorizontal } from 'lucide-react';
 import { TransactionCategory, TransactionType } from '@/types';
+import { TRANSACTION_CATEGORIES } from '@/lib/categories';
 
 export type DateFilterType = 'all' | 'today' | 'week' | 'month';
 
@@ -22,17 +23,11 @@ interface TransactionFiltersProps {
 
 const CATEGORY_ITEMS: { id: string; label: string; cat?: TransactionCategory }[] = [
   { id: 'all', label: 'Semua Kategori' },
-  { id: 'food', label: 'Makanan' },
-  { id: 'transport', label: 'Transportasi' },
-  { id: 'bills', label: 'Tagihan' },
-  { id: 'entertainment', label: 'Hiburan' },
-  { id: 'shopping', label: 'Belanja' },
-  { id: 'health', label: 'Kesehatan' },
-  { id: 'education', label: 'Pendidikan' },
-  { id: 'salary', label: 'Gaji' },
-  { id: 'freelance', label: 'Freelance' },
-  { id: 'investment', label: 'Investasi' },
-  { id: 'other', label: 'Lainnya' },
+  ...TRANSACTION_CATEGORIES.map((c) => ({
+    id: c.id,
+    label: c.shortLabel,
+    cat: c.id,
+  })),
 ];
 
 const DATE_FILTER_ITEMS: { id: DateFilterType; label: string }[] = [

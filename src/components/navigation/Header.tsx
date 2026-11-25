@@ -22,7 +22,8 @@ export default function Header({
   const initials = user?.name ? user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2) : 'U';
 
   const displayTitle = title || `Selamat siang, ${firstName}.`;
-  const displaySubtitle = subtitle || 'Kondisi keuanganmu bulan ini sangat sehat.';
+  const displaySubtitle =
+    subtitle !== undefined ? subtitle : 'Kondisi keuanganmu bulan ini sangat sehat.';
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -43,38 +44,39 @@ export default function Header({
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#242636]">
               {displayTitle}
             </h1>
-            <p className="text-xs sm:text-sm text-[#757A95] mt-0.5 font-medium">
-              {displaySubtitle}
-            </p>
+            {displaySubtitle && (
+              <p className="text-xs sm:text-sm text-[#757A95] mt-0.5 font-medium">
+                {displaySubtitle}
+              </p>
+            )}
           </div>
         </div>
 
         {/* Header Right Action Controls */}
-        <div className="flex items-center gap-3 self-start sm:self-auto">
+        <div className="flex items-center gap-3 self-start sm:self-auto shrink-0">
           {/* Quick Search Pill */}
           <button
             onClick={() => setIsSearchOpen(true)}
-            className="flex items-center gap-2.5 px-3.5 py-2 rounded-2xl glass-pill text-xs font-medium text-[#757A95] hover:text-[#242636] hover:bg-white/80 transition-all cursor-pointer shadow-xs"
+            className="flex items-center gap-2.5 px-3.5 py-2 rounded-2xl glass-pill text-xs font-medium text-[#757A95] hover:text-[#242636] hover:bg-white/80 transition-all cursor-pointer shadow-xs whitespace-nowrap shrink-0"
           >
-            <Search size={14} className="text-[#7C7CE6]" />
+            <Search size={14} className="text-[#7C7CE6] shrink-0" />
             <span className="hidden sm:inline">Cari transaksi, anggaran...</span>
             <span className="sm:hidden">Cari</span>
-            <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono bg-black/[0.04] text-[#757A95] rounded-md">
+            <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono bg-black/[0.04] text-[#757A95] rounded-md shrink-0">
               <Command size={10} /> K
             </kbd>
           </button>
 
           {/* Notification Button */}
           <button
-            className="relative w-10 h-10 rounded-2xl glass-pill flex items-center justify-center text-[#757A95] hover:text-[#242636] hover:bg-white/80 transition-all cursor-pointer shadow-xs"
+            className="relative w-10 h-10 rounded-2xl glass-pill flex items-center justify-center text-[#757A95] hover:text-[#242636] hover:bg-white/80 transition-all cursor-pointer shadow-xs shrink-0"
             title="Notifikasi"
           >
             <Bell size={17} />
-            <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-[#7C7CE6] ring-2 ring-white" />
           </button>
 
           {/* Profile Avatar Pill */}
-          <div className="flex items-center gap-2 pl-1">
+          <div className="flex items-center gap-2 pl-1 shrink-0">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#E4E2FB] to-[#D6E4FA] border border-white flex items-center justify-center text-[#7C7CE6] font-extrabold text-xs shadow-xs select-none">
               {initials}
             </div>

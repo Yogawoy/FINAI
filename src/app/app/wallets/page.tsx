@@ -15,6 +15,7 @@ import { Wallet, Transaction } from '@/types';
 import { formatIDR } from '@/lib/format';
 import { apiClient, mapApiErrorMessage } from '@/lib/api-client';
 import { emitRefresh, onRefresh } from '@/lib/data-refresh';
+import { useAuth } from '@/context/AuthContext';
 
 // Loading & Page Transition
 import WalletsSkeleton from '@/components/loading/WalletsSkeleton';
@@ -32,7 +33,7 @@ import WalletSuccessModal from '@/components/wallets/WalletSuccessModal';
 import TransactionToast from '@/components/transactions/TransactionToast';
 
 // Adapter to transform backend DB wallet to UI Wallet type
-function mapBackendWalletToUI(w: any): Wallet {
+function mapBackendWalletToUI(w: any, ownerName?: string): Wallet {
   const backendType = String(w.type).toUpperCase();
   let type: Wallet['type'] = 'bank';
   if (backendType === 'E_WALLET') type = 'ewallet';
@@ -47,14 +48,16 @@ function mapBackendWalletToUI(w: any): Wallet {
     currency: 'IDR',
     icon: w.icon || (type === 'ewallet' ? 'Wallet' : type === 'cash' ? 'Cash' : 'Bank'),
     accountIdentifier: w.accountLast4 ? `•••• ${w.accountLast4}` : undefined,
-    holderName: w.institution || undefined,
-    colorTheme: (w.color || (type === 'ewallet' ? 'blue' : type === 'cash' ? 'mint' : 'periwinkle')) as any,
+    holderName: ownerName || w.institution || undefined,
+    colorTheme: (w.color || 'periwinkle') as any,
     isDefault: false,
     isArchived: false,
   };
 }
 
 export default function WalletsPage() {
+  const { user } = useAuth();
+  const ownerName = user?.name?.split(' ')[0];
   const [isLoading, setIsLoading] = useState(true);
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -83,14 +86,14 @@ export default function WalletsPage() {
     try {
       setErrorMessage(null);
       const res = await apiClient.get<{ wallets: any[] }>('/api/wallets');
-      const mapped = (res.wallets || []).map(mapBackendWalletToUI);
+      const mapped = (res.wallets || []).map((w: any) => mapBackendWalletToUI(w, ownerName));
       setWallets(mapped);
     } catch (err) {
       setErrorMessage(mapApiErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [ownerName]);
 
   const fetchTransactions = useCallback(async () => {
     try {
@@ -164,7 +167,7 @@ export default function WalletsPage() {
         icon: walletData.icon || null,
       });
 
-      const newUiWallet = mapBackendWalletToUI(res.wallet);
+      const newUiWallet = mapBackendWalletToUI(res.wallet, ownerName);
       setLastCreatedWallet(newUiWallet);
       setIsSuccessModalOpen(true);
       showToast(`${newUiWallet.name} berhasil ditambahkan.`);
@@ -198,7 +201,7 @@ export default function WalletsPage() {
         icon: updated.icon || null,
       });
 
-      const updatedUi = mapBackendWalletToUI(res.wallet);
+      const updatedUi = mapBackendWalletToUI(res.wallet, ownerName);
       showToast(`${updatedUi.name} berhasil diperbarui.`);
       fetchWallets();
       emitRefresh('wallet');
@@ -251,9 +254,6 @@ export default function WalletsPage() {
             <h1 className="text-2xl sm:text-3xl font-extrabold text-[#242636] tracking-tight">
               Dompet Saya
             </h1>
-            <p className="text-xs sm:text-sm text-[#757A95] mt-0.5">
-              Kelola seluruh sumber dana, rekening bank, dan pos tabungan Anda.
-            </p>
           </div>
 
           <div className="flex items-center gap-2.5">
@@ -289,19 +289,16 @@ export default function WalletsPage() {
                   Total Saldo Kas
                 </span>
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#E4E2FB] text-[#5F5ED4] border border-[#7C7CE6]/20">
-                  {activeWallets.length} Dompet Aktif
+                  {activeWallets.length} Dompet
                 </span>
               </div>
 
-              <div className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#242636] tracking-tight tabular-nums mt-1.5">
+              <div className="text-2xl sm:text-3xl font-extrabold text-[#242636] tracking-tight tabular-nums mt-1.5">
                 {isMasked ? 'Rp ••••••••' : formatIDR(totalBalance)}
               </div>
-              <p className="text-xs text-[#757A95] mt-1">
-                Konsolidasi likuiditas seluruh rekening bank, e-wallet, uang tunai, dan pos tabungan Anda.
-              </p>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 shrink-0">
+            <div className={`grid grid-cols-3 ${savingsTotal > 0 ? 'sm:grid-cols-4' : ''} gap-2.5 shrink-0`}>
               <div className="p-3.5 rounded-2xl bg-white/90 border border-black/[0.04] shadow-2xs space-y-1">
                 <span className="text-[10px] font-bold text-[#757A95] uppercase tracking-wider flex items-center gap-1">
                   <Building2 size={11} className="text-[#7C7CE6]" /> Bank
@@ -329,31 +326,25 @@ export default function WalletsPage() {
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-white/90 border border-black/[0.04] shadow-2xs space-y-1">
-                <span className="text-[10px] font-bold text-[#757A95] uppercase tracking-wider flex items-center gap-1">
-                  <PiggyBank size={11} className="text-[#5F5ED4]" /> Tabungan
-                </span>
-                <div className="text-xs sm:text-sm font-extrabold text-[#242636] tabular-nums">
-                  {isMasked ? '••••••••' : formatIDR(savingsTotal)}
+              {savingsTotal > 0 && (
+                <div className="p-3.5 rounded-2xl bg-white/90 border border-black/[0.04] shadow-2xs space-y-1">
+                  <span className="text-[10px] font-bold text-[#757A95] uppercase tracking-wider flex items-center gap-1">
+                    <PiggyBank size={11} className="text-[#5F5ED4]" /> Tabungan
+                  </span>
+                  <div className="text-xs sm:text-sm font-extrabold text-[#242636] tabular-nums">
+                    {isMasked ? '••••••••' : formatIDR(savingsTotal)}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
 
         <section className="space-y-4">
           <div className="flex items-center justify-between px-1">
-            <div>
-              <h3 className="text-lg font-bold text-[#242636] tracking-tight">
-                Koleksi Dompet Saya
-              </h3>
-              <p className="text-xs text-[#757A95]">
-                Klik kartu mana saja untuk melihat rincian mutasi kas dan ringkasan bulanan.
-              </p>
-            </div>
-            <span className="text-xs font-semibold text-[#757A95]">
-              {activeWallets.length} Rekening Terhubung
-            </span>
+            <h3 className="text-lg font-bold text-[#242636] tracking-tight">
+              Koleksi Dompet Saya
+            </h3>
           </div>
 
           {activeWallets.length > 0 ? (

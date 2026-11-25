@@ -4,12 +4,11 @@ import React from 'react';
 import { Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
-interface AuthBrandProps {
+interface BrandLogoProps {
   className?: string;
-  variant?: 'light' | 'dark';
 }
 
-export default function AuthBrand({ className = '' }: AuthBrandProps) {
+export default function BrandLogo({ className = '' }: BrandLogoProps) {
   return (
     <Link
       href="/"

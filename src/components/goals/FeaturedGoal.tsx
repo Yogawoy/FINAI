@@ -63,15 +63,10 @@ export default function FeaturedGoal({
       <div className="relative z-10 space-y-6">
         {/* Top Header Row: Featured Goal Label + Status Badge */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-[#EDEAFC] text-[#5F5ED4] border border-[#7C7CE6]/30 flex items-center gap-1.5">
-              <Sparkles size={12} />
-              <span>Target Utama</span>
-            </span>
-            <span className="text-xs text-[#757A95]">
-              Prioritas target saat ini
-            </span>
-          </div>
+          <span className="px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-[#EDEAFC] text-[#5F5ED4] border border-[#7C7CE6]/30 inline-flex items-center gap-1.5 self-start">
+            <Sparkles size={12} />
+            <span>Target Utama</span>
+          </span>
 
           <GoalStatusBadge status={goal.status} size="md" />
         </div>
@@ -92,7 +87,7 @@ export default function FeaturedGoal({
                 <h3 className="text-2xl sm:text-3xl font-black text-[#242636] tracking-tight">
                   {goal.title}
                 </h3>
-                {goal.notes && (
+                {goal.notes && goal.notes !== goal.title && (
                   <p className="text-xs sm:text-sm text-[#757A95] line-clamp-1">
                     {goal.notes}
                   </p>
@@ -166,17 +161,21 @@ export default function FeaturedGoal({
               </div>
             </div>
 
-            {/* Funding Route Tag */}
-            <div className="px-3.5 py-2 rounded-2xl bg-white/90 border border-black/[0.05] flex items-center justify-between text-xs">
-              <span className="text-[10px] font-bold text-[#757A95] uppercase tracking-wider">
-                Alur Tabungan
-              </span>
-              <div className="flex items-center gap-1.5 font-bold">
-                <span className="text-[#242636]">{goal.sourceWalletName || 'BCA'}</span>
-                <ArrowRight size={12} className="text-[#7C7CE6]" />
-                <span className="text-[#5F5ED4]">{goal.destinationWalletName || 'Tabungan'}</span>
-              </div>
-            </div>
+            {/* Funding Route Tag (only if source & destination differ) */}
+            {goal.sourceWalletName &&
+              goal.destinationWalletName &&
+              goal.sourceWalletName !== goal.destinationWalletName && (
+                <div className="px-3.5 py-2 rounded-2xl bg-white/90 border border-black/[0.05] flex items-center justify-between text-xs">
+                  <span className="text-[10px] font-bold text-[#757A95] uppercase tracking-wider">
+                    Alur Tabungan
+                  </span>
+                  <div className="flex items-center gap-1.5 font-bold">
+                    <span className="text-[#242636]">{goal.sourceWalletName}</span>
+                    <ArrowRight size={12} className="text-[#7C7CE6]" />
+                    <span className="text-[#5F5ED4]">{goal.destinationWalletName}</span>
+                  </div>
+                </div>
+              )}
 
             {/* Quick Action Buttons */}
             <div className="flex items-center gap-2.5 pt-1">

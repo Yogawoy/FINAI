@@ -2,20 +2,10 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  ChevronDown,
-  Check,
-  Utensils,
-  Car,
-  ShoppingBag,
-  Zap,
-  Film,
-  Heart,
-  GraduationCap,
-  Sparkles,
-  Tag,
-} from 'lucide-react';
+import { ChevronDown, Check, Tag } from 'lucide-react';
 import { TransactionCategory } from '@/types';
+import { EXPENSE_CATEGORIES, normalizeTransactionCategory } from '@/lib/categories';
+import { renderTransactionCategoryIcon } from '@/components/categories/CategoryIcon';
 
 export interface CategoryOption {
   id: TransactionCategory;
@@ -23,16 +13,11 @@ export interface CategoryOption {
   icon: React.ReactNode;
 }
 
-export const ALL_CATEGORIES: CategoryOption[] = [
-  { id: 'food', label: 'Makanan & Minuman', icon: <Utensils size={15} /> },
-  { id: 'transport', label: 'Transportasi', icon: <Car size={15} /> },
-  { id: 'shopping', label: 'Belanja', icon: <ShoppingBag size={15} /> },
-  { id: 'bills', label: 'Tagihan & Utilitas', icon: <Zap size={15} /> },
-  { id: 'entertainment', label: 'Hiburan', icon: <Film size={15} /> },
-  { id: 'health', label: 'Kesehatan', icon: <Heart size={15} /> },
-  { id: 'education', label: 'Pendidikan', icon: <GraduationCap size={15} /> },
-  { id: 'other', label: 'Lainnya', icon: <Sparkles size={15} /> },
-];
+export const ALL_CATEGORIES: CategoryOption[] = EXPENSE_CATEGORIES.map((c) => ({
+  id: c.id,
+  label: c.label,
+  icon: renderTransactionCategoryIcon(c.id, 15),
+}));
 
 interface CategorySelectProps {
   value: TransactionCategory | string;
@@ -50,7 +35,8 @@ export default function CategorySelect({
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const selectedCat = ALL_CATEGORIES.find((c) => c.id === value) || ALL_CATEGORIES[0];
+  const canonicalValue = normalizeTransactionCategory(value);
+  const selectedCat = ALL_CATEGORIES.find((c) => c.id === canonicalValue) || ALL_CATEGORIES[0];
 
   // Click outside & Escape
   useEffect(() => {
@@ -129,7 +115,7 @@ export default function CategorySelect({
             className="absolute left-0 right-0 top-full mt-1.5 p-1.5 bg-white border border-black/[0.08] rounded-2xl shadow-[0_12px_32px_rgba(36,38,54,0.12)] z-50 max-h-60 overflow-y-auto space-y-0.5"
           >
             {ALL_CATEGORIES.map((cat) => {
-              const isSelected = cat.id === value;
+              const isSelected = cat.id === canonicalValue;
               return (
                 <button
                   key={cat.id}

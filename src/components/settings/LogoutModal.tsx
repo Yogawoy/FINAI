@@ -35,7 +35,6 @@ export default function LogoutModal({
           </div>
         </div>
 
-        {/* Buttons */}
         <div className="flex items-center gap-3 pt-3 border-t border-[#E8EAF2]/80">
           <button
             type="button"

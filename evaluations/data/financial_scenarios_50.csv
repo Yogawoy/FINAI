@@ -1,0 +1,41 @@
+id,category,name,income,expense,balance,budget_limit,budget_spent,net_cash_flow,savings_rate_pct,expense_ratio_pct,budget_util_pct,liquidity_months,saw_score,status
+SCN-01,"Surplus Sehat","Profesional Muda Hemat",15000000,5000000,35000000,6000000,4800000,10000000,66.7,33.3,80,7,1,Strong
+SCN-02,"Surplus Sehat","Keluarga Baru Mapan",22000000,9000000,60000000,10000000,8500000,13000000,59.1,40.9,85,6.7,1,Strong
+SCN-03,"Surplus Sehat","Freelancer Sukses Berdisiplin",18000000,6500000,40000000,7500000,6000000,11500000,63.9,36.1,80,6.2,1,Strong
+SCN-04,"Surplus Sehat","Karyawan Senior Frugal",12000000,4000000,28000000,4500000,3800000,8000000,66.7,33.3,84.4,7,1,Strong
+SCN-05,"Surplus Sehat","Eksekutif Muda Dana Melimpah",35000000,12000000,90000000,14000000,11000000,23000000,65.7,34.3,78.6,7.5,1,Strong
+SCN-06,"Defisit Arus Kas","Defisit Berat Konsumtif",5000000,7800000,1000000,5000000,7500000,-2800000,-56,156,150,0.1,0.109,Critical
+SCN-07,"Defisit Arus Kas","Biaya Rumah Tangga Membengkak",8000000,11000000,2500000,8000000,10800000,-3000000,-37.5,137.5,135,0.2,0.145,Critical
+SCN-08,"Defisit Arus Kas","Mahasiswa Akhir Menipis",2000000,3200000,250000,2000000,3100000,-1200000,-60,160,155,0.1,0.095,Critical
+SCN-09,"Defisit Arus Kas","Pekerja Lepas Sepi Proyek",3000000,5500000,800000,4000000,5200000,-2500000,-83.3,183.3,130,0.1,0.15,Critical
+SCN-10,"Defisit Arus Kas","Gaya Hidup Melebihi Kemampuan",10000000,16000000,2000000,9000000,15500000,-6000000,-60,160,172.2,0.1,0.064,Critical
+SCN-11,"Anggaran Lewat Batas","Overbudget Makan & Hiburan",7000000,6800000,4000000,4500000,6500000,200000,2.9,97.1,144.4,0.6,0.222,Critical
+SCN-12,"Anggaran Lewat Batas","Kalap Belanja Promo Tanggal Kembar",9000000,8700000,5000000,6000000,8400000,300000,3.3,96.7,140,0.6,0.242,Critical
+SCN-13,"Anggaran Lewat Batas","Overbudget Ekstrem Kendaraan",6000000,5900000,3000000,3500000,5600000,100000,1.7,98.3,160,0.5,0.156,Critical
+SCN-14,"Anggaran Lewat Batas","Banyak Undangan Pernikahan",8500000,8200000,6000000,5000000,7800000,300000,3.5,96.5,156,0.7,0.225,Critical
+SCN-15,"Anggaran Lewat Batas","Langganan Digital Menumpuk",11000000,10500000,7000000,7000000,10000000,500000,4.5,95.5,142.9,0.7,0.272,Critical
+SCN-16,"Saldo Nol / Menipis","Saldo Nol Total Habis",3000000,3200000,0,3000000,3100000,-200000,-6.7,106.7,103.3,0,0.193,Critical
+SCN-17,"Saldo Nol / Menipis","Buffer Darurat Kritis Kurang 3 Hari",4000000,4300000,150000,3800000,4200000,-300000,-7.5,107.5,110.5,0,0.181,Critical
+SCN-18,"Saldo Nol / Menipis","Pekerja Baru Belum Gajian",0,2500000,200000,2500000,2400000,-2500000,-100,999,96,0.1,0.059,Critical
+SCN-19,"Saldo Nol / Menipis","Terkuras Membayar Uang Pangkal",6000000,8000000,50000,6000000,7800000,-2000000,-33.3,133.3,130,0,0.14,Critical
+SCN-20,"Saldo Nol / Menipis","Gali Lubang Tutup Lubang",5000000,5400000,100000,5000000,5300000,-400000,-8,108,106,0,0.189,Critical
+SCN-21,"Multi-Dompet","Saldo Tersebar di 5 E-Wallet",8000000,5500000,12000000,6000000,5200000,2500000,31.3,68.8,86.7,2.2,0.923,Strong
+SCN-22,"Multi-Dompet","Dominasi Rekening Bisnis vs Pribadi",14000000,9000000,25000000,10000000,8600000,5000000,35.7,64.3,86,2.8,0.972,Strong
+SCN-23,"Multi-Dompet","E-Wallet Berlebih Tunai Kosong",6500000,4800000,9000000,5500000,4500000,1700000,26.2,73.8,81.8,1.9,0.887,Strong
+SCN-24,"Multi-Dompet","Tabungan Kunci di Deposito",10000000,7000000,15000000,7500000,6800000,3000000,30,70,90.7,2.1,0.867,Strong
+SCN-25,"Multi-Dompet","Distribusi Saldo Cukup Rata",16000000,10000000,30000000,11000000,9700000,6000000,37.5,62.5,88.2,3,0.958,Strong
+SCN-26,"Kontribusi Target","Nabung Ambisius DP Rumah",10000000,5000000,20000000,5500000,4900000,5000000,50,50,89.1,4,0.945,Strong
+SCN-27,"Kontribusi Target","Setoran 3 Target Bersamaan",12000000,7000000,22000000,8000000,6800000,5000000,41.7,58.3,85,3.1,1,Strong
+SCN-28,"Kontribusi Target","Target Terlalu Berat Melebihi Surplus",5000000,4200000,3000000,4500000,4100000,800000,16,84,91.1,0.7,0.566,Warning
+SCN-29,"Kontribusi Target","Target Dana Darurat Hampir Tercapai",9000000,5500000,25000000,6000000,5300000,3500000,38.9,61.1,88.3,4.5,0.956,Strong
+SCN-30,"Kontribusi Target","Alokasi Tabungan Seimbang 50/30/20",15000000,7500000,32000000,8500000,7200000,7500000,50,50,84.7,4.3,1,Strong
+SCN-31,"Kasus Ekstrem","Zero Activity Baru Buka Akun",0,0,0,0,0,0,0,0,0,0,0.5,Warning
+SCN-32,"Kasus Ekstrem","Pemasukan Sangat Besar Sekali Waktu",80000000,10000000,120000000,12000000,9500000,70000000,87.5,12.5,79.2,12,1,Strong
+SCN-33,"Kasus Ekstrem","Pensiunan Kaya Aset Tanpa Gaji",0,6000000,150000000,6500000,5800000,-6000000,-100,999,89.2,25,0.344,Critical
+SCN-34,"Kasus Ekstrem","Income Sangat Tinggi Tapi 100% Habis",50000000,50000000,1000000,40000000,49000000,0,0,100,122.5,0,0.156,Critical
+SCN-35,"Kasus Ekstrem","Defisit Bencana 5x Lipat Income",4000000,20000000,100000,4000000,19500000,-16000000,-400,500,487.5,0,0,Critical
+SCN-36,"Finansial Stabil","Karyawan Menengah Moderat",10000000,7500000,7500000,7500000,7200000,2500000,25,75,96,1,0.67,Stable
+SCN-37,"Finansial Stabil","Pegawai Negeri Golongan III",8000000,6000000,6000000,6000000,5500000,2000000,25,75,91.7,1,0.728,Stable
+SCN-38,"Finansial Stabil","Guru Swasta Berkeluarga",7000000,5400000,8000000,5500000,5100000,1600000,22.9,77.1,92.7,1.5,0.724,Stable
+SCN-39,"Finansial Stabil","Desainer UI/UX In-House",12000000,9200000,12000000,9500000,8900000,2800000,23.3,76.7,93.7,1.3,0.705,Stable
+SCN-40,"Finansial Waspada","Single Worker Tabungan Tipis",6000000,5200000,3500000,5300000,5000000,800000,13.3,86.7,94.3,0.7,0.454,Warning

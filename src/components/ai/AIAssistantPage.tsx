@@ -9,6 +9,7 @@ import AIInput from './AIInput';
 import AIQuickActions from './AIQuickActions';
 import { apiClient, mapApiErrorMessage } from '@/lib/api-client';
 import { emitRefresh } from '@/lib/data-refresh';
+import { getTransactionCategoryLabel, normalizeCategoryKey } from '@/lib/categories';
 
 interface GroqPayload {
   transactionType?: string;
@@ -58,20 +59,6 @@ interface LiveGoal {
   targetAmount: number;
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  food: 'Makanan & Minuman',
-  transport: 'Transportasi',
-  entertainment: 'Hiburan',
-  bills: 'Tagihan & Utilitas',
-  shopping: 'Belanja',
-  health: 'Kesehatan',
-  education: 'Pendidikan',
-  salary: 'Gaji & Pendapatan',
-  freelance: 'Freelance',
-  investment: 'Investasi',
-  other: 'Lainnya',
-};
-
 function formatDateLabel(dateStr?: string | null): string {
   if (dateStr) {
     try {
@@ -109,7 +96,6 @@ function resolveWalletId(
 export default function AIAssistantPage() {
   const [messages, setMessages] = useState<AIMessageType[]>([]);
   const [isThinking, setIsThinking] = useState(false);
-  const [showPresetsModal, setShowPresetsModal] = useState(false);
   const [confirmingIds, setConfirmingIds] = useState<Set<string>>(new Set());
 
   // Financial live context state (real data)
@@ -394,7 +380,7 @@ export default function AIAssistantPage() {
           // Map to AIFinancialAction
           let actionType: AIFinancialAction['type'] = 'expense';
           let title = payload.description || 'Transaksi';
-          let categoryLabel = payload.category ? CATEGORY_LABELS[payload.category] || payload.category : undefined;
+          let categoryLabel = payload.category ? getTransactionCategoryLabel(payload.category) : undefined;
 
           if ((!grok.action || grok.action === 'create_transaction')) {
             actionType = payload.transactionType === 'INCOME' ? 'income' : 'expense';
@@ -719,7 +705,7 @@ export default function AIAssistantPage() {
             walletId,
             type: groqPayload.transactionType || 'EXPENSE',
             amount: amountNum,
-            category: groqPayload.category || 'other',
+            category: normalizeCategoryKey(groqPayload.category),
             description: groqPayload.description || 'Transaksi via FinAI Assistant',
             ...(actionDate ? { transactionDate: actionDate } : {}),
           });
@@ -886,14 +872,15 @@ export default function AIAssistantPage() {
         monthlyExpense={monthlyExpense}
         activeGoalsCount={goals.length || 0}
         activeBudgetsCount={budgetsCount}
-        contextDate={contextDate || new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
       />
 
-      <div className="sticky top-0 z-20 py-2.5 -mx-3 px-3 bg-[#F6F7FB]/95 backdrop-blur-md border-b border-[#E8EAF2]/70 shadow-[0_4px_20px_rgba(36,38,54,0.02)] transition-all">
-        <div className="max-w-[920px] mx-auto">
-          <AIQuickActions onSelectAction={handleSendMessage} variant="sticky-bar" />
+      {messages.length > 0 && (
+        <div className="sticky top-0 z-20 py-2.5 -mx-3 px-3 bg-[#F6F7FB]/95 backdrop-blur-md border-b border-[#E8EAF2]/70 shadow-[0_4px_20px_rgba(36,38,54,0.02)] transition-all">
+          <div className="max-w-[920px] mx-auto">
+            <AIQuickActions onSelectAction={handleSendMessage} variant="sticky-bar" />
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="min-h-[420px] max-w-[920px] mx-auto pt-2 pb-6">
         <AIConversation
@@ -919,7 +906,6 @@ export default function AIAssistantPage() {
           <AIInput
             onSendMessage={handleSendMessage}
             disabled={isThinking || confirmingIds.size > 0}
-            onOpenPresets={() => setShowPresetsModal(!showPresetsModal)}
           />
         </div>
       </div>

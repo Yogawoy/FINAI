@@ -71,7 +71,6 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     const details = errorPayload?.details;
 
     if (response.status === 401 && typeof window !== 'undefined') {
-      // Handle redirect to login on 401 if on client
       if (!window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/register')) {
         window.location.href = '/login';
       }

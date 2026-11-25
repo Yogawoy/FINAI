@@ -1,18 +1,8 @@
 'use client';
 
 import React from 'react';
-import {
-  Laptop,
-  Plane,
-  ShieldCheck,
-  Bike,
-  Home,
-  GraduationCap,
-  Heart,
-  Sparkles,
-  Car,
-} from 'lucide-react';
 import { GoalCategoryType, GoalColorTheme } from '@/types';
+import { renderGoalCategoryIcon } from '@/components/categories/CategoryIcon';
 
 interface GoalVisualIconProps {
   category: GoalCategoryType;
@@ -77,32 +67,11 @@ export default function GoalVisualIcon({
 }: GoalVisualIconProps) {
   const theme = GOAL_THEME_COLORS[colorTheme] || GOAL_THEME_COLORS.periwinkle;
 
-  const renderIcon = () => {
-    switch (category) {
-      case 'laptop':
-        return <Laptop size={size} strokeWidth={2.2} />;
-      case 'travel':
-        return <Plane size={size} strokeWidth={2.2} />;
-      case 'emergency':
-        return <ShieldCheck size={size} strokeWidth={2.2} />;
-      case 'vehicle':
-        return <Bike size={size} strokeWidth={2.2} />;
-      case 'home':
-        return <Home size={size} strokeWidth={2.2} />;
-      case 'course':
-        return <GraduationCap size={size} strokeWidth={2.2} />;
-      case 'wedding':
-        return <Heart size={size} strokeWidth={2.2} />;
-      default:
-        return <Sparkles size={size} strokeWidth={2.2} />;
-    }
-  };
-
   return (
     <div
       className={`rounded-2xl flex items-center justify-center shrink-0 ${theme.bg} ${theme.text} border ${theme.border} ${className}`}
     >
-      {renderIcon()}
+      {renderGoalCategoryIcon(category, size, 2.2)}
     </div>
   );
 }

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, useScroll, useSpring } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
-import AuthBrand from '@/components/auth/AuthBrand';
+import BrandLogo from './BrandLogo';
 import MobileMenu from './MobileMenu';
 
 export default function Navbar() {
@@ -45,7 +45,7 @@ export default function Navbar() {
             }`}
           >
             {/* Brand Logo */}
-            <AuthBrand />
+            <BrandLogo />
 
             {/* Desktop Navigation Links */}
             <div className="hidden md:flex items-center gap-7 text-xs font-semibold text-[#757A95]">

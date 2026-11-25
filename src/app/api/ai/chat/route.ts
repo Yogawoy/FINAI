@@ -6,6 +6,7 @@ import { AIChatRequestSchema, type GrokStructuredResponse, type GrokUserContext,
 import { callGrok, GrokConfigurationError, GrokRateLimitError, GrokApiError, isGrokConfigured, getActiveProvider } from '@/lib/ai/grok';
 import { FINAI_GROK_MODEL, FINAI_XAI_MODEL } from '@/lib/ai/ai.prompts';
 import { buildFinancialContext, calculateFinancialPlan, type PlanningGoalInput } from '@/lib/ai/financial-calculations';
+import { findTransactionCategory, getTransactionCategoryLabel, normalizeCategoryKey, EXPENSE_CATEGORIES } from '@/lib/categories';
 
 // ---------------------------------------------------------------------------
 // POST /api/ai/chat â€” Grok-powered FinAI Assistant
@@ -362,40 +363,33 @@ export async function POST(request: NextRequest) {
 
     // Resolve and enrich budget queries with real user data from context
     const queryLower = message.toLowerCase();
+    const mentionsExpenseCategory = EXPENSE_CATEGORIES.some((c) =>
+      c.aliases.some((alias) => queryLower.includes(alias))
+    );
     const isBudgetQuery =
       structured.type === 'budget' ||
       /ang+ar+an|budget/i.test(message) ||
-      (/aman/i.test(message) && (queryLower.includes('belanja') || queryLower.includes('makan') || queryLower.includes('transport') || queryLower.includes('tagihan')));
+      (/aman/i.test(message) && mentionsExpenseCategory);
 
     if (isBudgetQuery && context.budgets && context.budgets.length > 0 && structured.type !== 'financial_action') {
       const userBudgets = context.budgets;
       const matched =
         userBudgets.find((b) => {
-          const cat = b.category.toLowerCase();
-          if (queryLower.includes(cat)) return true;
-          if ((cat === 'shopping' || cat === 'belanja') && (queryLower.includes('belanja') || queryLower.includes('shop') || queryLower.includes('beli'))) return true;
-          if ((cat === 'food' || cat === 'makanan') && (queryLower.includes('makan') || queryLower.includes('food') || queryLower.includes('kuliner') || queryLower.includes('jajan'))) return true;
-          if ((cat === 'transport' || cat === 'transportasi') && (queryLower.includes('transport') || queryLower.includes('bensin') || queryLower.includes('ongkos') || queryLower.includes('kendaraan'))) return true;
-          if ((cat === 'bills' || cat === 'tagihan') && (queryLower.includes('tagihan') || queryLower.includes('listrik') || queryLower.includes('air') || queryLower.includes('bill'))) return true;
-          if ((cat === 'entertainment' || cat === 'hiburan') && (queryLower.includes('hiburan') || queryLower.includes('nonton') || queryLower.includes('game'))) return true;
-          return false;
+          const cat = normalizeCategoryKey(b.category);
+          if (queryLower.includes(cat) || queryLower.includes(b.category.toLowerCase())) return true;
+          const meta = findTransactionCategory(cat);
+          return meta ? meta.aliases.some((alias) => queryLower.includes(alias)) : false;
         }) ||
-        userBudgets.find((b) => structured.type === 'budget' && (structured.data as any)?.category && b.category.toLowerCase() === (structured.data as any).category.toLowerCase()) ||
+        userBudgets.find(
+          (b) =>
+            structured.type === 'budget' &&
+            (structured.data as any)?.category &&
+            normalizeCategoryKey(b.category) === normalizeCategoryKey((structured.data as any).category)
+        ) ||
         userBudgets[0];
 
       if (matched) {
-        const categoryLabel =
-          matched.category === 'shopping'
-            ? 'Belanja'
-            : matched.category === 'food'
-            ? 'Makanan'
-            : matched.category === 'transport'
-            ? 'Transportasi'
-            : matched.category === 'bills'
-            ? 'Tagihan'
-            : matched.category === 'entertainment'
-            ? 'Hiburan'
-            : matched.category;
+        const categoryLabel = getTransactionCategoryLabel(matched.category, 'short');
 
         const limit = safeNum(matched.limitAmount);
         const used = safeNum(matched.usedAmount);

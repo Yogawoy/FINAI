@@ -8,6 +8,7 @@ import DatePicker from '@/components/ui/DatePicker';
 import SegmentedControl from '@/components/ui/SegmentedControl';
 import WalletSelect from '@/components/ui/WalletSelect';
 import { GoalItem, GoalCategoryType, GoalColorTheme, GoalFrequency, Wallet } from '@/types';
+import { GOAL_CATEGORIES } from '@/lib/categories';
 import { formatIDR } from '@/lib/format';
 import GoalVisualIcon, { GOAL_THEME_COLORS } from './GoalVisualIcon';
 import GoalTransferFlow from './GoalTransferFlow';
@@ -19,16 +20,10 @@ interface CreateGoalModalProps {
   wallets?: Wallet[];
 }
 
-const CATEGORY_OPTIONS: { id: GoalCategoryType; label: string }[] = [
-  { id: 'laptop', label: 'Gadget' },
-  { id: 'travel', label: 'Liburan' },
-  { id: 'emergency', label: 'Darurat' },
-  { id: 'vehicle', label: 'Kendaraan' },
-  { id: 'home', label: 'Properti' },
-  { id: 'course', label: 'Edukasi' },
-  { id: 'wedding', label: 'Pernikahan' },
-  { id: 'other', label: 'Lainnya' },
-];
+const CATEGORY_OPTIONS: { id: GoalCategoryType; label: string }[] = GOAL_CATEGORIES.map((c) => ({
+  id: c.id,
+  label: c.shortLabel,
+}));
 
 const COLOR_OPTIONS: { id: GoalColorTheme; label: string; bgClass: string }[] = [
   { id: 'periwinkle', label: 'Periwinkle', bgClass: 'bg-[#7C7CE6]' },

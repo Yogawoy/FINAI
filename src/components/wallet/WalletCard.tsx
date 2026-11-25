@@ -1,29 +1,36 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useMemo } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import {
-  Sparkles,
   Wifi,
   Eye,
   EyeOff,
-  ChevronDown,
-  Check,
-  Building2,
-  Banknote,
-  Smartphone,
-  CreditCard,
-  PiggyBank,
+  ChevronLeft,
+  ChevronRight,
+  Layers,
 } from 'lucide-react';
 import AnimatedCounter from '@/components/ui/AnimatedCounter';
 import { formatIDR } from '@/lib/format';
+import {
+  getWalletTheme,
+  getWalletIcon,
+  formatEmbossedCardNumber,
+} from '@/lib/walletTheme';
+import {
+  CardMaterialLayers,
+  EmvGoldChip,
+  CardNetworkEmblem,
+} from './PhysicalCardSurface';
 
-interface WalletDropdownItem {
+export interface WalletDropdownItem {
   id: string;
   name: string;
   type: string;
   balance: number;
   accountLast4?: string | null;
+  institution?: string | null;
+  color?: string | null;
 }
 
 interface WalletCardProps {
@@ -35,266 +42,365 @@ interface WalletCardProps {
   wallets?: WalletDropdownItem[];
 }
 
-const getWalletIcon = (type: string) => {
-  switch (type?.toLowerCase()) {
-    case 'bank':
-      return <Building2 size={14} className="text-[#3E6FB0]" />;
-    case 'cash':
-      return <Banknote size={14} className="text-[#1B7354]" />;
-    case 'ewallet':
-      return <Smartphone size={14} className="text-[#7C7CE6]" />;
-    case 'savings':
-    case 'investment':
-      return <PiggyBank size={14} className="text-[#6867D4]" />;
-    default:
-      return <CreditCard size={14} className="text-[#757A95]" />;
-  }
-};
+const STACK_LAYERS = [
+  { y: 0, scale: 1, zIndex: 40, opacity: 1 },
+  { y: -13, scale: 0.95, zIndex: 30, opacity: 1 },
+  { y: -26, scale: 0.9, zIndex: 20, opacity: 1 },
+  { y: -39, scale: 0.85, zIndex: 10, opacity: 1 },
+] as const;
 
 export default function WalletCard({
   balance = 0,
-  cardNumber = '••••  ••••  ••••  0000',
-  holderName = '',
-  expiry = '08/26',
+  cardNumber = '•••• •••• •••• 4821',
+  holderName = 'PENGGUNA',
+  expiry = '11/29',
   className = '',
   wallets = [],
 }: WalletCardProps) {
+  const prefersReducedMotion = useReducedMotion();
   const [isBalanceHidden, setIsBalanceHidden] = useState(false);
-  const [selectedWalletId, setSelectedWalletId] = useState<string>('all');
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
 
-  // Compute active wallet or total
-  const selectedWallet = wallets.find((w) => w.id === selectedWalletId);
-  const currentBalance = selectedWallet ? selectedWallet.balance : balance;
-  const currentAccountLabel = selectedWallet ? selectedWallet.name : 'Semua Dompet (Total)';
-  const currentIdentifier = selectedWallet
-    ? (selectedWallet.accountLast4 ? `•••• ${selectedWallet.accountLast4}` : cardNumber)
-    : cardNumber;
+  const hasWallets = wallets.length > 0;
 
-  // Handle click outside and Escape key to close dropdown
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setIsDropdownOpen(false);
-      }
-    };
+  const displayWallets: WalletDropdownItem[] = useMemo(() => {
+    if (hasWallets) return wallets;
+    return [
+      {
+        id: 'default-finai-card',
+        name: 'Dompet FinAI',
+        type: 'BANK',
+        balance,
+        accountLast4: cardNumber.replace(/\D/g, '').slice(-4) || '0000',
+      },
+    ];
+  }, [hasWallets, wallets, balance, cardNumber]);
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsDropdownOpen(false);
-    };
+  const safeActiveIndex = activeIndex % displayWallets.length;
+  const activeWallet = displayWallets[safeActiveIndex];
+  const activeTheme = getWalletTheme(activeWallet);
 
-    if (isDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('keydown', handleKeyDown);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isDropdownOpen]);
+  const totalWalletsBalance = useMemo(() => {
+    if (!hasWallets) return balance;
+    return wallets.reduce((sum, w) => sum + w.balance, 0);
+  }, [hasWallets, wallets, balance]);
+
+  const getWalletSharePercent = (walletBalance: number) => {
+    if (totalWalletsBalance <= 0) return 0;
+    const raw = (walletBalance / totalWalletsBalance) * 100;
+    return Math.max(0, Math.min(100, Math.round(raw * 10) / 10));
+  };
+
+  const handlePrev = () => {
+    if (displayWallets.length <= 1) return;
+    setActiveIndex((prev) => (prev - 1 + displayWallets.length) % displayWallets.length);
+  };
+
+  const handleNext = () => {
+    if (displayWallets.length <= 1) return;
+    setActiveIndex((prev) => (prev + 1) % displayWallets.length);
+  };
+
+  const springTransition = prefersReducedMotion
+    ? { duration: 0.12 }
+    : { type: 'spring' as const, stiffness: 300, damping: 28, mass: 0.85 };
 
   return (
-    <div
-      className={`relative w-full min-h-[280px] sm:min-h-[300px] md:min-h-[320px] rounded-[28px] sm:rounded-[32px] p-7 sm:p-9 flex flex-col justify-between select-none ${className}`}
-    >
+    <div className={`grid grid-cols-1 xl:grid-cols-12 gap-5 items-stretch w-full ${className}`}>
       {/* ===================================================================== */}
-      {/* 0. INNER CLIPPED LAYER FOR BACKGROUND & WAVES (PREVENTS POPUP CLIPPING) */}
+      {/* KOLOM KIRI: WADAH SHOWCASE TUMPUKAN KARTU REKENING                    */}
       {/* ===================================================================== */}
-      <div className="absolute inset-0 rounded-[28px] sm:rounded-[32px] bg-gradient-to-br from-[#8E9AF7] via-[#7C7CE6] to-[#5F5ED4] shadow-[0_25px_60px_-12px_rgba(124,124,230,0.48),0_10px_30px_rgba(36,38,54,0.12)] border border-white/40 overflow-hidden pointer-events-none z-0">
-        <div className="absolute -top-24 -right-24 w-[420px] h-[420px] rounded-full bg-white/20 blur-2xl" />
-        <div className="absolute -bottom-28 -left-20 w-96 h-96 rounded-full bg-[#4E4DC7]/40 blur-xl" />
-        <svg
-          className="absolute inset-0 w-full h-full opacity-40"
-          viewBox="0 0 600 320"
-          preserveAspectRatio="none"
-        >
-          <path
-            d="M-20,230 C120,130 260,290 400,160 C470,95 520,145 620,120 L620,340 L-20,340 Z"
-            fill="rgba(255,255,255,0.18)"
-          />
-          <path
-            d="M-20,120 C140,50 300,230 620,70"
-            fill="none"
-            stroke="rgba(255,255,255,0.35)"
-            strokeWidth="2.5"
-          />
-        </svg>
-      </div>
+      <div className="xl:col-span-6 bg-white rounded-3xl border border-slate-200/80 p-5 sm:p-6 shadow-[0_8px_24px_-6px_rgba(15,23,42,0.06)] flex flex-col justify-between">
+        <div className="mx-auto w-full max-w-[420px] flex flex-col justify-between h-full">
+          {/* Wrapper Tumpukan dengan Ruang Atas untuk Lapisan Belakang */}
+          <div className="relative pt-11 pb-3 overflow-visible">
+            <div className="relative h-[215px] sm:h-[225px] w-full">
+              {/* Bayangan Ambien Berdimensi Mengikuti Warna Kartu Aktif */}
+              <div
+                aria-hidden="true"
+                className={`absolute -bottom-2 inset-x-8 h-7 rounded-full blur-2xl opacity-35 pointer-events-none transition-colors duration-300 ${activeTheme.glow}`}
+              />
 
-      {/* ===================================================================== */}
-      {/* 1. CARD TOP ROW: BRAND & WALLET SELECTOR DROPDOWN (OVERFLOW VISIBLE) */}
-      {/* ===================================================================== */}
-      <div className="flex items-center justify-between relative z-30">
-        {/* Dropdown Container */}
-        <div ref={dropdownRef} className="relative">
-          <button
-            type="button"
-            onClick={() => setIsDropdownOpen((prev) => !prev)}
-            aria-expanded={isDropdownOpen}
-            aria-haspopup="listbox"
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-2xl bg-white/25 hover:bg-white/35 active:scale-98 backdrop-blur-md border border-white/35 text-white transition-all cursor-pointer shadow-xs"
-          >
-            <span className="text-xs sm:text-sm font-bold tracking-wide">
-              {currentAccountLabel}
-            </span>
-            <ChevronDown
-              size={14}
-              className={`transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`}
-            />
-          </button>
+              {displayWallets.map((wallet, idx) => {
+                const offset =
+                  (idx - safeActiveIndex + displayWallets.length) % displayWallets.length;
+                const isVisibleInStack = offset < 4;
+                const isActive = offset === 0;
+                const theme = getWalletTheme(wallet);
+                const layer = isVisibleInStack
+                  ? STACK_LAYERS[offset]
+                  : { y: -48, scale: 0.8, zIndex: 0, opacity: 0 };
 
-          {/* Unclipped High Z-Index Floating Popover */}
-          <AnimatePresence>
-            {isDropdownOpen && (
-              <motion.div
-                initial={{ opacity: 0, y: -6, scale: 0.96 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -6, scale: 0.96 }}
-                transition={{ duration: 0.16, ease: 'easeOut' }}
-                className="absolute left-0 top-full mt-2 w-64 p-2 rounded-2xl bg-white text-[#242636] shadow-[0_20px_45px_rgba(36,38,54,0.22)] border border-black/[0.08] z-50 divide-y divide-[#E8EAF2]/60"
-              >
-                {/* Option 1: Total Semua Dompet */}
-                <div className="pb-1.5">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedWalletId('all');
-                      setIsDropdownOpen(false);
+                return (
+                  <motion.div
+                    key={wallet.id}
+                    initial={false}
+                    animate={{
+                      y: layer.y,
+                      scale: layer.scale,
+                      zIndex: layer.zIndex,
+                      opacity: layer.opacity,
                     }}
-                    className={`w-full px-3 py-2.5 rounded-xl text-left text-xs font-bold flex items-center justify-between transition-colors cursor-pointer ${
-                      selectedWalletId === 'all'
-                        ? 'bg-[#EDEAFC] text-[#5F5ED4]'
-                        : 'hover:bg-[#FAFBFD] text-[#242636]'
+                    whileHover={
+                      !isActive && isVisibleInStack && !prefersReducedMotion
+                        ? { y: layer.y - 4 }
+                        : undefined
+                    }
+                    transition={springTransition}
+                    onClick={() => {
+                      if (!isActive && isVisibleInStack) {
+                        setActiveIndex(idx);
+                      }
+                    }}
+                    style={{ originX: 0.5, originY: 0 }}
+                    className={`group absolute inset-0 h-[215px] sm:h-[225px] rounded-2xl p-5 text-white overflow-hidden select-none bg-gradient-to-br ${theme.gradient} ${
+                      isActive
+                        ? 'border border-white/25 ring-1 ring-inset ring-white/15 shadow-[0_18px_36px_-10px_rgba(15,23,42,0.28)]'
+                        : isVisibleInStack
+                          ? 'ring-2 ring-white/95 cursor-pointer shadow-[0_8px_20px_-6px_rgba(15,23,42,0.18)]'
+                          : 'pointer-events-none'
                     }`}
+                    aria-hidden={!isActive}
                   >
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-lg bg-[#E4E2FB] text-[#7C7CE6] flex items-center justify-center shrink-0">
-                        <CreditCard size={14} />
-                      </div>
-                      <div>
-                        <span className="block leading-tight">Total Semua Dompet</span>
-                        <span className="text-[10px] text-[#757A95] font-normal leading-tight">
-                          {formatIDR(balance)}
-                        </span>
-                      </div>
-                    </div>
-                    {selectedWalletId === 'all' && (
-                      <Check size={15} strokeWidth={2.5} className="text-[#5F5ED4] shrink-0" />
-                    )}
-                  </button>
-                </div>
+                    <CardMaterialLayers enableHoverSweep={isActive && !prefersReducedMotion} />
 
-                {/* Specific Wallets List */}
-                <div className="pt-1.5 space-y-1 max-h-56 overflow-y-auto no-scrollbar">
-                  {wallets.map((w) => {
-                    const isSelected = selectedWalletId === w.id;
-                    return (
-                      <button
-                        key={w.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedWalletId(w.id);
-                          setIsDropdownOpen(false);
-                        }}
-                        className={`w-full px-3 py-2 rounded-xl text-left text-xs flex items-center justify-between transition-colors cursor-pointer ${
-                          isSelected
-                            ? 'bg-[#EDEAFC] text-[#5F5ED4] font-bold'
-                            : 'hover:bg-[#FAFBFD] text-[#242636] font-semibold'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="w-7 h-7 rounded-lg bg-[#FAFBFD] border border-[#E8EAF2] flex items-center justify-center shrink-0">
-                            {getWalletIcon(w.type)}
+                    {/* Isi Kartu (Hanya Tampil pada Kartu Aktif agar Kartu Belakang Bersih Tanpa Teks Terpotong) */}
+                    <div
+                      className={`relative z-10 h-full flex flex-col justify-between transition-opacity duration-200 ${
+                        isActive ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                      }`}
+                    >
+                      {/* Top Row: Nama Dompet & Sublabel Mikro (Kiri) + Emblem Jaringan Minimalis (Kanan) */}
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <span className="text-sm sm:text-[15px] font-bold tracking-wide text-white truncate block leading-tight drop-shadow-[0_1px_1px_rgba(0,0,0,0.18)]">
+                            {wallet.name}
+                          </span>
+                          <span className="text-[9px] tracking-[0.22em] uppercase text-white/70 font-semibold block mt-0.5 leading-none">
+                            {theme.subLabel}
+                          </span>
+                        </div>
+
+                        <CardNetworkEmblem />
+                      </div>
+
+                      {/* Middle Row: Chip EMV Logam + Contactless (Kiri) & Saldo Tersedia (Kanan) */}
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2.5 shrink-0">
+                          <EmvGoldChip idSuffix={`dash-${wallet.id}`} />
+                          <Wifi
+                            size={17}
+                            className="text-white/80 rotate-90 drop-shadow-[0_1px_1px_rgba(0,0,0,0.2)]"
+                            aria-hidden="true"
+                          />
+                        </div>
+
+                        <div className="text-right min-w-0">
+                          <div className="flex items-center justify-end gap-1.5 mb-0.5">
+                            <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.16em] text-white/75">
+                              SALDO TERSEDIA
+                            </span>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setIsBalanceHidden((prev) => !prev);
+                              }}
+                              className="p-1 rounded-md bg-white/18 hover:bg-white/30 active:scale-95 text-white transition-all cursor-pointer"
+                              aria-label={
+                                isBalanceHidden ? 'Tampilkan Saldo' : 'Sembunyikan Saldo'
+                              }
+                              title={
+                                isBalanceHidden ? 'Tampilkan Saldo' : 'Sembunyikan Saldo'
+                              }
+                            >
+                              {isBalanceHidden ? <EyeOff size={12} /> : <Eye size={12} />}
+                            </button>
                           </div>
-                          <div className="truncate">
-                            <span className="block leading-tight truncate">{w.name}</span>
-                            <span className="text-[10px] text-[#757A95] font-normal leading-tight">
-                              {formatIDR(w.balance)}
+
+                          <div className="text-2xl sm:text-[28px] font-bold tracking-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.22)] tabular-nums truncate leading-tight">
+                            {isBalanceHidden ? (
+                              <span className="tracking-widest font-mono text-xl sm:text-2xl">
+                                Rp ••••••••
+                              </span>
+                            ) : (
+                              <AnimatedCounter value={wallet.balance} prefix="Rp " />
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Bottom Block: Nomor Kartu Embossed + Card Holder & Valid Thru */}
+                      <div className="space-y-2">
+                        <div className="font-mono text-[14px] sm:text-[15px] tracking-[0.22em] text-white/95 drop-shadow-[0_1.5px_1px_rgba(0,0,0,0.38)] truncate">
+                          {formatEmbossedCardNumber(wallet.accountLast4 || cardNumber)}
+                        </div>
+
+                        <div className="flex items-end justify-between gap-3">
+                          <div className="min-w-0">
+                            <span className="text-[8px] tracking-[0.18em] text-white/60 uppercase block leading-none mb-1">
+                              CARD HOLDER
+                            </span>
+                            <span className="text-xs font-semibold tracking-[0.14em] uppercase text-white/95 truncate block leading-none drop-shadow-[0_1px_1px_rgba(0,0,0,0.25)]">
+                              {holderName || 'PENGGUNA FINAI'}
+                            </span>
+                          </div>
+
+                          <div className="text-right shrink-0">
+                            <span className="text-[8px] tracking-[0.18em] text-white/60 uppercase block leading-none mb-1">
+                              VALID THRU
+                            </span>
+                            <span className="font-mono text-xs tracking-widest text-white/90 leading-none block drop-shadow-[0_1px_1px_rgba(0,0,0,0.25)]">
+                              {expiry || '11/29'}
                             </span>
                           </div>
                         </div>
-                        {isSelected && (
-                          <Check size={15} strokeWidth={2.5} className="text-[#5F5ED4] shrink-0 ml-2" />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
 
-        {/* Right Wireless & Sparkles Icons */}
-        <div className="flex items-center gap-3">
-          <Wifi size={22} className="text-white/90 rotate-90" />
-          <div className="w-9 h-9 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white border border-white/30 shadow-xs">
-            <Sparkles size={18} />
+          {/* Baris Kontrol Mini di Bawah Tumpukan */}
+          <div className="flex items-center justify-end pt-2">
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={handlePrev}
+                disabled={displayWallets.length <= 1}
+                aria-label="Kartu sebelumnya"
+                className="w-7 h-7 rounded-full border border-slate-200 bg-white hover:bg-slate-50 active:scale-95 text-slate-600 flex items-center justify-center transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft size={14} />
+              </button>
+              <button
+                type="button"
+                onClick={handleNext}
+                disabled={displayWallets.length <= 1}
+                aria-label="Kartu berikutnya"
+                className="w-7 h-7 rounded-full border border-slate-200 bg-white hover:bg-slate-50 active:scale-95 text-slate-600 flex items-center justify-center transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <ChevronRight size={14} />
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       {/* ===================================================================== */}
-      {/* 2. CARD MIDDLE ROW: EMV GOLD CHIP & SALDO TERSEDIA (WITH EYE TOGGLE) */}
+      {/* KOLOM KANAN: RINGKASAN TOTAL SALDO, ALOKASI & DAFTAR SEMUA DOMPET     */}
       {/* ===================================================================== */}
-      <div className="flex flex-wrap items-center justify-between gap-4 relative z-10 my-4">
-        {/* Large Realistic EMV Chip */}
-        <div className="w-13 h-10 rounded-xl bg-gradient-to-tr from-[#E5C158] via-[#F3DE8A] to-[#D4AF37] border border-[#C5A028] shadow-[0_2px_8px_rgba(0,0,0,0.22)] flex flex-col justify-between p-1.5 relative overflow-hidden shrink-0">
-          <div className="w-full h-px bg-[#B08D20]/60 my-auto" />
-          <div className="absolute inset-x-3.5 inset-y-0 border-x border-[#B08D20]/50" />
-          <div className="w-4 h-2.5 rounded-xs border border-[#B08D20]/60 mx-auto" />
-        </div>
-
-        {/* Large Available Balance Display + Eye Toggle Icon */}
-        <div className="text-right">
-          <div className="flex items-center justify-end gap-1.5 mb-1">
-            <span className="text-[11px] uppercase font-bold text-white/80 tracking-wider">
-              {selectedWallet ? `Saldo ${selectedWallet.name}` : 'Total Saldo Tersedia'}
-            </span>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsBalanceHidden(!isBalanceHidden);
-              }}
-              className="p-1 rounded-lg bg-white/20 hover:bg-white/35 active:scale-90 text-white transition-all cursor-pointer shadow-xs"
-              title={isBalanceHidden ? 'Tampilkan Saldo' : 'Sembunyikan Saldo'}
-            >
-              {isBalanceHidden ? <EyeOff size={13} /> : <Eye size={13} />}
-            </button>
-          </div>
-
-          <div className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.2)] tabular-nums">
-            {isBalanceHidden ? (
-              <span className="tracking-widest font-mono text-2xl sm:text-3xl md:text-4xl">
-                Rp ••••••••
+      <div className="xl:col-span-6 p-6 flex flex-col justify-between gap-5 h-full rounded-3xl border border-slate-200/80 bg-white shadow-[0_8px_24px_-6px_rgba(15,23,42,0.06)]">
+        {/* Bagian Atas: Header Total Saldo & Segmented Allocation Bar */}
+        <div>
+          <div className="flex items-start justify-between gap-3">
+            <div className="space-y-1 min-w-0">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+                TOTAL SEMUA DOMPET
               </span>
+              <div className="text-2xl sm:text-[26px] font-bold tracking-tight tabular-nums text-slate-900">
+                {isBalanceHidden ? (
+                  <span className="tracking-widest font-mono text-xl sm:text-2xl">
+                    Rp ••••••••
+                  </span>
+                ) : (
+                  <AnimatedCounter value={totalWalletsBalance} prefix="Rp " />
+                )}
+              </div>
+            </div>
+
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 text-xs font-semibold shrink-0">
+              <Layers size={13} />
+              <span>{wallets.length} Dompet</span>
+            </span>
+          </div>
+
+          {/* Segmented Allocation Bar */}
+          <div
+            className="h-2.5 w-full rounded-full bg-slate-100 overflow-hidden flex gap-0.5 mt-3"
+            role="img"
+            aria-label="Distribusi saldo antar dompet"
+          >
+            {hasWallets && totalWalletsBalance > 0 ? (
+              wallets.map((w) => {
+                const pct = getWalletSharePercent(w.balance);
+                if (pct <= 0) return null;
+                const theme = getWalletTheme(w);
+                return (
+                  <div
+                    key={w.id}
+                    title={`${w.name}: ${pct}%`}
+                    style={{ width: `${pct}%` }}
+                    className={`h-full bg-gradient-to-r ${theme.gradient} first:rounded-l-full last:rounded-r-full transition-all duration-300`}
+                  />
+                );
+              })
             ) : (
-              <AnimatedCounter value={currentBalance} prefix="Rp" />
+              <div className="h-full w-full bg-slate-200/70 rounded-full" />
             )}
           </div>
         </div>
-      </div>
 
-      {/* ===================================================================== */}
-      {/* 3. CARD BOTTOM ROW: CARD NUMBER, HOLDER & EXPIRY                     */}
-      {/* ===================================================================== */}
-      <div className="space-y-2 relative z-10 pt-2 border-t border-white/20 text-white">
-        <div className="flex items-center justify-between text-xs sm:text-sm font-mono tracking-widest text-white/95 drop-shadow-xs">
-          <span>{currentIdentifier}</span>
-          <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md border border-white/30">
-            {selectedWallet ? selectedWallet.type.toUpperCase() : 'FINAI PLATINUM'}
-          </span>
-        </div>
+        {/* Bagian Bawah: Daftar Interaktif Semua Dompet (Sinkron 2 Arah dengan Kartu Kiri) */}
+        <div className="space-y-2 max-h-[175px] overflow-y-auto no-scrollbar">
+          {hasWallets ? (
+            wallets.map((w, idx) => {
+              const isSelected = idx === safeActiveIndex;
+              const theme = getWalletTheme(w);
+              const pct = getWalletSharePercent(w.balance);
 
-        <div className="flex items-center justify-between text-xs text-white/85">
-          <span className="font-semibold tracking-wide uppercase text-[11px]">
-            {holderName}
-          </span>
-          <span className="font-mono text-[11px] tracking-wider text-white/70">
-            EXP {expiry}
-          </span>
+              return (
+                <button
+                  key={w.id}
+                  type="button"
+                  onClick={() => setActiveIndex(idx)}
+                  className={`w-full flex items-center justify-between px-3.5 py-2 rounded-2xl border transition-all duration-200 cursor-pointer text-left ${
+                    isSelected
+                      ? 'bg-indigo-50/75 border-indigo-200 shadow-xs'
+                      : 'bg-slate-50/60 border-slate-100 hover:bg-slate-50 hover:border-slate-200'
+                  }`}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div
+                      className={`h-9 w-9 rounded-xl bg-white border border-slate-100 shadow-2xs flex items-center justify-center shrink-0 ${theme.accentText}`}
+                    >
+                      {getWalletIcon(w, 16)}
+                    </div>
+                    <div className="min-w-0">
+                      <span
+                        className={`text-sm truncate block ${
+                          isSelected
+                            ? 'text-indigo-950 font-semibold'
+                            : 'text-slate-800 font-medium'
+                        }`}
+                      >
+                        {w.name}
+                      </span>
+                      <span className="text-[11px] text-slate-500 block truncate">
+                        {theme.typeLabel}
+                        {w.institution ? ` • ${w.institution}` : ''}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="text-right shrink-0 ml-3">
+                    <span className="font-semibold text-sm tabular-nums text-slate-900 block">
+                      {isBalanceHidden ? 'Rp ••••••' : formatIDR(w.balance)}
+                    </span>
+                    <span className="text-[11px] font-medium text-indigo-600 tabular-nums block">
+                      {pct}%
+                    </span>
+                  </div>
+                </button>
+              );
+            })
+          ) : (
+            <div className="px-3.5 py-4 rounded-2xl bg-slate-50/60 border border-slate-100 text-xs text-slate-500 text-center">
+              Belum ada dompet yang terhubung.
+            </div>
+          )}
         </div>
       </div>
     </div>

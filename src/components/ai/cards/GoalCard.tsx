@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Target, Calendar, PiggyBank } from 'lucide-react';
+import { getGoalCategoryLabel } from '@/lib/categories';
 import { formatIDR } from '@/lib/format';
 
 interface GoalCardProps {
@@ -46,7 +47,7 @@ export default function GoalCard({
             Target Impian
           </span>
           <h4 className="text-sm sm:text-base font-bold text-[#242636] mt-1.5">{name}</h4>
-          {category && <span className="text-[11px] text-[#757A95]">{category}</span>}
+          {category && <span className="text-[11px] text-[#757A95]">{getGoalCategoryLabel(category)}</span>}
         </div>
         <div className="text-right">
           <span className="text-[10px] text-[#757A95] font-semibold block">Progress</span>

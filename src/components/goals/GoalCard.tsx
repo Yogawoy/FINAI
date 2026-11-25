@@ -113,9 +113,6 @@ export default function GoalCard({
           <span className="text-xs font-extrabold text-[#1B7354] tabular-nums">
             {formatIDR(isWeekly ? weeklySaving : monthlySaving)}/{isWeekly ? 'mgg' : 'bln'}
           </span>
-          <span className="text-[10px] text-[#757A95] block">
-            ≈ {formatIDR(isWeekly ? monthlySaving : weeklySaving)}/{isWeekly ? 'bln' : 'mgg'}
-          </span>
         </div>
 
         <button

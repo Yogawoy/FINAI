@@ -11,6 +11,11 @@ import {
 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { BudgetCategory } from '@/types';
+import {
+  getTransactionCategoryColor,
+  getTransactionCategoryLabel,
+  normalizeTransactionCategory,
+} from '@/lib/categories';
 import { formatIDR } from '@/lib/format';
 import { apiClient, mapApiErrorMessage } from '@/lib/api-client';
 import { emitRefresh, onRefresh } from '@/lib/data-refresh';
@@ -21,7 +26,6 @@ import PageTransition from '@/components/loading/PageTransition';
 
 // Modular Subcomponents & 6 Visual Modals
 import BudgetOverview from '@/components/budgets/BudgetOverview';
-import BudgetInsight from '@/components/budgets/BudgetInsight';
 import BudgetFilters, { BudgetFilterType } from '@/components/budgets/BudgetFilters';
 import BudgetList from '@/components/budgets/BudgetList';
 import CreateBudgetModal from '@/components/budgets/CreateBudgetModal';
@@ -46,16 +50,17 @@ function getMonthOptions(): string[] {
 const MONTH_OPTIONS = getMonthOptions();
 
 function mapBackendBudgetToUI(b: any): BudgetCategory {
+  const canonical = normalizeTransactionCategory(b.category);
   return {
     id: b.id,
-    name: b.category,
-    category: b.category as any,
+    name: getTransactionCategoryLabel(b.category),
+    category: canonical,
     limit: Number(b.limitAmount),
     spent: Number(b.usedAmount || 0),
     period: 'monthly',
-    color: '#7C7CE6',
-    icon: 'PieChart',
-    iconName: 'PieChart',
+    color: getTransactionCategoryColor(canonical),
+    icon: canonical,
+    iconName: canonical,
     status: 'safe',
   };
 }
@@ -296,9 +301,6 @@ export default function BudgetsPage() {
             <h1 className="text-2xl sm:text-3xl font-black text-[#242636] tracking-tight">
               Anggaran
             </h1>
-            <p className="text-xs sm:text-sm text-[#757A95] mt-0.5 font-medium">
-              Rencanakan pengeluaran sebelum Anda berbelanja.
-            </p>
           </div>
 
           <div className="flex items-center gap-2.5">
@@ -378,29 +380,11 @@ export default function BudgetsPage() {
           onQuickCreate={() => setIsCreateModalOpen(true)}
         />
 
-        <BudgetInsight
-          insightText="Dengan pola belanja saat ini, Anda berpotensi menghemat Rp420.000 pada pos Makanan & Minuman bulan ini."
-          category="Makanan & Minuman"
-          dailySafeSpend={51600}
-          onExplore={() => {
-            const foodBudget = budgets.find((b) => b.category === 'food');
-            if (foodBudget) handleSelectBudget(foodBudget);
-          }}
-        />
-
         <section className="space-y-4">
           <div className="flex items-center justify-between px-1">
-            <div>
-              <h2 className="text-lg font-bold text-[#242636] tracking-tight">
-                Pos Anggaran Kategori
-              </h2>
-              <p className="text-xs text-[#757A95]">
-                Klik pos anggaran mana pun untuk melihat rincian batas dan status.
-              </p>
-            </div>
-            <span className="text-xs font-semibold text-[#757A95]">
-              {filteredBudgets.length} Kategori Terpasang
-            </span>
+            <h2 className="text-lg font-bold text-[#242636] tracking-tight">
+              Pos Anggaran Kategori
+            </h2>
           </div>
 
           <BudgetFilters

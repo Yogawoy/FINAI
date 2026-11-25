@@ -11,24 +11,12 @@ import {
   Copy,
   MoreVertical,
   ArrowUpRight,
-  Utensils,
-  Coffee,
-  ShoppingBag,
-  Car,
-  Fuel,
-  Train,
-  Film,
-  Dices,
-  Shirt,
-  Sparkle,
-  Zap,
-  Globe,
-  Music,
-  WalletCards,
   X,
 } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
 import { BudgetCategory } from '@/types';
+import { getTransactionCategoryLabel, normalizeCategoryKey } from '@/lib/categories';
+import { renderTransactionCategoryIcon } from '@/components/categories/CategoryIcon';
 import { formatIDR } from '@/lib/format';
 import { getCategoryIconComponent, getCategoryColorTheme } from './BudgetRow';
 
@@ -43,28 +31,11 @@ interface BudgetDetailModalProps {
 }
 
 function getCategoryLabel(cat: string): string {
-  const map: Record<string, string> = {
-    food: 'Makanan & Minuman',
-    transport: 'Transportasi',
-    entertainment: 'Hiburan',
-    shopping: 'Belanja',
-    bills: 'Tagihan',
-    health: 'Kesehatan',
-    education: 'Edukasi',
-    other: 'Lainnya',
-  };
-  return map[cat] || cat.charAt(0).toUpperCase() + cat.slice(1);
+  return getTransactionCategoryLabel(cat);
 }
 
 function getCategoryIcon(cat: string) {
-  const map: Record<string, React.ReactNode> = {
-    food: <Utensils size={14} className="text-[#5F5ED4]" />,
-    transport: <Car size={14} className="text-[#3B82F6]" />,
-    entertainment: <Film size={14} className="text-[#9333EA]" />,
-    shopping: <Shirt size={14} className="text-[#EA580C]" />,
-    bills: <Zap size={14} className="text-[#EAB308]" />,
-  };
-  return map[cat] || <WalletCards size={14} className="text-[#7C7CE6]" />;
+  return renderTransactionCategoryIcon(cat, 14, 'text-[#5F5ED4]');
 }
 
 export default function BudgetDetailModal({
@@ -87,7 +58,9 @@ export default function BudgetDetailModal({
 
   // Dynamic transactions filtered by budget category (real data, last 30 days, max 4)
   const categoryTxs = transactions.filter(
-    (tx: any) => String(tx.category).toLowerCase() === String(budget.category).toLowerCase() && String(tx.type).toUpperCase() === 'EXPENSE'
+    (tx: any) =>
+      normalizeCategoryKey(tx.category) === normalizeCategoryKey(budget.category) &&
+      String(tx.type).toUpperCase() === 'EXPENSE'
   );
   const recentTxs = (categoryTxs.length > 0 ? categoryTxs.slice(0, 4) : []).map((tx: any) => {
     const d = tx.transactionDate ? new Date(tx.transactionDate) : new Date();
